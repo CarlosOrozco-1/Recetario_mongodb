@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  mongo:
+    image: mongo:8
+    container_name: recetario-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    restart: unless-stopped
+
+  backend:
+    build: ./backend
+    container_name: recetario-backend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/recetario
+      - JWT_SECRET=nn&SFFeHKyeIoI6ubo@D)7,txuw0NnlC
+      - PORT=3000
+    depends_on:
+      - mongo
+    command: npm run dev
+
+  frontend:
+    build: ./frontend
+    container_name: recetario-frontend
+    ports:
+      - "4200:4200"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+    command: npm start
+
+volumes:
+  mongo-data:
