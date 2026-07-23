@@ -1,7 +1,7 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
-require('dotenv').config();
+const express = require("express");
+const mongoose = require("mongoose");
+const cors = require("cors");
+require("dotenv").config();
 
 const app = express();
 
@@ -10,17 +10,22 @@ app.use(cors());
 app.use(express.json());
 
 // Ruta de prueba
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', message: 'API funcionando correctamente' });
+app.get("/api/health", (req, res) => {
+  res.json({ status: "ok", message: "API funcionando correctamente" });
 });
 
-// Conexión a MongoDB
-const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/recetario';
+// Rutas de autenticación
+app.use("/api/auth", require("./routes/auth"));
 
-mongoose.connect(MONGO_URI)
-  .then(() => console.log('✅ Conectado a MongoDB'))
-  .catch(err => {
-    console.error('❌ Error de conexión a MongoDB:', err.message);
+// Conexión a MongoDB
+const MONGO_URI =
+  process.env.MONGO_URI || "mongodb://localhost:27017/recetario";
+
+mongoose
+  .connect(MONGO_URI)
+  .then(() => console.log("✅ Conectado a MongoDB"))
+  .catch((err) => {
+    console.error("❌ Error de conexión a MongoDB:", err.message);
     process.exit(1);
   });
 
