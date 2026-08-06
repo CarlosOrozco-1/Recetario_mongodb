@@ -1,0 +1,54 @@
+<div class="form-container">
+  <form (ngSubmit)="onSubmit()">
+    <h2>{{ isEdit ? 'Editar Receta' : 'Nueva Receta' }}</h2>
+
+    <div *ngIf="error" class="error">{{ error }}</div>
+
+    <label for="titulo">Título</label>
+    <input
+      id="titulo"
+      type="text"
+      [(ngModel)]="recipe.titulo"
+      name="titulo"
+      required
+    />
+
+    <label for="descripcion">Descripción</label>
+    <textarea
+      id="descripcion"
+      [(ngModel)]="recipe.descripcion"
+      name="descripcion"
+      rows="3"
+      required
+    ></textarea>
+
+    <label>Ingredientes</label>
+    <div *ngFor="let ing of recipe.ingredientes; let i = index" class="ing-row">
+      <input
+        type="text"
+        [(ngModel)]="recipe.ingredientes[i]"
+        [name]="'ingrediente' + i"
+        placeholder="Ingrediente {{ i + 1 }}"
+      />
+      <button type="button" (click)="onRemoveIngrediente(i)">✕</button>
+    </div>
+    <button type="button" class="btn-add" (click)="onAddIngrediente()">
+      + Agregar ingrediente
+    </button>
+
+    <label for="instrucciones">Instrucciones</label>
+    <textarea
+      id="instrucciones"
+      [(ngModel)]="recipe.instrucciones"
+      name="instrucciones"
+      rows="5"
+      required
+    ></textarea>
+
+    <button type="submit" class="btn-save">
+      {{ isEdit ? 'Guardar cambios' : 'Crear receta' }}
+    </button>
+
+    <a routerLink="/dashboard" class="btn-cancel">Cancelar</a>
+  </form>
+</div>

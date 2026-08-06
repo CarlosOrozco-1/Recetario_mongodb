@@ -1,0 +1,41 @@
+<div class="dashboard">
+  <header>
+    <h1>Mis Recetas</h1>
+    <div>
+      <button type="button" (click)="onLogout()">Cerrar sesión</button>
+    </div>
+  </header>
+
+  <div *ngIf="loading()" class="loading">Cargando recetas...</div>
+  <div *ngIf="error()" class="error">{{ error() }}</div>
+
+  <button type="button" class="btn-new" routerLink="/recipes/new">
+    + Nueva receta
+  </button>
+
+  <div class="grid">
+    <div *ngFor="let recipe of recipes()" class="card">
+      <h3>{{ recipe.titulo }}</h3>
+      <p>{{ recipe.descripcion }}</p>
+
+      <div class="ingredientes">
+        <span *ngFor="let ing of recipe.ingredientes" class="tag">
+          {{ ing }}
+        </span>
+      </div>
+
+      <div class="actions">
+        <button type="button" [routerLink]="['/recipes', recipe._id, 'edit']">
+          Editar
+        </button>
+        <button type="button" class="delete" (click)="onDelete(recipe._id!)">
+          Eliminar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <p *ngIf="recipes().length === 0 && !loading()" class="empty">
+    No tienes recetas aún. ¡Crea la primera!
+  </p>
+</div>

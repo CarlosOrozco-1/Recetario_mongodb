@@ -1,0 +1,21 @@
+{
+  "languages": {
+    "HTML": {
+      "language_servers": [
+        {
+          "name": "angular-language-server",
+          "binary": {
+            "path": "/home/carloso/Projects/2026/MAIN/recetario/frontend/node_modules/@angular/language-server/bin/ngserver",
+            "arguments": [
+              "--stdio",
+              "--tsProbeLocations",
+              "/home/carloso/Projects/2026/MAIN/recetario/frontend/node_modules",
+              "--ngProbeLocations",
+              "/home/carloso/Projects/2026/MAIN/recetario/frontend/node_modules"
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

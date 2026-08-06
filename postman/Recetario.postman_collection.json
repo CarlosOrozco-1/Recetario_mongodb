@@ -1,0 +1,217 @@
+{
+  "info": {
+    "name": "Recetario API",
+    "description": "CRUD Completo - Usuarios y Recetas (Práctica MEAN Stack)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000/api"
+    },
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "userId",
+      "value": ""
+    },
+    {
+      "key": "recipeId",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Health Check",
+      "item": [
+        {
+          "name": "GET /api/health",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/health"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "POST /api/auth/register",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json.token) {",
+                  "    pm.collectionVariables.set('token', json.token);",
+                  "    pm.collectionVariables.set('userId', json._id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/register",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Carlos Test\",\n  \"email\": \"carlos@test.com\",\n  \"password\": \"12345678\"\n}"
+            }
+          }
+        },
+        {
+          "name": "POST /api/auth/login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json.token) {",
+                  "    pm.collectionVariables.set('token', json.token);",
+                  "    pm.collectionVariables.set('userId', json._id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/login",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"carlos@test.com\",\n  \"password\": \"12345678\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Recipes CRUD",
+      "item": [
+        {
+          "name": "POST /api/recipes - Crear",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json._id) {",
+                  "    pm.collectionVariables.set('recipeId', json._id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/recipes",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Pasta a la carbonara\",\n  \"descripcion\": \"Clásica receta italiana\",\n  \"ingredientes\": [\"pasta\", \"huevos\", \"bacon\", \"queso parmesano\"],\n  \"instrucciones\": \"Hervir la pasta, mezclar con los demás ingredientes\"\n}"
+            }
+          }
+        },
+        {
+          "name": "GET /api/recipes - Listar todas",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/recipes",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ]
+          }
+        },
+        {
+          "name": "GET /api/recipes/:id - Obtener una",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/recipes/{{recipeId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["recipes", "{{recipeId}}"]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ]
+          }
+        },
+        {
+          "name": "PUT /api/recipes/:id - Actualizar",
+          "request": {
+            "method": "PUT",
+            "url": {
+              "raw": "{{baseUrl}}/recipes/{{recipeId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["recipes", "{{recipeId}}"]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Pasta a la carbonara actualizada\",\n  \"descripcion\": \"Receta mejorada\",\n  \"ingredientes\": [\"pasta\", \"huevos\", \"bacon\", \"queso\", \"pimienta\"],\n  \"instrucciones\": \"Hervir la pasta, mezclar todo y añadir pimienta\"\n}"
+            }
+          }
+        },
+        {
+          "name": "DELETE /api/recipes/:id - Eliminar",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/recipes/{{recipeId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["recipes", "{{recipeId}}"]
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

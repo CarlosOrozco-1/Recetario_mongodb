@@ -9,15 +9,33 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Ruta de prueba
+// Ruta de prueba con estado de MongoDB
 app.get("/api/health", (req, res) => {
-  res.json({ status: "ok", message: "API funcionando correctamente" });
+  const mongoState = mongoose.connection.readyState;
+  const states = {
+    0: "desconectado",
+    1: "conectado",
+    2: "conectando",
+    3: "desconectando",
+  };
+
+  res.json({
+    status: mongoState === 1 ? "ok" : "error",
+    mongodb: states[mongoState] || "desconocido",
+    database: mongoose.connection.name || "N/A",
+    host: mongoose.connection.host || "N/A",
+    port: mongoose.connection.port || "N/A",
+    timestamp: new Date().toISOString(),
+  });
 });
 
 // Rutas de autenticación
 app.use("/api/auth", require("./routes/auth"));
 
-// Conexión a MongoDB
+// Rutas de recetas
+app.use("/api/recipes", require("./routes/recipes"));
+
+// Conexión a MongoDB a la base de datos recetario
 const MONGO_URI =
   process.env.MONGO_URI || "mongodb://localhost:27017/recetario";
 
