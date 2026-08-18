@@ -24,6 +24,32 @@ const RecipeSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+    categoria: {
+      type: String,
+      default: "Otro",
+      trim: true,
+    },
+    tiempoPreparacion: {
+      type: Number,
+      default: 0,
+    },
+    dificultad: {
+      type: String,
+      enum: ["Fácil", "Media", "Difícil"],
+      default: "Media",
+    },
+    porciones: {
+      type: Number,
+      default: 1,
+    },
+    favorito: {
+      type: Boolean,
+      default: false,
+    },
+    publica: {
+      type: Boolean,
+      default: false,
+    },
     usuario: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",

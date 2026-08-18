@@ -1,0 +1,11 @@
+{
+  "name": "recetario",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Language server para el editor (no es parte de la app)",
+  "devDependencies": {
+    "@angular/language-server": "22.1.0",
+    "@angular/language-service": "22.1.0",
+    "typescript": "6.0.3"
+  }
+}

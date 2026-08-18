@@ -1,54 +1,136 @@
-<div class="form-container">
-  <form (ngSubmit)="onSubmit()">
-    <h2>{{ isEdit ? 'Editar Receta' : 'Nueva Receta' }}</h2>
+<div class="form-wrapper animate-fade-in">
+  <div class="form-card">
+    <form (ngSubmit)="onSubmit()">
+      <h2>{{ isEdit ? 'Editar Receta' : 'Nueva Receta' }}</h2>
+      <p class="form-subtitle">Comparte tu pasión culinaria con el mundo</p>
 
-    <div *ngIf="error" class="error">{{ error }}</div>
+      <div *ngIf="error" class="error-alert animate-slide-up">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+        {{ error }}
+      </div>
 
-    <label for="titulo">Título</label>
-    <input
-      id="titulo"
-      type="text"
-      [(ngModel)]="recipe.titulo"
-      name="titulo"
-      required
-    />
+      <div class="input-group">
+        <label for="titulo">Título de la receta</label>
+        <input
+          id="titulo"
+          type="text"
+          [(ngModel)]="recipe.titulo"
+          name="titulo"
+          placeholder="Ej: Pasta carbonara artesanal"
+          required
+        />
+      </div>
 
-    <label for="descripcion">Descripción</label>
-    <textarea
-      id="descripcion"
-      [(ngModel)]="recipe.descripcion"
-      name="descripcion"
-      rows="3"
-      required
-    ></textarea>
+      <div class="input-group">
+        <label for="descripcion">Breve descripción</label>
+        <textarea
+          id="descripcion"
+          [(ngModel)]="recipe.descripcion"
+          name="descripcion"
+          rows="3"
+          placeholder="Describe el sabor, origen o por qué te encanta esta receta..."
+          required
+        ></textarea>
+      </div>
 
-    <label>Ingredientes</label>
-    <div *ngFor="let ing of recipe.ingredientes; let i = index" class="ing-row">
-      <input
-        type="text"
-        [(ngModel)]="recipe.ingredientes[i]"
-        [name]="'ingrediente' + i"
-        placeholder="Ingrediente {{ i + 1 }}"
-      />
-      <button type="button" (click)="onRemoveIngrediente(i)">✕</button>
-    </div>
-    <button type="button" class="btn-add" (click)="onAddIngrediente()">
-      + Agregar ingrediente
-    </button>
+      <!-- Recipe parameters grid -->
+      <div class="form-grid">
+        <div class="input-group">
+          <label for="categoria">Categoría</label>
+          <select id="categoria" [(ngModel)]="recipe.categoria" name="categoria">
+            <option value="Plato Principal">🍲 Plato Principal</option>
+            <option value="Desayuno">🍳 Desayuno</option>
+            <option value="Postre">🍰 Postre</option>
+            <option value="Bebida">🍹 Bebida</option>
+            <option value="Entrada">🥗 Entrada</option>
+            <option value="Otro">🍕 Otro</option>
+          </select>
+        </div>
 
-    <label for="instrucciones">Instrucciones</label>
-    <textarea
-      id="instrucciones"
-      [(ngModel)]="recipe.instrucciones"
-      name="instrucciones"
-      rows="5"
-      required
-    ></textarea>
+        <div class="input-group">
+          <label for="dificultad">Dificultad</label>
+          <select id="dificultad" [(ngModel)]="recipe.dificultad" name="dificultad">
+            <option value="Fácil">🟢 Fácil</option>
+            <option value="Media">🟡 Media</option>
+            <option value="Difícil">🔴 Difícil</option>
+          </select>
+        </div>
 
-    <button type="submit" class="btn-save">
-      {{ isEdit ? 'Guardar cambios' : 'Crear receta' }}
-    </button>
+        <div class="input-group">
+          <label for="tiempoPreparacion">Tiempo (minutos)</label>
+          <input
+            id="tiempoPreparacion"
+            type="number"
+            [(ngModel)]="recipe.tiempoPreparacion"
+            name="tiempoPreparacion"
+            min="1"
+            required
+          />
+        </div>
 
-    <a routerLink="/dashboard" class="btn-cancel">Cancelar</a>
-  </form>
+        <div class="input-group">
+          <label for="porciones">Porciones</label>
+          <input
+            id="porciones"
+            type="number"
+            [(ngModel)]="recipe.porciones"
+            name="porciones"
+            min="1"
+            required
+          />
+        </div>
+      </div>
+
+      <div class="checkbox-group-simple animate-slide-up">
+        <input
+          id="publica"
+          type="checkbox"
+          [(ngModel)]="recipe.publica"
+          name="publica"
+          class="modern-checkbox"
+        />
+        <label for="publica" class="checkbox-label-simple">Hacer pública esta receta (otros chefs podrán consultarla)</label>
+      </div>
+
+      <div class="ingredients-section">
+        <label>Ingredientes</label>
+        <div
+          *ngFor="let ing of recipe.ingredientes; let i = index; trackBy: trackByIndex"
+          class="ing-row animate-slide-up"
+        >
+          <input
+            type="text"
+            [(ngModel)]="recipe.ingredientes[i]"
+            [name]="'ingrediente' + i"
+            placeholder="Ej: 200g de pasta"
+            required
+          />
+          <button type="button" class="btn-remove-ing" (click)="onRemoveIngrediente(i)" title="Quitar">✕</button>
+        </div>
+        <button type="button" class="btn-add" (click)="onAddIngrediente()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          Agregar ingrediente
+        </button>
+      </div>
+
+      <div class="input-group">
+        <label for="instrucciones">Instrucciones de preparación</label>
+        <textarea
+          id="instrucciones"
+          [(ngModel)]="recipe.instrucciones"
+          name="instrucciones"
+          rows="6"
+          placeholder="Paso 1. Hervir agua...&#10;Paso 2. Saltear ingredientes..."
+          required
+        ></textarea>
+      </div>
+
+      <div class="form-actions">
+        <a routerLink="/dashboard" class="btn-secondary">Cancelar</a>
+        <button type="submit" class="btn-primary">
+          {{ isEdit ? 'Guardar cambios' : 'Crear receta' }}
+        </button>
+      </div>
+    </form>
+  </div>
 </div>

@@ -1,75 +1,179 @@
-.form-container {
-  max-width: 600px;
-  margin: 30px auto;
-  padding: 20px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
+.form-wrapper {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  background-color: var(--bg-warm);
+}
+
+.form-card {
+  width: 100%;
+  max-width: 680px;
+  background-color: var(--surface);
+  border-radius: var(--radius-lg);
+  padding: 40px;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border);
 }
 
 form {
   display: flex;
   flex-direction: column;
+  gap: 24px;
+}
+
+h2 {
+  font-size: 28px;
+  color: var(--text-main);
+  text-align: center;
+  margin-bottom: 4px;
+}
+
+.form-subtitle {
+  color: var(--text-muted);
+  text-align: center;
+  font-size: 14px;
+  margin-bottom: 12px;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.input-group label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+@media (max-width: 580px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Ingredients List */
+.ingredients-section {
+  display: flex;
+  flex-direction: column;
   gap: 12px;
 }
 
-label {
-  font-weight: bold;
-}
-
-input,
-textarea {
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-family: inherit;
+.ingredients-section label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-main);
 }
 
 .ing-row {
   display: flex;
-  gap: 8px;
+  gap: 10px;
+  align-items: center;
 }
 
 .ing-row input {
   flex: 1;
 }
 
-.ing-row button {
-  background: #dc3545;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  padding: 0 12px;
+.btn-remove-ing {
+  background-color: #fef2f2;
+  color: #ef4444;
+  border: 1px solid #fca5a5;
+  width: 42px;
+  height: 42px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
   cursor: pointer;
+  transition: var(--transition);
+}
+
+.btn-remove-ing:hover {
+  background-color: #ef4444;
+  color: white;
+  border-color: #ef4444;
 }
 
 .btn-add {
-  background: #28a745;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  padding: 8px;
+  align-self: flex-start;
+  background-color: transparent;
+  color: var(--primary);
+  border: 1px dashed var(--primary);
+  padding: 10px 16px;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: var(--transition);
 }
 
-.btn-save {
-  background: #007bff;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  padding: 10px;
+.btn-add:hover {
+  background-color: var(--primary-light);
+  border-color: var(--primary);
+}
+
+/* Modern simple checkbox styling */
+.checkbox-group-simple {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.modern-checkbox {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--primary);
   cursor: pointer;
-  margin-top: 8px;
-}
-
-.btn-cancel {
-  text-align: center;
-  color: #666;
-  text-decoration: none;
-}
-
-.error {
-  color: red;
-  background: #ffe6e6;
-  padding: 10px;
+  margin: 0;
   border-radius: 4px;
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.checkbox-label-simple {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-main);
+  cursor: pointer;
+  user-select: none;
+}
+
+/* Error alert inside form */
+.error-alert {
+  background-color: #fef2f2;
+  color: #ef4444;
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid #fca5a5;
+  margin-bottom: 8px;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.form-actions a, .form-actions button {
+  padding: 12px 24px;
+  font-size: 15px;
 }

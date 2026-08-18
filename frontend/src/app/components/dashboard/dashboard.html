@@ -1,41 +1,288 @@
-<div class="dashboard">
-  <header>
-    <h1>Mis Recetas</h1>
-    <div>
-      <button type="button" (click)="onLogout()">Cerrar sesión</button>
+<div class="dashboard-wrapper animate-fade-in">
+  <!-- Header -->
+  <header class="dashboard-header">
+    <div class="header-content">
+      <div class="brand">
+        <span class="brand-icon">🍳</span>
+        <h1>El Recetario de {{ userName() }}</h1>
+      </div>
+      <div class="header-actions">
+        <button type="button" class="btn-primary" routerLink="/recipe">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          Nueva Receta
+        </button>
+        <button type="button" class="btn-secondary btn-logout" (click)="onLogout()" title="Cerrar sesión">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+        </button>
+      </div>
     </div>
   </header>
 
-  <div *ngIf="loading()" class="loading">Cargando recetas...</div>
-  <div *ngIf="error()" class="error">{{ error() }}</div>
+  <!-- Navigation Tabs -->
+  <div class="nav-tabs">
+    <button
+      type="button"
+      class="tab-btn"
+      [class.active]="activeTab() === 'mine'"
+      (click)="changeTab('mine')"
+    >
+      📖 Mis Recetas
+    </button>
+    <button
+      type="button"
+      class="tab-btn"
+      [class.active]="activeTab() === 'public'"
+      (click)="changeTab('public')"
+    >
+      🌎 Explorar Públicas
+    </button>
+  </div>
 
-  <button type="button" class="btn-new" routerLink="/recipes/new">
-    + Nueva receta
-  </button>
-
-  <div class="grid">
-    <div *ngFor="let recipe of recipes()" class="card">
-      <h3>{{ recipe.titulo }}</h3>
-      <p>{{ recipe.descripcion }}</p>
-
-      <div class="ingredientes">
-        <span *ngFor="let ing of recipe.ingredientes" class="tag">
-          {{ ing }}
-        </span>
+  <!-- Stats Bar (Only shown for own recipes tab) -->
+  <div class="stats-bar" *ngIf="activeTab() === 'mine'">
+    <div class="stat-card">
+      <span class="stat-icon">📖</span>
+      <div class="stat-info">
+        <span class="stat-value">{{ totalRecipes() }}</span>
+        <span class="stat-label">Recetas Guardadas</span>
       </div>
-
-      <div class="actions">
-        <button type="button" [routerLink]="['/recipes', recipe._id, 'edit']">
-          Editar
-        </button>
-        <button type="button" class="delete" (click)="onDelete(recipe._id!)">
-          Eliminar
-        </button>
+    </div>
+    <div class="stat-card">
+      <span class="stat-icon">🥕</span>
+      <div class="stat-info">
+        <span class="stat-value">{{ totalIngredients() }}</span>
+        <span class="stat-label">Ingredientes Únicos</span>
       </div>
     </div>
   </div>
 
-  <p *ngIf="recipes().length === 0 && !loading()" class="empty">
-    No tienes recetas aún. ¡Crea la primera!
-  </p>
+  <!-- Search and Filters -->
+  <div class="toolbar">
+    <div class="search-box">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="search-icon"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+      <input type="text" [(ngModel)]="searchQuery" name="searchQuery" placeholder="Buscar receta o ingrediente..." />
+    </div>
+    
+    <div class="filter-controls">
+      <!-- Category selector -->
+      <div class="filter-box">
+        <select [(ngModel)]="selectedCategory" name="selectedCategory">
+          <option value="Todas">📂 Todas las categorías</option>
+          <option value="Plato Principal">🍲 Plato Principal</option>
+          <option value="Desayuno">🍳 Desayuno</option>
+          <option value="Postre">🍰 Postre</option>
+          <option value="Bebida">🍹 Bebida</option>
+          <option value="Entrada">🥗 Entrada</option>
+          <option value="Otro">🍕 Otro</option>
+        </select>
+      </div>
+
+      <!-- Favorites toggle (only in mine) -->
+      <button
+        *ngIf="activeTab() === 'mine'"
+        type="button"
+        class="btn-filter-fav"
+        [class.active]="showOnlyFavorites()"
+        (click)="showOnlyFavorites.set(!showOnlyFavorites())"
+      >
+        <span class="star-icon">{{ showOnlyFavorites() ? '★' : '☆' }}</span>
+        Favoritas
+      </button>
+
+      <!-- Sort selector -->
+      <div class="sort-box">
+        <select [(ngModel)]="sortBy" name="sortBy">
+          <option value="recent">Más recientes</option>
+          <option value="title">Alfabético (A-Z)</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="loading()" class="loading-state">
+    <div class="spinner"></div>
+    <p>Calentando fogones...</p>
+  </div>
+  
+  <div *ngIf="error()" class="error-alert">
+    {{ error() }}
+  </div>
+
+  <!-- Recipe Grid -->
+  <div class="recipe-grid" *ngIf="!loading()">
+    <div *ngFor="let recipe of filteredRecipes()" class="recipe-card animate-slide-up">
+      <div class="recipe-card-header">
+        <div class="recipe-img-placeholder">
+          <span *ngIf="recipe.categoria === 'Desayuno'">🍳</span>
+          <span *ngIf="recipe.categoria === 'Postre'">🍰</span>
+          <span *ngIf="recipe.categoria === 'Bebida'">🍹</span>
+          <span *ngIf="recipe.categoria === 'Entrada'">🥗</span>
+          <span *ngIf="recipe.categoria === 'Plato Principal'">🍲</span>
+          <span *ngIf="recipe.categoria === 'Otro' || !recipe.categoria">🍕</span>
+        </div>
+        
+        <!-- Owner quick indicators (public/private + favorite toggle) -->
+        <div class="card-badges-top">
+          <span *ngIf="isOwner(recipe)" class="privacy-badge" [class.is-public]="recipe.publica">
+            {{ recipe.publica ? '🔓 Pública' : '🔒 Privada' }}
+          </span>
+          <button
+            *ngIf="isOwner(recipe)"
+            type="button"
+            class="favorite-star-btn"
+            [class.is-fav]="recipe.favorito"
+            (click)="toggleFavorite(recipe, $event)"
+            title="Marcar como favorita"
+          >
+            ★
+          </button>
+        </div>
+      </div>
+      <div class="recipe-card-body">
+        <div class="recipe-card-meta-top">
+          <span class="category-badge">{{ recipe.categoria || 'Otro' }}</span>
+          <span
+            class="difficulty-badge"
+            [ngClass]="{
+              'easy': recipe.dificultad === 'Fácil',
+              'medium': recipe.dificultad === 'Media',
+              'hard': recipe.dificultad === 'Difícil'
+            }"
+          >
+            {{ recipe.dificultad || 'Media' }}
+          </span>
+        </div>
+
+        <h3>{{ recipe.titulo }}</h3>
+        <p class="recipe-desc">{{ recipe.descripcion }}</p>
+        
+        <div class="recipe-meta">
+          <span class="meta-tag duration">
+            ⏰ {{ recipe.tiempoPreparacion || 15 }} min
+          </span>
+          <span class="meta-tag servings">
+            👥 {{ recipe.porciones || 2 }} porc.
+          </span>
+        </div>
+
+        <div class="chef-author" *ngIf="activeTab() === 'public'">
+          🧑‍🍳 Chef: <strong>{{ getChefName(recipe) }}</strong>
+        </div>
+        
+        <div class="recipe-actions">
+          <button type="button" class="btn-primary btn-sm btn-block" (click)="openRecipeModal(recipe)">
+            Ver Receta
+          </button>
+          
+          <div class="action-row" *ngIf="isOwner(recipe)">
+            <button type="button" class="btn-secondary btn-icon" [routerLink]="['/recipe', recipe._id]" title="Editar">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+            </button>
+            <button type="button" class="btn-danger btn-icon" (click)="confirmDelete(recipe)" title="Eliminar">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+            </button>
+          </div>
+
+          <div class="readonly-badge" *ngIf="!isOwner(recipe)">
+            📖 Solo lectura
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="filteredRecipes().length === 0 && !loading()" class="empty-state animate-slide-up">
+    <div class="empty-icon">🍽️</div>
+    <h3 *ngIf="recipes().length === 0">No hay recetas aquí</h3>
+    <h3 *ngIf="recipes().length > 0">No se encontraron recetas</h3>
+    <p *ngIf="recipes().length === 0 && activeTab() === 'mine'">Es el momento perfecto para añadir tu primera creación culinaria.</p>
+    <p *ngIf="recipes().length === 0 && activeTab() === 'public'">Aún no hay recetas públicas de otros chefs para explorar.</p>
+    <p *ngIf="recipes().length > 0">Intenta buscar con otros términos o filtros.</p>
+    <button *ngIf="recipes().length === 0 && activeTab() === 'mine'" type="button" class="btn-primary" routerLink="/recipe">Crear Receta</button>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div class="modal-backdrop" *ngIf="recipeToDelete()" (click)="cancelDelete()">
+    <div class="modal-content animate-slide-up" (click)="$event.stopPropagation()">
+      <div class="modal-header warning-header">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <h3>¿Eliminar Receta?</h3>
+      </div>
+      <div class="modal-body">
+        <p>Estás a punto de eliminar <strong>"{{ recipeToDelete()?.titulo }}"</strong>. Esta acción no se puede deshacer y borrará la receta de la base de datos de MongoDB.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" (click)="cancelDelete()">Cancelar</button>
+        <button type="button" class="btn-danger" (click)="deleteRecipe()">Eliminar definitivamente</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recipe Detail Modal -->
+  <div class="modal-backdrop" *ngIf="selectedRecipe()" (click)="closeRecipeModal()">
+    <div class="modal-content recipe-detail-modal animate-slide-up" (click)="$event.stopPropagation()">
+      <button class="btn-close" (click)="closeRecipeModal()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+      
+      <div class="recipe-modal-header">
+        <div class="modal-meta-top">
+          <span class="category-badge">{{ selectedRecipe()?.categoria || 'Otro' }}</span>
+          <span
+            class="difficulty-badge"
+            [ngClass]="{
+              'easy': selectedRecipe()?.dificultad === 'Fácil',
+              'medium': selectedRecipe()?.dificultad === 'Media',
+              'hard': selectedRecipe()?.dificultad === 'Difícil'
+            }"
+          >
+            Dificultad: {{ selectedRecipe()?.dificultad || 'Media' }}
+          </span>
+        </div>
+        <h2>{{ selectedRecipe()?.titulo }}</h2>
+        <p class="recipe-modal-desc">{{ selectedRecipe()?.descripcion }}</p>
+        
+        <div class="modal-stats-row">
+          <span>⏰ <strong>T. Preparación:</strong> {{ selectedRecipe()?.tiempoPreparacion || 15 }} min</span>
+          <span>👥 <strong>Porciones:</strong> {{ selectedRecipe()?.porciones || 2 }}</span>
+          <span *ngIf="selectedRecipe() && !isOwner(selectedRecipe()!)">🧑‍🍳 <strong>Autor:</strong> {{ getChefName(selectedRecipe()!) }}</span>
+          <span *ngIf="selectedRecipe() && isOwner(selectedRecipe()!)">🔓 <strong>Compartido:</strong> {{ selectedRecipe()?.publica ? 'Público' : 'Privado' }}</span>
+        </div>
+      </div>
+      
+      <div class="recipe-modal-body">
+        <div class="ingredients-section">
+          <h3>🥕 Ingredientes (marca los que ya tengas listos)</h3>
+          <ul class="checklist">
+            <li *ngFor="let ing of selectedRecipe()?.ingredientes; let i = index">
+              <label class="check-container">
+                <input type="checkbox">
+                <span class="checkmark"></span>
+                <span class="ing-text">{{ ing }}</span>
+              </label>
+            </li>
+          </ul>
+        </div>
+        
+        <div class="instructions-section">
+          <h3>📝 Instrucciones de Preparación</h3>
+          <div class="instructions-content">{{ selectedRecipe()?.instrucciones }}</div>
+        </div>
+      </div>
+      
+      <div class="modal-footer split-footer">
+        <button type="button" class="btn-secondary" (click)="closeRecipeModal()">Cerrar</button>
+        <button
+          *ngIf="selectedRecipe() && isOwner(selectedRecipe()!)"
+          type="button"
+          class="btn-primary"
+          [routerLink]="['/recipe', selectedRecipe()?._id]"
+          (click)="closeRecipeModal()"
+        >
+          Editar Receta
+        </button>
+      </div>
+    </div>
+  </div>
 </div>

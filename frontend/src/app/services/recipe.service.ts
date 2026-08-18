@@ -10,7 +10,13 @@ export interface Recipe {
   ingredientes: string[];
   instrucciones: string;
   imagen?: string;
-  usuario?: string;
+  usuario?: string | { _id: string; name: string };
+  categoria?: string;
+  tiempoPreparacion?: number;
+  dificultad?: "Fácil" | "Media" | "Difícil";
+  porciones?: number;
+  favorito?: boolean;
+  publica?: boolean;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -29,8 +35,9 @@ export class RecipeService {
       Authorization: `Bearer ${token}`,
     });
   }
-  getAll(): Observable<Recipe[]> {
-    return this.http.get<Recipe[]>(this.apiUrl, { headers: this.getHeaders() });
+  getAll(scope?: string): Observable<Recipe[]> {
+    const url = scope ? `${this.apiUrl}?scope=${scope}` : this.apiUrl;
+    return this.http.get<Recipe[]>(url, { headers: this.getHeaders() });
   }
   getById(id: string): Observable<Recipe> {
     return this.http.get<Recipe>(`${this.apiUrl}/${id}`, {

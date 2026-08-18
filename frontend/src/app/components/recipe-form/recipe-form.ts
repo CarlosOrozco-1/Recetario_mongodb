@@ -1,9 +1,10 @@
-import { Component, inject, OnInit } from "@angular/core";
+import { Component, inject, OnInit, ChangeDetectorRef } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { ActivatedRoute, Router, RouterModule } from "@angular/router";
 import { firstValueFrom } from "rxjs";
 import { RecipeService, Recipe } from "../../services/recipe.service";
+import { ToastService } from "../../services/toast.service";
 
 @Component({
   selector: "app-recipe-form",
@@ -13,8 +14,10 @@ import { RecipeService, Recipe } from "../../services/recipe.service";
 })
 export class RecipeForm implements OnInit {
   private readonly recipeService = inject(RecipeService);
+  private readonly toastService = inject(ToastService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   recipe: Recipe = {
     titulo: "",
@@ -22,6 +25,12 @@ export class RecipeForm implements OnInit {
     ingredientes: [""],
     instrucciones: "",
     imagen: "",
+    categoria: "Plato Principal",
+    tiempoPreparacion: 20,
+    dificultad: "Media",
+    porciones: 2,
+    publica: false,
+    favorito: false,
   };
 
   isEdit = false;
@@ -29,46 +38,109 @@ export class RecipeForm implements OnInit {
   error = "";
 
   ngOnInit(): void {
-    const id = this.route.snapshot.paramMap.get("id");
-    if (id) {
-      this.isEdit = true;
-      this.id = id;
-      this.loadRecipe(id);
-    }
+    this.route.paramMap.subscribe(params => {
+      const id = params.get("id");
+      console.log("Formulario de receta cargado. ID detectado:", id);
+      if (id) {
+        this.isEdit = true;
+        this.id = id;
+        this.loadRecipe(id);
+      } else {
+        this.isEdit = false;
+        this.id = "";
+        this.recipe = {
+          titulo: "",
+          descripcion: "",
+          ingredientes: [""],
+          instrucciones: "",
+          imagen: "",
+          categoria: "Plato Principal",
+          tiempoPreparacion: 20,
+          dificultad: "Media",
+          porciones: 2,
+          publica: false,
+          favorito: false,
+        };
+      }
+    });
   }
 
-  async loadRecipe(id: string): Promise<void> {
-    try {
-      this.recipe = await firstValueFrom(this.recipeService.getById(id));
-    } catch (err: unknown) {
-      this.error = "Error al cargar la receta";
-    }
+  loadRecipe(id: string): void {
+    console.log("Obteniendo receta desde el servicio para ID:", id);
+    this.recipeService.getById(id).subscribe({
+next: (data) => {
+        console.log("Datos recibidos del backend:", data);
+        this.recipe = {
+          ...data,
+          categoria: data.categoria || "Plato Principal",
+          tiempoPreparacion: data.tiempoPreparacion ?? 20,
+          dificultad: data.dificultad || "Media",
+          porciones: data.porciones ?? 2,
+          publica: data.publica ?? false,
+          favorito: data.favorito ?? false,
+          ingredientes: data.ingredientes && data.ingredientes.length > 0
+            ? [...data.ingredientes]
+            : [""],
+        };
+        console.log("Modelo de receta asignado en el formulario:", this.recipe);
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error("Error al cargar la receta desde la API:", err);
+        this.error = "Error al cargar la receta";
+        this.toastService.error("No se pudo cargar la receta");
+      }
+    });
   }
 
   onAddIngrediente(): void {
     this.recipe.ingredientes.push("");
   }
 
+  trackByIndex(index: number): number {
+    return index;
+  }
+
   onRemoveIngrediente(index: number): void {
     this.recipe.ingredientes.splice(index, 1);
   }
 
-  async onSubmit(): Promise<void> {
+  onSubmit(): void {
     this.error = "";
-    try {
-      const ingredientes = this.recipe.ingredientes.filter(
-        (i) => i.trim() !== "",
-      );
-      const data = { ...this.recipe, ingredientes };
-
-      if (this.isEdit) {
-        await firstValueFrom(this.recipeService.update(this.id, data));
-      } else {
-        await firstValueFrom(this.recipeService.create(data));
-      }
-      this.router.navigate(["/dashboard"]);
-    } catch (err: unknown) {
-      this.error = "Error al guardar la receta";
+    const ingredientes = this.recipe.ingredientes.filter(
+      (i) => i.trim() !== "",
+    );
+    if (ingredientes.length === 0) {
+      this.error = "Agrega al menos un ingrediente";
+      this.toastService.error("Debes agregar al menos un ingrediente");
+      return;
     }
+
+    // Destructurar y limpiar campos de metadata generados por MongoDB/Mongoose
+    // para evitar errores de validación de esquemas (CastError) en el backend.
+    const { _id, usuario, createdAt, updatedAt, ...cleanRecipe } = this.recipe;
+    const data = { ...cleanRecipe, ingredientes };
+    
+    console.log("Enviando datos al backend para guardar:", data);
+
+    const request$ = this.isEdit 
+      ? this.recipeService.update(this.id, data) 
+      : this.recipeService.create(data);
+
+    request$.subscribe({
+      next: () => {
+        if (this.isEdit) {
+          this.toastService.success("¡Receta actualizada con éxito!");
+        } else {
+          this.toastService.success("¡Nueva receta creada con éxito!");
+        }
+        this.router.navigate(["/dashboard"]);
+      },
+      error: (err) => {
+        console.error("Error al guardar la receta en la API:", err);
+        this.error = "Error al guardar la receta";
+        this.toastService.error("Ocurrió un error al intentar guardar la receta");
+      }
+    });
   }
 }
