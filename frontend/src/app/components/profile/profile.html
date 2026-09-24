@@ -1,0 +1,193 @@
+<div class="profile-wrapper animate-fade-in">
+  <div *ngIf="loading()" class="loading-state">
+    <div class="spinner"></div>
+    <p>Cargando perfil...</p>
+  </div>
+
+  <div *ngIf="error()" class="error-alert">
+    {{ error() }}
+    <button type="button" class="btn-secondary" (click)="router.navigate(['/dashboard'])">Volver al Dashboard</button>
+  </div>
+
+  <div *ngIf="!loading() && !error()" class="profile-container">
+    <!-- Profile Header -->
+    <header class="profile-header">
+      <div class="profile-cover"></div>
+      
+      <div class="profile-info">
+        <div class="avatar-section">
+          <img 
+            *ngIf="profileUser()?.avatar" 
+            [src]="profileUser()!.avatar" 
+            alt="{{ profileUser()?.name }}" 
+            class="profile-avatar"
+          />
+          <div *ngIf="!profileUser()?.avatar" class="profile-avatar placeholder">
+            {{ (profileUser()?.name ?? '').charAt(0).toUpperCase() || '?' }}
+          </div>
+        </div>
+
+        <div class="profile-meta">
+          <h1>{{ profileUser()?.name || 'Chef' }}</h1>
+          <p class="username">@{{ (profileUser()?.name ?? '').toLowerCase().replace(/\s+/g, '') || 'chef' }}</p>
+          <p class="bio" *ngIf="profileUser()?.bio">{{ profileUser()?.bio }}</p>
+        </div>
+
+        <div class="profile-stats">
+          <div class="stat">
+            <span class="stat-value">{{ profileUser()?.stats?.recetasCount || 0 }}</span>
+            <span class="stat-label">Recetas</span>
+          </div>
+          <div class="stat">
+            <span class="stat-value">{{ profileUser()?.stats?.seguidoresCount || 0 }}</span>
+            <span class="stat-label">Seguidores</span>
+          </div>
+          <div class="stat">
+            <span class="stat-value">{{ profileUser()?.stats?.siguiendoCount || 0 }}</span>
+            <span class="stat-label">Siguiendo</span>
+          </div>
+          <div class="stat">
+            <span class="stat-value">{{ profileUser()?.stats?.favoritosCount || 0 }}</span>
+            <span class="stat-label">Favoritos</span>
+          </div>
+        </div>
+
+        <div class="profile-actions">
+          <button 
+            *ngIf="!isOwnProfile() && !checkingFollow()" 
+            type="button" 
+            class="btn-primary" 
+            [class.following]="isFollowing()"
+            (click)="toggleFollow()"
+          >
+            {{ isFollowing() ? 'Dejar de seguir' : 'Seguir' }}
+          </button>
+          <button 
+            *ngIf="checkingFollow()" 
+            type="button" 
+            class="btn-primary" 
+            disabled
+          >
+            Cargando...
+          </button>
+          <button 
+            *ngIf="isOwnProfile()" 
+            type="button" 
+            class="btn-secondary" 
+            routerLink="/profile/edit"
+          >
+            Editar perfil
+          </button>
+          <button 
+            *ngIf="isOwnProfile()" 
+            type="button" 
+            class="btn-secondary" 
+            (click)="onLogout()"
+          >
+            Cerrar sesión
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Tabs -->
+    <nav class="profile-tabs">
+      <button 
+        type="button" 
+        class="profile-tab" 
+        [class.active]="activeTab() === 'recipes'"
+        (click)="changeTab('recipes')"
+      >
+        📖 Recetas ({{ userRecipes().length }})
+      </button>
+      <button 
+        type="button" 
+        class="profile-tab" 
+        [class.active]="activeTab() === 'favorites'"
+        (click)="changeTab('favorites')"
+      >
+        ❤️ Favoritos
+      </button>
+      <button 
+        type="button" 
+        class="profile-tab" 
+        [class.active]="activeTab() === 'activity'"
+        (click)="changeTab('activity')"
+      >
+        📋 Actividad
+      </button>
+    </nav>
+
+    <!-- Tab Content -->
+    <div class="profile-tab-content">
+      <!-- RECETAS -->
+      <div *ngIf="activeTab() === 'recipes'">
+        <div *ngIf="userRecipes().length === 0" class="empty-state">
+          <div class="empty-icon">📖</div>
+          <h3>No hay recetas aún</h3>
+          <p *ngIf="isOwnProfile()">¡Crea tu primera receta para empezar!</p>
+          <p *ngIf="!isOwnProfile()">Este chef aún no ha compartido recetas.</p>
+          <button *ngIf="isOwnProfile()" type="button" class="btn-primary" routerLink="/recipe">Crear Receta</button>
+        </div>
+
+        <div class="recipe-grid" *ngIf="userRecipes().length > 0">
+          <div *ngFor="let recipe of userRecipes()" class="recipe-card animate-slide-up">
+            <div class="recipe-card-header">
+              <div class="recipe-img-placeholder">
+                <img *ngIf="recipe.imagen" [src]="'/api/recipes/image/' + recipe.imagen" [alt]="recipe.titulo" loading="lazy" />
+                <span *ngIf="!recipe.imagen && recipe.categoria === 'Desayuno'">🍳</span>
+                <span *ngIf="!recipe.imagen && recipe.categoria === 'Postre'">🍰</span>
+                <span *ngIf="!recipe.imagen && recipe.categoria === 'Bebida'">🍹</span>
+                <span *ngIf="!recipe.imagen && recipe.categoria === 'Entrada'">🥗</span>
+                <span *ngIf="!recipe.imagen && recipe.categoria === 'Plato Principal'">🍲</span>
+                <span *ngIf="!recipe.imagen && (recipe.categoria === 'Otro' || !recipe.categoria)">🍕</span>
+              </div>
+            </div>
+            <div class="recipe-card-body">
+              <div class="recipe-card-meta-top">
+                <span class="category-badge">{{ recipe.categoria || 'Otro' }}</span>
+                <span class="difficulty-badge" [ngClass]="{
+                  'easy': recipe.dificultad === 'Fácil',
+                  'medium': recipe.dificultad === 'Media',
+                  'hard': recipe.dificultad === 'Difícil'
+                }">
+                  {{ recipe.dificultad || 'Media' }}
+                </span>
+              </div>
+              <h3>{{ recipe.titulo }}</h3>
+              <p class="recipe-desc">{{ recipe.descripcion }}</p>
+              <div class="recipe-meta">
+                <span class="meta-tag duration">⏰ {{ recipe.tiempoPreparacion || 15 }} min</span>
+                <span class="meta-tag servings">👥 {{ recipe.porciones || 2 }} porc.</span>
+              </div>
+              <div class="recipe-actions">
+                <button type="button" class="btn-primary btn-sm btn-block" (click)="openRecipeModal(recipe)">
+                  Ver Receta
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FAVORITOS -->
+      <div *ngIf="activeTab() === 'favorites'">
+        <div class="empty-state">
+          <div class="empty-icon">❤️</div>
+          <h3>Sin favoritos aún</h3>
+          <p *ngIf="isOwnProfile()">Guarda recetas que te gusten para encontrarlas aquí.</p>
+          <p *ngIf="!isOwnProfile()">Este chef no tiene favoritos públicos.</p>
+        </div>
+      </div>
+
+      <!-- ACTIVIDAD -->
+      <div *ngIf="activeTab() === 'activity'">
+        <div class="empty-state">
+          <div class="empty-icon">📋</div>
+          <h3>Actividad reciente</h3>
+          <p>La actividad se mostrará aquí cuando esté disponible.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

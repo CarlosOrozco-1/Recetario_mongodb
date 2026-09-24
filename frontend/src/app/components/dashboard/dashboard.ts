@@ -5,16 +5,19 @@ import { Router, RouterModule } from "@angular/router";
 import { firstValueFrom } from "rxjs";
 import { AuthService } from "../../services/auth.service";
 import { RecipeService, Recipe } from "../../services/recipe.service";
+import { SocialService, Comment, Review } from "../../services/social.service";
 import { ToastService } from "../../services/toast.service";
+import { Notifications } from "../notifications/notifications";
 
 @Component({
   selector: "app-dashboard",
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, Notifications],
   templateUrl: "./dashboard.html",
   styleUrl: "./dashboard.css",
 })
 export class Dashboard implements OnInit {
   private readonly recipeService = inject(RecipeService);
+  private readonly socialService = inject(SocialService);
   private readonly authService = inject(AuthService);
   private readonly toastService = inject(ToastService);
   private readonly router = inject(Router);
@@ -30,8 +33,22 @@ export class Dashboard implements OnInit {
   sortBy = signal<"recent" | "title">("recent");
   showOnlyFavorites = signal<boolean>(false);
 
+  modalActiveTab = signal<"ingredients" | "instructions" | "comments" | "reviews">("ingredients");
+
   selectedRecipe = signal<Recipe | null>(null);
   recipeToDelete = signal<Recipe | null>(null);
+
+  // Modal Social State
+  modalComments = signal<Comment[]>([]);
+  modalReviews = signal<Review[]>([]);
+  newCommentText = signal("");
+  newReview = signal({ puntuacion: 0, texto: "" });
+  isLoadingComments = signal(false);
+  isLoadingReviews = signal(false);
+  isSubmittingComment = signal(false);
+  isSubmittingReview = signal(false);
+  replyingToComment = signal<Comment | null>(null);
+  replyText = signal("");
 
   userName = computed(() => {
     const user = this.authService.getUser();
@@ -157,10 +174,6 @@ export class Dashboard implements OnInit {
     return "Chef Anónimo";
   }
 
-  openRecipeModal(recipe: Recipe): void {
-    this.selectedRecipe.set(recipe);
-  }
-
   closeRecipeModal(): void {
     this.selectedRecipe.set(null);
   }
@@ -222,5 +235,194 @@ export class Dashboard implements OnInit {
   onLogout(): void {
     this.authService.logout();
     this.toastService.success("Sesión cerrada. ¡Vuelve pronto a la cocina!");
+  }
+
+  // --- ACCIONES SOCIALES ---
+  toggleLike(recipe: Recipe, event: Event): void {
+    event.stopPropagation();
+    if (!recipe._id) return;
+    this.recipeService.toggleLike(recipe._id).subscribe({
+      next: (res) => {
+        this.recipes.update(list => 
+          list.map(r => r._id === recipe._id ? { ...r, liked: res.liked, likesCount: res.likesCount } : r)
+        );
+        this.toastService.success(res.liked ? "¡Te gusta esta receta! ❤️" : "Like quitado");
+      },
+      error: () => this.toastService.error("Error al dar like")
+    });
+  }
+
+  toggleSave(recipe: Recipe, event: Event): void {
+    event.stopPropagation();
+    if (!recipe._id) return;
+    this.recipeService.toggleSave(recipe._id).subscribe({
+      next: (res) => {
+        this.recipes.update(list => 
+          list.map(r => r._id === recipe._id ? { ...r, saved: res.saved, guardadosCount: res.guardadosCount } : r)
+        );
+        this.toastService.success(res.saved ? "¡Receta guardada! 🔖" : "Guardado quitado");
+      },
+      error: () => this.toastService.error("Error al guardar")
+    });
+  }
+
+  incrementShare(recipe: Recipe, event: Event): void {
+    event.stopPropagation();
+    if (!recipe._id) return;
+    this.recipeService.incrementShare(recipe._id).subscribe({
+      next: (res) => {
+        this.recipes.update(list => 
+          list.map(r => r._id === recipe._id ? { ...r, compartidosCount: res.compartidosCount } : r)
+        );
+        this.toastService.success("¡Receta compartida! 🔗");
+      },
+      error: () => this.toastService.error("Error al compartir")
+    });
+  }
+
+  // --- MODAL SOCIAL METHODS ---
+  openRecipeModal(recipe: Recipe): void {
+    this.selectedRecipe.set(recipe);
+    this.loadComments(recipe._id!);
+    this.loadReviews(recipe._id!);
+    this.newCommentText.set("");
+    this.newReview.set({ puntuacion: 0, texto: "" });
+  }
+
+  loadComments(recipeId: string): void {
+    this.isLoadingComments.set(true);
+    this.socialService.getCommentsByRecipe(recipeId).subscribe({
+      next: (comments) => {
+        this.modalComments.set(comments);
+        this.isLoadingComments.set(false);
+      },
+      error: () => {
+        this.toastService.error("Error cargando comentarios");
+        this.isLoadingComments.set(false);
+      }
+    });
+  }
+
+  loadReviews(recipeId: string): void {
+    this.isLoadingReviews.set(true);
+    this.socialService.getReviewsByRecipe(recipeId).subscribe({
+      next: (reviews) => {
+        this.modalReviews.set(reviews);
+        this.isLoadingReviews.set(false);
+      },
+      error: () => {
+        this.toastService.error("Error cargando reseñas");
+        this.isLoadingReviews.set(false);
+      }
+    });
+  }
+
+  submitComment(): void {
+    const recipe = this.selectedRecipe();
+    const text = this.newCommentText().trim();
+    if (!recipe?._id || !text) return;
+
+    this.isSubmittingComment.set(true);
+    this.socialService.createComment({ texto: text, receta: recipe._id }).subscribe({
+      next: (comment) => {
+        this.modalComments.update(list => [comment, ...list]);
+        this.newCommentText.set("");
+        this.isSubmittingComment.set(false);
+        this.toastService.success("Comentario publicado");
+      },
+      error: () => {
+        this.toastService.error("Error publicando comentario");
+        this.isSubmittingComment.set(false);
+      }
+    });
+  }
+
+  startReply(comment: Comment): void {
+    this.replyingToComment.set(comment);
+    this.replyText.set("");
+  }
+
+  cancelReply(): void {
+    this.replyingToComment.set(null);
+    this.replyText.set("");
+  }
+
+  submitReply(): void {
+    const recipe = this.selectedRecipe();
+    const parent = this.replyingToComment();
+    const text = this.replyText().trim();
+    if (!recipe?._id || !parent || !text) return;
+
+    this.isSubmittingComment.set(true);
+    this.socialService.createComment({ texto: text, receta: recipe._id, parentComment: parent._id }).subscribe({
+      next: (reply) => {
+        this.modalComments.update(list => list.map(c => 
+          c._id === parent._id ? { ...c, replies: [...(c.replies || []), reply] } : c
+        ));
+        this.cancelReply();
+        this.isSubmittingComment.set(false);
+        this.toastService.success("Respuesta publicada");
+      },
+      error: () => {
+        this.toastService.error("Error publicando respuesta");
+        this.isSubmittingComment.set(false);
+      }
+    });
+  }
+
+  setRating(stars: number): void {
+    this.newReview.update(r => ({ ...r, puntuacion: stars }));
+  }
+
+  submitReview(): void {
+    const recipe = this.selectedRecipe();
+    const { puntuacion, texto } = this.newReview();
+    if (!recipe?._id || puntuacion === 0) {
+      this.toastService.error("Selecciona una puntuación");
+      return;
+    }
+
+    this.isSubmittingReview.set(true);
+    this.socialService.createReview({ puntuacion, texto, receta: recipe._id }).subscribe({
+      next: (review) => {
+        this.modalReviews.update(list => [review, ...list]);
+        // Actualizar rating en la receta
+        const currentRecipe = this.selectedRecipe();
+        if (currentRecipe?._id) {
+          this.selectedRecipe.set({
+            ...currentRecipe,
+            ratingPromedio: review.puntuacion, // se recalcula en backend
+            ratingCount: (currentRecipe.ratingCount || 0) + 1
+          });
+        }
+        this.newReview.set({ puntuacion: 0, texto: "" });
+        this.isSubmittingReview.set(false);
+        this.toastService.success("¡Reseña publicada! ⭐");
+      },
+      error: (err) => {
+        this.toastService.error(err.error?.message || "Error publicando reseña");
+        this.isSubmittingReview.set(false);
+      }
+    });
+  }
+
+  getStarClass(star: number, review?: Review): string {
+    const rating = review?.puntuacion ?? this.newReview().puntuacion;
+    return star <= rating ? 'filled' : '';
+  }
+
+  formatTime(dateString: string): string {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return "ahora";
+    if (diffMins < 60) return `hace ${diffMins} min`;
+    if (diffHours < 24) return `hace ${diffHours}h`;
+    if (diffDays < 7) return `hace ${diffDays}d`;
+    return date.toLocaleDateString("es-ES", { day: "numeric", month: "short" });
   }
 }

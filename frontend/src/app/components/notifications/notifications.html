@@ -1,0 +1,70 @@
+<div class="notifications-dropdown" (click)="$event.stopPropagation()">
+  <!-- Bell Button -->
+  <button 
+    type="button" 
+    class="notification-bell" 
+    (click)="toggle()"
+    [attr.aria-label]="isOpen() ? 'Cerrar notificaciones' : 'Abrir notificaciones'"
+    [class.has-unread]="unreadCount() > 0"
+  >
+    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+      <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+    </svg>
+    <span *ngIf="unreadCount() > 0" class="unread-badge">{{ unreadCount() > 9 ? '9+' : unreadCount() }}</span>
+  </button>
+
+  <!-- Dropdown Panel -->
+  <div *ngIf="isOpen()" class="notifications-panel">
+    <div class="notifications-header">
+      <h3>Notificaciones</h3>
+      <div class="header-actions">
+        <button *ngIf="unreadCount() > 0" type="button" class="btn-link" (click)="markAllAsRead()">
+          Marcar todas como leídas
+        </button>
+        <button type="button" class="btn-link" (click)="loadNotifications()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="notifications-list" *ngIf="!loading()">
+      <div *ngIf="notifications().length === 0" class="empty-notifications">
+        <div class="empty-icon">🔔</div>
+        <p *ngIf="!error()">No tienes notificaciones nuevas</p>
+        <p *ngIf="error()">{{ error() }}</p>
+      </div>
+
+      <div *ngIf="notifications().length > 0" class="notifications-items">
+        <div *ngFor="let notification of notifications()" class="notification-item" (click)="markAsRead(notification)">
+          <div class="notification-icon">
+            <span>{{ getActivityIcon(notification.tipo) }}</span>
+          </div>
+          <div class="notification-content">
+            <p class="notification-text">{{ getActivityText(notification) }}</p>
+            <span class="notification-time">{{ formatTime(notification.createdAt) }}</span>
+          </div>
+          <button type="button" class="notification-close" (click)="$event.stopPropagation(); markAsRead(notification)">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
+        </div>
+
+        <div *ngIf="unreadCount() > 5" class="view-all">
+          <button type="button" class="btn-link" routerLink="/feed">
+            Ver todas las notificaciones
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="loading()" class="loading-notifications">
+      <div class="spinner-small"></div>
+      <span>Cargando...</span>
+    </div>
+
+    <div *ngIf="error()" class="error-notifications">
+      <p>{{ error() }}</p>
+      <button type="button" class="btn-secondary btn-sm" (click)="loadNotifications()">Reintentar</button>
+    </div>
+  </div>
+</div>

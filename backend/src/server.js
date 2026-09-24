@@ -1,15 +1,19 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
+const commentsRouter = require("./routes/comments");
+const reviewsRouter = require("./routes/reviews");
+const followsRouter = require("./routes/follows");
+const activityFeedRouter = require("./routes/activityFeed");
+const recipeSocialRouter = require("./routes/recipeSocial");
+
 require("dotenv").config();
 
 const app = express();
 
-// Middlewares
 app.use(cors());
 app.use(express.json());
 
-// Ruta de prueba con estado de MongoDB
 app.get("/api/health", (req, res) => {
   const mongoState = mongoose.connection.readyState;
   const states = {
@@ -29,15 +33,15 @@ app.get("/api/health", (req, res) => {
   });
 });
 
-// Rutas de autenticación
 app.use("/api/auth", require("./routes/auth"));
-
-// Rutas de recetas
 app.use("/api/recipes", require("./routes/recipes"));
+app.use("/api/comments", commentsRouter);
+app.use("/api/reviews", reviewsRouter);
+app.use("/api/follows", followsRouter);
+app.use("/api/activity", activityFeedRouter);
+app.use("/api/recipes", recipeSocialRouter);
 
-// Conexión a MongoDB a la base de datos recetario
-const MONGO_URI =
-  process.env.MONGO_URI || "mongodb://localhost:27017/recetario";
+const MONGO_URI = process.env.MONGODB_URI || process.env.MONGO_URI || "mongodb://localhost:27017/recetario";
 
 mongoose
   .connect(MONGO_URI)
@@ -47,7 +51,6 @@ mongoose
     process.exit(1);
   });
 
-// Iniciar servidor
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`🚀 Backend corriendo en puerto ${PORT}`);

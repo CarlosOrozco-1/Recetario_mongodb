@@ -245,47 +245,47 @@
 
 ---
 
-## 🌐 Fase 6 - Red Social de Recetas (Refactoring)
+## 🌐 Fase 6 - Red Social de Recetas (Refactoring) ✅ COMPLETADA
 
 **Objetivo:** Transformar el recetario personal en una red social completa para compartir, descubrir y valorar recetas.
 
-### Paso 39 - Modelo de Datos Social
-- [ ] Extender `User`: bio, avatar, seguidores/seguidos, recetas favoritas, stats
-- [ ] Extender `Recipe`: likes, saves, shares, comments[], rating promedio, visibilidad
-- [ ] Nuevo modelo `Comment`: user, recipe, texto, fecha, respuestas (threaded)
-- [ ] Nuevo modelo `Review`: user, recipe, rating (1-5), texto, fecha
-- [ ] Nuevo modelo `ActivityFeed`: user, tipo (creó, comentó, puntuó, compartió, siguió), ref, fecha
+### Paso 39 - Modelo de Datos Social ✅
+- [x] Extender `User`: bio, avatar, seguidores/seguidos, recetas favoritas, stats
+- [x] Extender `Recipe`: likes, saves, shares, comments[], rating promedio, visibilidad
+- [x] Nuevo modelo `Comment`: user, recipe, texto, fecha, respuestas (threaded)
+- [x] Nuevo modelo `Review`: user, recipe, rating (1-5), texto, fecha
+- [x] Nuevo modelo `ActivityFeed`: user, tipo (creó, comentó, puntuó, compartió, siguió), ref, fecha
 
-### Paso 40 - Backend: Endpoints Sociales
-- [ ] `POST/GET /api/recipes/:id/comments` - comentarios en receta
-- [ ] `POST /api/recipes/:id/reviews` - reseña con puntuación
-- [ ] `POST /api/recipes/:id/like` - toggle like
-- [ ] `POST /api/recipes/:id/save` - toggle guardar (bookmark)
-- [ ] `POST /api/users/:id/follow` - seguir/dejar de seguir
-- [ ] `GET /api/users/:id/profile` - perfil público con stats
-- [ ] `GET /api/feed` - feed personalizado (recetas de seguidos + recomendadas)
-- [ ] `GET /api/search` - búsqueda global (recetas, usuarios, hashtags)
+### Paso 40 - Backend: Endpoints Sociales ✅
+- [x] `POST/GET /api/recipes/:id/comments` - comentarios en receta
+- [x] `POST /api/recipes/:id/reviews` - reseña con puntuación
+- [x] `POST /api/recipes/:id/like` - toggle like
+- [x] `POST /api/recipes/:id/save` - toggle guardar (bookmark)
+- [x] `POST /api/users/:id/follow` - seguir/dejar de seguir
+- [x] `GET /api/users/:id/profile` - perfil público con stats
+- [x] `GET /api/feed` - feed personalizado (recetas de seguidos + recomendadas)
+- [x] `GET /api/search` - búsqueda global (recetas, usuarios, hashtags)
 
-### Paso 41 - Frontend: Componentes Sociales
-- [ ] Perfil de usuario (`/profile/:username`)
-- [ ] Feed principal (`/feed`) con infinite scroll
-- [ ] Detalle receta con: comments thread, reviews, rating stars, share button
-- [ ] Modal de comentario/respuesta
-- [ ] Componente rating stars (lectura/escritura)
-- [ ] Notificaciones (campana) - likes, comments, follows
+### Paso 41 - Frontend: Componentes Sociales ✅
+- [x] Perfil de usuario (`/profile/:username`)
+- [x] Feed principal (`/feed`) con infinite scroll
+- [x] Detalle receta con: comments thread, reviews, rating stars, share button
+- [x] Modal de comentario/respuesta
+- [x] Componente rating stars (lectura/escritura)
+- [x] Notificaciones (campana) - likes, comments, follows
 
-### Paso 42 - UX/UI Social
-- [ ] Cards de receta con: autor, rating, likes, saves, comments count
-- [ ] Avatar + username en todas las cards
-- [ ] Botones: like (♥), save (🔖), share (🔗), comment (💬)
-- [ ] Hashtags en descripción (#postre #facil)
-- [ ] Estados vacíos amigables ("Sigue chefs para ver su contenido")
+### Paso 42 - UX/UI Social ✅
+- [x] Cards de receta con: autor, rating, likes, saves, comments count
+- [x] Avatar + username en todas las cards
+- [x] Botones: like (♥), save (🔖), share (🔗), comment (💬)
+- [x] Hashtags en descripción (#postre #facil)
+- [x] Estados vacíos amigables ("Sigue chefs para ver su contenido")
 
-### Paso 43 - Validaciones y Moderación
-- [ ] Reportar receta/comentario/usuario
-- [ ] Soft delete en contenido reportado
-- [ ] Rate limiting estricto en acciones sociales
-- [ ] Sanitización XSS en comentarios/biografías
+### Paso 43 - Validaciones y Moderación ✅
+- [x] Reportar receta/comentario/usuario
+- [x] Soft delete en contenido reportado
+- [x] Rate limiting estricto en acciones sociales
+- [x] Sanitización XSS en comentarios/biografías
 
 ---
 

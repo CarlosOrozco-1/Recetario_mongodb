@@ -55,6 +55,42 @@ const RecipeSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+
+    // --- CAMPOS SOCIALES ---
+    likes: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    }],
+    likesCount: { type: Number, default: 0 },
+
+    guardados: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    }],
+    guardadosCount: { type: Number, default: 0 },
+
+    comentariosCount: { type: Number, default: 0 },
+
+    ratingPromedio: { type: Number, default: 0 },
+    ratingCount: { type: Number, default: 0 },
+
+    compartidosCount: { type: Number, default: 0 },
+
+    hashtags: [{
+      type: String,
+      lowercase: true,
+      trim: true,
+    }],
+
+    reportado: {
+      type: Boolean,
+      default: false,
+    },
+    reportes: [{
+      usuario: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+      motivo: String,
+      createdAt: { type: Date, default: Date.now },
+    }],
   },
   { timestamps: true }
 );

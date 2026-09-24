@@ -10,7 +10,7 @@ export interface Recipe {
   ingredientes: string[];
   instrucciones: string;
   imagen?: string;
-  usuario?: string | { _id: string; name: string };
+  usuario?: string | { _id: string; name: string; avatar?: string };
   categoria?: string;
   tiempoPreparacion?: number;
   dificultad?: "Fácil" | "Media" | "Difícil";
@@ -19,6 +19,20 @@ export interface Recipe {
   publica?: boolean;
   createdAt?: string;
   updatedAt?: string;
+  // --- CAMPOS SOCIALES ---
+  likes?: string[];
+  likesCount?: number;
+  liked?: boolean;           // Estado del usuario actual
+  guardados?: string[];
+  guardadosCount?: number;
+  saved?: boolean;           // Estado del usuario actual
+  comentariosCount?: number;
+  ratingPromedio?: number;
+  ratingCount?: number;
+  compartidosCount?: number;
+  hashtags?: string[];
+  reportado?: boolean;
+  reportes?: any[];
 }
 
 @Injectable({
@@ -65,5 +79,25 @@ export class RecipeService {
     return this.http.put<Recipe>(`${this.apiUrl}/${id}/image`, formData, {
       headers: this.getHeaders()
     });
+  }
+
+  // --- ACCIONES SOCIALES ---
+  toggleLike(id: string): Observable<{ liked: boolean; likesCount: number }> {
+    return this.http.post<{ liked: boolean; likesCount: number }>(
+      `${this.apiUrl}/${id}/like`, {}, { headers: this.getHeaders() }
+    );
+  }
+  toggleSave(id: string): Observable<{ saved: boolean; guardadosCount: number }> {
+    return this.http.post<{ saved: boolean; guardadosCount: number }>(
+      `${this.apiUrl}/${id}/save`, {}, { headers: this.getHeaders() }
+    );
+  }
+  incrementShare(id: string): Observable<{ compartidosCount: number }> {
+    return this.http.post<{ compartidosCount: number }>(
+      `${this.apiUrl}/${id}/share`, {}, { headers: this.getHeaders() }
+    );
+  }
+  reportRecipe(id: string, motivo: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/${id}/report`, { motivo }, { headers: this.getHeaders() });
   }
 }

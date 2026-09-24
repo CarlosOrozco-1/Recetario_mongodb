@@ -1,0 +1,85 @@
+<div class="feed-wrapper animate-fade-in">
+  <!-- Header -->
+  <header class="feed-header">
+    <div class="header-content">
+      <div class="brand">
+        <span class="brand-icon">📰</span>
+        <h1>Tu Feed</h1>
+      </div>
+      <div class="header-actions">
+        <button type="button" class="btn-secondary" (click)="refreshFeed()" [disabled]="loading()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
+          Actualizar
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Error -->
+  <div *ngIf="error()" class="error-alert">
+    {{ error() }}
+    <button type="button" class="btn-secondary" (click)="loadFeed(true)">Reintentar</button>
+  </div>
+
+  <!-- Feed List -->
+  <div class="feed-container" (scroll)="onScroll($event)" #feedContainer>
+    <div *ngIf="loading() && activities().length === 0" class="loading-state">
+      <div class="spinner"></div>
+      <p>Cargando tu feed...</p>
+    </div>
+
+    <div *ngIf="!loading() && activities().length === 0" class="empty-state">
+      <div class="empty-icon">📭</div>
+      <h3>Tu feed está vacío</h3>
+      <p>Sigue a otros chefs y crea recetas para ver actividad aquí.</p>
+      <button type="button" class="btn-primary" routerLink="/dashboard">Explorar Recetas</button>
+    </div>
+
+    <div class="feed-list" *ngIf="activities().length > 0">
+      <div *ngFor="let activity of activities(); trackBy: trackByActivityId" class="activity-card animate-slide-up">
+        <div class="activity-header">
+          <img 
+            *ngIf="activity.usuario?.avatar" 
+            [src]="activity.usuario!.avatar" 
+            alt="{{ activity.usuario?.name }}" 
+            class="activity-avatar"
+            (error)="onImageError($event)"
+          />
+          <span *ngIf="!activity.usuario?.avatar" class="activity-avatar placeholder">{{ (activity.usuario?.name ?? '').charAt(0).toUpperCase() || '?' }}</span>
+          <div class="activity-meta">
+            <strong>{{ activity.usuario?.name || 'Alguien' }}</strong>
+            <span class="activity-time">{{ formatTime(activity.createdAt) }}</span>
+          </div>
+        </div>
+
+        <div class="activity-content">
+          <span class="activity-icon">{{ getActivityIcon(activity.tipo) }}</span>
+          <p class="activity-text">{{ getActivityText(activity) }}</p>
+        </div>
+
+        <div *ngIf="activity.referencia?.tipo === 'Recipe' && activity.referencia.id" class="activity-recipe-link">
+          <button 
+            type="button" 
+            class="btn-link" 
+            [routerLink]="['/recipe', activity.referencia.id]"
+          >
+            Ver receta →
+          </button>
+        </div>
+      </div>
+
+      <!-- Load More Trigger -->
+      <div class="load-more-trigger" *ngIf="hasMore() && !loadingMore()">
+        <div class="spinner-small"></div>
+        <span>Cargando más...</span>
+      </div>
+      <div *ngIf="loadingMore()" class="loading-more">
+        <div class="spinner-small"></div>
+        <span>Cargando más actividades...</span>
+      </div>
+      <div *ngIf="!hasMore() && activities().length > 0" class="end-of-feed">
+        <p>🎉 Has visto toda la actividad reciente</p>
+      </div>
+    </div>
+  </div>
+</div>
