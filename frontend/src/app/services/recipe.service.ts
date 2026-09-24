@@ -59,4 +59,11 @@ export class RecipeService {
       headers: this.getHeaders(),
     });
   }
+  uploadImage(id: string, file: File): Observable<Recipe> {
+    const formData = new FormData();
+    formData.append("imagen", file);
+    return this.http.put<Recipe>(`${this.apiUrl}/${id}/image`, formData, {
+      headers: this.getHeaders()
+    });
+  }
 }

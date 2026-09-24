@@ -37,6 +37,9 @@ export class RecipeForm implements OnInit {
   id = "";
   error = "";
 
+  selectedFile: File | null = null;
+  previewUrl: string | null = null;
+
   ngOnInit(): void {
     this.route.paramMap.subscribe(params => {
       const id = params.get("id");
@@ -141,6 +144,30 @@ next: (data) => {
         this.error = "Error al guardar la receta";
         this.toastService.error("Ocurrió un error al intentar guardar la receta");
       }
+    });
+  }
+
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files?.length) {
+      this.selectedFile = input.files[0];
+      this.previewUrl = URL.createObjectURL(this.selectedFile);
+    }
+  }
+
+  removeImage(): void {
+    this.selectedFile = null;
+    this.previewUrl = null;
+  }
+
+  uploadImage(): void {
+    if (!this.selectedFile || !this.id) return;
+    this.recipeService.uploadImage(this.id, this.selectedFile).subscribe({
+      next: (recipe) => {
+        this.recipe = { ...this.recipe, imagen: recipe.imagen };
+        this.toastService.success("Imagen subida correctamente");
+      },
+      error: () => this.toastService.error("Error subiendo imagen")
     });
   }
 }

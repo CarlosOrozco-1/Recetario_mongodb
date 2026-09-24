@@ -172,11 +172,11 @@
 ### Paso 27 - Pruebas de integración
 - [x] Registrar usuario desde Angular
 - [x] Iniciar sesión
-- [ ] Crear receta
-- [ ] Listar recetas
-- [ ] Editar receta
-- [ ] Eliminar receta
-- [ ] Verificar persistencia en MongoDB
+- [x] Crear receta
+- [x] Listar recetas
+- [x] Editar receta
+- [x] Eliminar receta
+- [x] Verificar persistencia en MongoDB
 
 ### Paso 28 - Validaciones y Manejo de Errores
 - [ ] Validaciones en backend (campos obligatorios)
@@ -206,6 +206,86 @@
 - [ ] Configurar para producción
 - [ ] Variables de entorno seguras
 - [ ] Imágenes Docker optimizadas
+
+---
+
+## 🖼️ Fase 5 - Imágenes de Recetas (GridFS - MongoDB Nativo)
+
+### Paso 33 - Configuración GridFS + Multer
+- [x] Instalar `multer-gridfs-storage` en backend
+- [x] Crear middleware `upload.js` con GridFSStorage (bucket "uploads")
+- [x] Configurar límite de tamaño y tipos MIME permitidos (image/*)
+
+### Paso 34 - Endpoint Subida de Imagen
+- [x] `POST /api/recipes/:id/image` (protegido, solo dueño)
+- [x] Recibe `multipart/form-data` con campo `imagen`
+- [x] Guarda `file.id` (ObjectId de GridFS) en `recipe.imagen`
+- [x] Retorna receta actualizada
+
+### Paso 35 - Endpoint Servir Imagen
+- [x] `GET /api/recipes/image/:fileId`
+- [x] Stream directo desde GridFSBucket → response
+- [x] Headers: Content-Type, Cache-Control
+
+### Paso 36 - Frontend: Subida en Formulario
+- [x] Input `<input type="file" accept="image/*">` en recipe-form
+- [x] Preview antes de subir
+- [x] Botón "Subir imagen" llama a `RecipeService.uploadImage(id, file)`
+- [x] Toast éxito/error
+
+### Paso 37 - Frontend: Visualización
+- [x] En modal detalle y card: `<img [src]="'/api/recipes/image/' + recipe.imagen" />`
+- [x] Fallback a placeholder SVG si no hay imagen
+- [x] Lazy loading (`loading="lazy"`)
+
+### Paso 38 - Limpieza y Validaciones
+- [ ] Eliminar imagen GridFS al borrar receta (cascade)
+- [ ] Validar tamaño máx (ej. 5MB) y dimensiones
+- [ ] Opcional: redimensionar en servidor (sharp)
+
+---
+
+## 🌐 Fase 6 - Red Social de Recetas (Refactoring)
+
+**Objetivo:** Transformar el recetario personal en una red social completa para compartir, descubrir y valorar recetas.
+
+### Paso 39 - Modelo de Datos Social
+- [ ] Extender `User`: bio, avatar, seguidores/seguidos, recetas favoritas, stats
+- [ ] Extender `Recipe`: likes, saves, shares, comments[], rating promedio, visibilidad
+- [ ] Nuevo modelo `Comment`: user, recipe, texto, fecha, respuestas (threaded)
+- [ ] Nuevo modelo `Review`: user, recipe, rating (1-5), texto, fecha
+- [ ] Nuevo modelo `ActivityFeed`: user, tipo (creó, comentó, puntuó, compartió, siguió), ref, fecha
+
+### Paso 40 - Backend: Endpoints Sociales
+- [ ] `POST/GET /api/recipes/:id/comments` - comentarios en receta
+- [ ] `POST /api/recipes/:id/reviews` - reseña con puntuación
+- [ ] `POST /api/recipes/:id/like` - toggle like
+- [ ] `POST /api/recipes/:id/save` - toggle guardar (bookmark)
+- [ ] `POST /api/users/:id/follow` - seguir/dejar de seguir
+- [ ] `GET /api/users/:id/profile` - perfil público con stats
+- [ ] `GET /api/feed` - feed personalizado (recetas de seguidos + recomendadas)
+- [ ] `GET /api/search` - búsqueda global (recetas, usuarios, hashtags)
+
+### Paso 41 - Frontend: Componentes Sociales
+- [ ] Perfil de usuario (`/profile/:username`)
+- [ ] Feed principal (`/feed`) con infinite scroll
+- [ ] Detalle receta con: comments thread, reviews, rating stars, share button
+- [ ] Modal de comentario/respuesta
+- [ ] Componente rating stars (lectura/escritura)
+- [ ] Notificaciones (campana) - likes, comments, follows
+
+### Paso 42 - UX/UI Social
+- [ ] Cards de receta con: autor, rating, likes, saves, comments count
+- [ ] Avatar + username en todas las cards
+- [ ] Botones: like (♥), save (🔖), share (🔗), comment (💬)
+- [ ] Hashtags en descripción (#postre #facil)
+- [ ] Estados vacíos amigables ("Sigue chefs para ver su contenido")
+
+### Paso 43 - Validaciones y Moderación
+- [ ] Reportar receta/comentario/usuario
+- [ ] Soft delete en contenido reportado
+- [ ] Rate limiting estricto en acciones sociales
+- [ ] Sanitización XSS en comentarios/biografías
 
 ---
 

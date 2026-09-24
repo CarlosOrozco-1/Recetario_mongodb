@@ -113,12 +113,13 @@
     <div *ngFor="let recipe of filteredRecipes()" class="recipe-card animate-slide-up">
       <div class="recipe-card-header">
         <div class="recipe-img-placeholder">
-          <span *ngIf="recipe.categoria === 'Desayuno'">🍳</span>
-          <span *ngIf="recipe.categoria === 'Postre'">🍰</span>
-          <span *ngIf="recipe.categoria === 'Bebida'">🍹</span>
-          <span *ngIf="recipe.categoria === 'Entrada'">🥗</span>
-          <span *ngIf="recipe.categoria === 'Plato Principal'">🍲</span>
-          <span *ngIf="recipe.categoria === 'Otro' || !recipe.categoria">🍕</span>
+          <img *ngIf="recipe.imagen" [src]="'/api/recipes/image/' + recipe.imagen" [alt]="recipe.titulo" loading="lazy" />
+          <span *ngIf="!recipe.imagen && recipe.categoria === 'Desayuno'">🍳</span>
+          <span *ngIf="!recipe.imagen && recipe.categoria === 'Postre'">🍰</span>
+          <span *ngIf="!recipe.imagen && recipe.categoria === 'Bebida'">🍹</span>
+          <span *ngIf="!recipe.imagen && recipe.categoria === 'Entrada'">🥗</span>
+          <span *ngIf="!recipe.imagen && recipe.categoria === 'Plato Principal'">🍲</span>
+          <span *ngIf="!recipe.imagen && (recipe.categoria === 'Otro' || !recipe.categoria)">🍕</span>
         </div>
         
         <!-- Owner quick indicators (public/private + favorite toggle) -->
@@ -227,6 +228,7 @@
       </button>
       
       <div class="recipe-modal-header">
+        <img *ngIf="selectedRecipe()?.imagen" [src]="'/api/recipes/image/' + selectedRecipe()!.imagen" [alt]="selectedRecipe()!.titulo" class="modal-recipe-image" loading="lazy" />
         <div class="modal-meta-top">
           <span class="category-badge">{{ selectedRecipe()?.categoria || 'Otro' }}</span>
           <span

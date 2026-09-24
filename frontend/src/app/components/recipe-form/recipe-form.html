@@ -125,6 +125,21 @@
         ></textarea>
       </div>
 
+      <div class="input-group">
+        <label>Imagen del plato</label>
+        <input type="file" accept="image/*" (change)="onFileSelected($event)" #fileInput />
+        <div class="file-preview" *ngIf="previewUrl">
+          <img [src]="previewUrl" alt="Vista previa" />
+          <button type="button" (click)="removeImage()">Eliminar</button>
+        </div>
+        <button type="button" class="btn-secondary" (click)="uploadImage()" *ngIf="selectedFile && !recipe.imagen">
+          Subir imagen
+        </button>
+        <div *ngIf="recipe.imagen" class="current-image">
+          <small>Imagen actual: <a [href]="'/api/recipes/image/' + recipe.imagen" target="_blank">ver</a></small>
+        </div>
+      </div>
+
       <div class="form-actions">
         <a routerLink="/dashboard" class="btn-secondary">Cancelar</a>
         <button type="submit" class="btn-primary">

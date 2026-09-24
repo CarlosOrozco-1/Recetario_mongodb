@@ -177,3 +177,54 @@ h2 {
   padding: 12px 24px;
   font-size: 15px;
 }
+
+/* Image Upload */
+.file-preview {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+  padding: 12px;
+  background-color: var(--bg-warm);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+}
+
+.file-preview img {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+}
+
+.file-preview button {
+  background-color: #fef2f2;
+  color: #ef4444;
+  border: 1px solid #fca5a5;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 13px;
+  transition: var(--transition);
+}
+
+.file-preview button:hover {
+  background-color: #ef4444;
+  color: white;
+  border-color: #ef4444;
+}
+
+.current-image {
+  margin-top: 8px;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.current-image a {
+  color: var(--primary);
+  text-decoration: none;
+}
+
+.current-image a:hover {
+  text-decoration: underline;
+}

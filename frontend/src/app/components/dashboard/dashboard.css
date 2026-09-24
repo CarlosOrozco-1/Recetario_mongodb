@@ -246,10 +246,25 @@
   font-size: 48px;
   opacity: 0.8;
   transition: transform 0.3s ease;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.recipe-img-placeholder img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .recipe-card:hover .recipe-img-placeholder {
-  transform: scale(1.1);
+  transform: scale(1.02);
+}
+
+.recipe-card:hover .recipe-img-placeholder img {
+  transform: scale(1.05);
 }
 
 /* Badges on Header */
@@ -527,6 +542,16 @@
   padding: 32px;
   background: linear-gradient(135deg, var(--primary-light) 0%, #ffe4e6 100%);
   border-bottom: 1px solid var(--border);
+  position: relative;
+}
+
+.modal-recipe-image {
+  width: 100%;
+  max-height: 250px;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+  margin-bottom: 16px;
+  box-shadow: var(--shadow-md);
 }
 
 .modal-meta-top {
