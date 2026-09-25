@@ -363,6 +363,24 @@
   background-color: white;
 }
 
+.social-btn.own-recipe {
+  opacity: 0.5;
+  cursor: not-allowed;
+  color: var(--text-muted);
+  background-color: var(--bg-warm);
+  border-color: var(--border);
+}
+
+.social-btn.own-recipe:hover {
+  transform: none;
+  box-shadow: var(--shadow-sm);
+  background-color: var(--bg-warm);
+}
+
+.social-btn.own-recipe svg {
+  opacity: 0.5;
+}
+
 .social-btn.liked {
   color: #ef4444;
   background-color: #fef2f2;
@@ -1231,6 +1249,38 @@
 
 .reply-header .comment-time {
   font-size: 10px;
+}
+
+.reply-header .comment-time {
+  font-size: 10px;
+}
+
+.reply-actions-nested {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.reply-btn-nested {
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--primary);
+  background-color: var(--primary-light);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.reply-btn-nested:hover:not(:disabled) {
+  background-color: var(--primary);
+  color: white;
+}
+
+.reply-btn-nested:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 /* ===== REVIEWS SECTION ===== */

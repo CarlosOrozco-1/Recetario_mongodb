@@ -8,7 +8,9 @@ const {
   remove,
 } = require("../controllers/recipeController");
 const auth = require("../middleware/auth");
-const upload = require("../middleware/upload");
+const { uploadMiddleware, validateImageDimensions } = require("../middleware/upload");
+const { createLimiter } = require("../middleware/rateLimiter");
+const { sanitizeFields } = require("../middleware/sanitize");
 const mongoose = require("mongoose");
 const { GridFSBucket } = require("mongodb");
 
@@ -16,13 +18,13 @@ const router = express.Router();
 
 router.use(auth);
 
-router.post("/", create);
+router.post("/", createLimiter, sanitizeFields(["titulo", "descripcion", "instrucciones", "categoria", "hashtags"]), create);
 router.get("/", getAll);
 router.get("/:id", getById);
 router.put("/:id", update);
 router.delete("/:id", remove);
 
-router.post("/:id/image", auth, upload, async (req, res) => {
+router.post("/:id/image", auth, uploadMiddleware, validateImageDimensions, async (req, res) => {
   try {
     const recipe = await Recipe.findOneAndUpdate(
       { _id: req.params.id, usuario: req.user._id },

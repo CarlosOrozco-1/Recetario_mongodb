@@ -146,9 +146,11 @@
             type="button"
             class="social-btn"
             [class.liked]="recipe.liked"
+            [class.own-recipe]="isOwner(recipe)"
+            [disabled]="isOwner(recipe)"
             (click)="toggleLike(recipe, $event)"
-            [attr.aria-label]="recipe.liked ? 'Quitar like' : 'Dar like'"
-            title="{{ recipe.liked ? 'Quitar like' : 'Dar like' }}"
+            [attr.aria-label]="isOwner(recipe) ? 'No puedes dar like a tu propia receta' : (recipe.liked ? 'Quitar like' : 'Dar like')"
+            title="{{ isOwner(recipe) ? 'No puedes dar like a tu propia receta. Usa Guardar para favoritas.' : (recipe.liked ? 'Quitar like' : 'Dar like') }}"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
             <span class="social-count">{{ recipe.likesCount || 0 }}</span>
@@ -362,7 +364,13 @@
                     <p class="comment-text">{{ comment.texto }}</p>
                     
                     <div class="comment-actions">
-                      <button type="button" class="reply-btn" (click)="startReply(comment)" [disabled]="replyingToComment()?._id === comment._id">
+                      <button 
+                        type="button" 
+                        class="reply-btn" 
+                        (click)="startReply(comment)" 
+                        [disabled]="replyingToComment()?._id === comment._id || isCommentOwner(comment)"
+                        *ngIf="!isCommentOwner(comment)"
+                      >
                         {{ replyingToComment()?._id === comment._id ? 'Cancelar' : 'Responder' }}
                       </button>
                     </div>
@@ -386,6 +394,19 @@
                           </div>
                         </div>
                         <p class="comment-text">{{ reply.texto }}</p>
+                        
+                        <!-- Botón Responder en respuestas anidadas -->
+                        <div class="reply-actions-nested">
+                          <button 
+                            type="button" 
+                            class="reply-btn-nested" 
+                            (click)="startReply(reply)" 
+                            [disabled]="replyingToComment()?._id === reply._id || isCommentOwner(reply)"
+                            *ngIf="!isCommentOwner(reply)"
+                          >
+                            {{ replyingToComment()?._id === reply._id ? 'Cancelar' : 'Responder' }}
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>

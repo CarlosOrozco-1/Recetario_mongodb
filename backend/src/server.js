@@ -6,6 +6,7 @@ const reviewsRouter = require("./routes/reviews");
 const followsRouter = require("./routes/follows");
 const activityFeedRouter = require("./routes/activityFeed");
 const recipeSocialRouter = require("./routes/recipeSocial");
+const { apiLimiter } = require("./middleware/rateLimiter");
 
 require("dotenv").config();
 
@@ -13,6 +14,9 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
+
+// Rate limiter global
+app.use("/api", apiLimiter);
 
 app.get("/api/health", (req, res) => {
   const mongoState = mongoose.connection.readyState;

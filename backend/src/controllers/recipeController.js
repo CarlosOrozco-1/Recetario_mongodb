@@ -1,4 +1,6 @@
 const Recipe = require("../models/Recipe");
+const mongoose = require("mongoose");
+const { GridFSBucket } = require("mongodb");
 
 const create = async (req, res) => {
   try {
@@ -9,6 +11,18 @@ const create = async (req, res) => {
     res.status(201).json(recipe);
   } catch (error) {
     res.status(500).json({ message: "Error al crear receta", error: error.message });
+  }
+};
+
+// Función auxiliar para eliminar imagen de GridFS
+const deleteImageFromGridFS = async (imageId) => {
+  if (!imageId) return;
+  try {
+    const bucket = new GridFSBucket(mongoose.connection.db, { bucketName: "uploads" });
+    await bucket.delete(new mongoose.Types.ObjectId(imageId));
+  } catch (error) {
+    console.error("Error eliminando imagen de GridFS:", error);
+    // No lanzamos error para no romper el flujo principal
   }
 };
 
@@ -69,6 +83,12 @@ const remove = async (req, res) => {
     if (!recipe) {
       return res.status(404).json({ message: "Receta no encontrada o no tienes permisos para eliminarla" });
     }
+    
+    // Eliminar imagen de GridFS si existe
+    if (recipe.imagen) {
+      await deleteImageFromGridFS(recipe.imagen);
+    }
+    
     res.json({ message: "Receta eliminada" });
   } catch (error) {
     res.status(500).json({ message: "Error al eliminar receta", error: error.message });

@@ -174,6 +174,12 @@ export class Dashboard implements OnInit {
     return "Chef Anónimo";
   }
 
+  isCommentOwner(comment: Comment): boolean {
+    const currentUser = this.authService.getUser();
+    if (!currentUser || !comment.usuario) return false;
+    return comment.usuario._id === currentUser._id;
+  }
+
   closeRecipeModal(): void {
     this.selectedRecipe.set(null);
   }
@@ -241,6 +247,13 @@ export class Dashboard implements OnInit {
   toggleLike(recipe: Recipe, event: Event): void {
     event.stopPropagation();
     if (!recipe._id) return;
+    
+    // No permitir like a propia receta
+    if (this.isOwner(recipe)) {
+      this.toastService.warning("No puedes dar like a tu propia receta. Usa 'Guardar' para tus favoritas.");
+      return;
+    }
+    
     this.recipeService.toggleLike(recipe._id).subscribe({
       next: (res) => {
         this.recipes.update(list => 
