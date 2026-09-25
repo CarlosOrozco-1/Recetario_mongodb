@@ -286,3 +286,48 @@ Actualizar `Dockerfile.frontend` para copiarlo.
 ---
 
 *Última actualización: 2026-08-18*
+---
+
+## 2026-09-25 | Deploy VPS (contenedor crasheado por whitelist de Atlas)
+
+### Síntoma
+En la VPS el contenedor `recetario-backend` arrancaba y se caía de inmediato:
+
+```
+🚀 Backend corriendo en puerto 3000
+❌ Error de conexión a MongoDB: Could not connect to any servers in your MongoDB
+   Atlas cluster. One common reason is that you're trying to access the database
+   from an IP that isn't whitelisted.
+[nodemon] app crashed - waiting for file changes before starting...
+```
+
+Desde Caddy: `wget: can't connect to remote host (172.20.0.3): Connection refused`
+
+### Causa Raíz
+**No era un problema de red ni de Caddy.** Dos confusiones se mezclaban:
+
+1. La IP pública de la VPS (`161.153.28.223`) no estaba en la **IP Access List** del
+   cluster de Atlas. Solo estaba la IP de la máquina de desarrollo, por eso en local
+   sí conectaba.
+2. Al estar la app caída, el `Connection refused` de Caddy era el síntoma correcto,
+   no la causa. El contenedor sí estaba en la red correcta (`caddy-central_default`)
+   y Caddy sí resolvía el nombre a `172.20.0.3`.
+
+Error de diagnóstico asociado: `docker stats` reportaba **22 PIDs**, lo que sugería
+un loop de reinicios. Era una falsa alarma: `docker stats` cuenta hilos, y `docker top`
+mostró solo 3 procesos reales (`npm` → `nodemon` → `node`).
+
+### Solución Aplicada
+1. Atlas → Network Access → Add IP Address → `161.153.28.223/32`
+2. `docker compose restart backend`
+3. Verificación desde la red de Caddy:
+   `docker exec caddy-central-caddy-1 wget -qO- http://recetario-backend:3000/api/health`
+
+**Resultado:** `{"status":"ok","mongodb":"conectado","database":"recetario",...}`
+
+### Verificación
+El test válido es **desde dentro de la red de Caddy**, porque ese es el origen real
+del tráfico. `curl localhost:3000` desde el host falla siempre que el servicio no
+publique puertos, y eso es intencional.
+
+**Documentación:** `docs/guia-deploy-vps.md` (sección 5, Troubleshooting)

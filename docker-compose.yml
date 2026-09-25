@@ -39,6 +39,8 @@ services:
     depends_on:
       - backend
     command: npm start
+    networks:
+      - caddy-network
 
 networks:
   caddy-network:
