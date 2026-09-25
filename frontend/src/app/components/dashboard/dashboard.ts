@@ -37,6 +37,8 @@ export class Dashboard implements OnInit {
 
   selectedRecipe = signal<Recipe | null>(null);
   recipeToDelete = signal<Recipe | null>(null);
+  recipeToTogglePublic = signal<Recipe | null>(null);
+  isTogglingPublic = signal(false);
 
   // Modal Social State
   modalComments = signal<Comment[]>([]);
@@ -217,11 +219,7 @@ export class Dashboard implements OnInit {
     if (!recipe._id || !this.isOwner(recipe)) return;
 
     const newFavStatus = !recipe.favorito;
-    // Limpiar campos antes de enviar actualización
-    const { _id, usuario, createdAt, updatedAt, ...cleanRecipe } = recipe;
-    const data = { ...cleanRecipe, favorito: newFavStatus };
-
-    this.recipeService.update(recipe._id, data as Recipe).subscribe({
+    this.recipeService.update(recipe._id, { favorito: newFavStatus } as Recipe).subscribe({
       next: () => {
         this.recipes.update(list => 
           list.map(r => r._id === recipe._id ? { ...r, favorito: newFavStatus } : r)
@@ -234,6 +232,46 @@ export class Dashboard implements OnInit {
       },
       error: (err) => {
         this.toastService.error("Error al actualizar favorito");
+      }
+    });
+  }
+
+  // --- VISIBILIDAD ---
+  askTogglePublic(recipe: Recipe, event: Event): void {
+    event.stopPropagation(); // Avoid opening the detail modal
+    if (!this.isOwner(recipe)) return;
+    this.recipeToTogglePublic.set(recipe);
+  }
+
+  cancelTogglePublic(): void {
+    this.recipeToTogglePublic.set(null);
+  }
+
+  confirmTogglePublic(): void {
+    const recipe = this.recipeToTogglePublic();
+    if (!recipe?._id) return;
+
+    const willBePublic = !recipe.publica;
+    this.isTogglingPublic.set(true);
+
+    this.recipeService.setPublic(recipe._id, willBePublic).subscribe({
+      next: () => {
+        this.recipes.update(list =>
+          list.map(r => (r._id === recipe._id ? { ...r, publica: willBePublic } : r))
+        );
+        // Reflejar el cambio si el modal de detalle está abierto
+        if (this.selectedRecipe()?._id === recipe._id) {
+          this.selectedRecipe.update(r => (r ? { ...r, publica: willBePublic } : r));
+        }
+        this.recipeToTogglePublic.set(null);
+        this.isTogglingPublic.set(false);
+        this.toastService.success(
+          willBePublic ? "Receta ahora es pública 🔓" : "Receta ahora es privada 🔒"
+        );
+      },
+      error: () => {
+        this.isTogglingPublic.set(false);
+        this.toastService.error("No se pudo cambiar la visibilidad");
       }
     });
   }

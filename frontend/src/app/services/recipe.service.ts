@@ -76,7 +76,13 @@ export class RecipeService {
   uploadImage(id: string, file: File): Observable<Recipe> {
     const formData = new FormData();
     formData.append("imagen", file);
-    return this.http.put<Recipe>(`${this.apiUrl}/${id}/image`, formData, {
+    return this.http.post<Recipe>(`${this.apiUrl}/${id}/image`, formData, {
+      headers: this.getHeaders()
+    });
+  }
+
+  setPublic(id: string, publica: boolean): Observable<Recipe> {
+    return this.http.put<Recipe>(`${this.apiUrl}/${id}`, { publica }, {
       headers: this.getHeaders()
     });
   }

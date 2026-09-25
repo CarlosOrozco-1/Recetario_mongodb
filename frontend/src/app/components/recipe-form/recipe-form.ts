@@ -149,25 +149,64 @@ next: (data) => {
 
   onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
-    if (input.files?.length) {
-      this.selectedFile = input.files[0];
-      this.previewUrl = URL.createObjectURL(this.selectedFile);
+    if (!input.files?.length) return;
+
+    const file = input.files[0];
+    if (!file.type.startsWith("image/")) {
+      this.toastService.error("Selecciona un archivo de imagen");
+      input.value = "";
+      return;
     }
+    if (file.size > 5 * 1024 * 1024) {
+      this.toastService.error("La imagen supera el tamaño máximo de 5 MB");
+      input.value = "";
+      return;
+    }
+
+    this.selectedFile = file;
+    this.previewUrl = URL.createObjectURL(file);
   }
 
   removeImage(): void {
+    if (this.previewUrl) URL.revokeObjectURL(this.previewUrl);
     this.selectedFile = null;
     this.previewUrl = null;
   }
 
   uploadImage(): void {
     if (!this.selectedFile || !this.id) return;
-    this.recipeService.uploadImage(this.id, this.selectedFile).subscribe({
+
+    const file = this.selectedFile;
+    const url = URL.createObjectURL(file);
+    const probe = new Image();
+
+    probe.onload = () => {
+      URL.revokeObjectURL(url);
+      // El backend ya no puede leer el buffer (GridFS consume el stream),
+      // así que el límite de dimensiones se aplica aquí.
+      if (probe.naturalWidth > 1920 || probe.naturalHeight > 1080) {
+        this.toastService.warning(
+          `La imagen mide ${probe.naturalWidth}x${probe.naturalHeight}px. Se subirá igual, pero se verá mejor si no supera 1920x1080.`
+        );
+      }
+      this.sendImage(file);
+    };
+    probe.onerror = () => {
+      URL.revokeObjectURL(url);
+      this.toastService.error("No se pudo leer la imagen seleccionada");
+    };
+    probe.src = url;
+  }
+
+  private sendImage(file: File): void {
+    if (!this.id) return;
+    this.recipeService.uploadImage(this.id, file).subscribe({
       next: (recipe) => {
         this.recipe = { ...this.recipe, imagen: recipe.imagen };
         this.toastService.success("Imagen subida correctamente");
       },
-      error: () => this.toastService.error("Error subiendo imagen")
+      error: (err) =>
+        this.toastService.error(err.error?.message || "Error subiendo imagen")
     });
   }
 }

@@ -2,10 +2,35 @@ const Recipe = require("../models/Recipe");
 const mongoose = require("mongoose");
 const { GridFSBucket } = require("mongodb");
 
+// Únicos campos que el cliente puede escribir. Sin esta lista, un PUT podía
+// pisar _id, usuario (robo de receta), likes, likesCount, reportado, etc.
+const EDITABLE_FIELDS = [
+  "titulo",
+  "descripcion",
+  "ingredientes",
+  "instrucciones",
+  "categoria",
+  "tiempoPreparacion",
+  "dificultad",
+  "porciones",
+  "favorito",
+  "publica",
+  "hashtags",
+  "imagen",
+];
+
+const pickEditable = (body) => {
+  const allowed = {};
+  for (const field of EDITABLE_FIELDS) {
+    if (body[field] !== undefined) allowed[field] = body[field];
+  }
+  return allowed;
+};
+
 const create = async (req, res) => {
   try {
     const recipe = await Recipe.create({
-      ...req.body,
+      ...pickEditable(req.body),
       usuario: req.user._id,
     });
     res.status(201).json(recipe);
@@ -63,10 +88,14 @@ const getById = async (req, res) => {
 
 const update = async (req, res) => {
   try {
+    const changes = pickEditable(req.body);
+    if (Object.keys(changes).length === 0) {
+      return res.status(400).json({ message: "No se envió ningún campo editable" });
+    }
     const recipe = await Recipe.findOneAndUpdate(
       { _id: req.params.id, usuario: req.user._id },
-      req.body,
-      { new: true }
+      changes,
+      { new: true, runValidators: true }
     );
     if (!recipe) {
       return res.status(404).json({ message: "Receta no encontrada o no tienes permisos para editarla" });

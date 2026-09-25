@@ -345,33 +345,75 @@ git checkout <commit-bueno> && docker compose up -d --build
 - [x] **Step 4** — `frontend/Dockerfile.prod` + `nginx.conf` + `.dockerignore`
 - [x] **Step 4** — Build de producción verificado en local (`/healthz` y fallback SPA OK)
 - [x] **Step 4** — Presupuesto CSS de Angular corregido (bloqueaba el build)
-- [ ] **Step 5** — Transferir imagen a la VPS y levantar el frontend
-- [ ] **Step 6** — Bloque de Caddy + `caddy validate` + `caddy reload`
-- [ ] **Step 7** — Verificación pública end-to-end
+- [x] **Step 5** — Imagen compilada en la VPS (94.2 MB) y contenedor recreado
+- [x] **Step 5** — Verificado: nginx escucha en `:80` y `/healthz` responde `ok` desde Caddy
+- [x] **Step 6** — Bloque de Caddy con `handle /api/*` (no `handle_path`), `caddy validate` y `caddy reload` OK
+- [x] **Step 6** — Certificado Let's Encrypt emitido para `foodloopc.duckdns.org`
+- [x] **Step 7** — Verificación end-to-end en navegador: login, CRUD y social OK
+- [x] **Step 7** — Imágenes: corregidos 4 bugs (ruta bajo JWT, `MONGODB_URI`, `sharp` sin buffer, `PUT` vs `POST`)
+- [x] **Step 7** — Toggle de visibilidad con modal de confirmación (tarjeta y modal de detalle)
+- [ ] **Step 7** — Revalidar en VPS: imagen visible en tarjeta y modal de detalle
 
-### 3.4 Procedimiento de deploy del frontend (build local → VPS)
+### 3.4 Procedimiento de deploy del frontend
 
-La imagen se construye **en local** y se transfiere. La VPS nunca compila Angular.
+**Estrategia actual: construir en la VPS con un solo comando y una sola sesión SSH.**
+
+La VPS tiene 956 MiB de RAM, así que el build de Angular (~1.5 GB) entra por swap y
+tarda **~8 minutos**. Durante ese tiempo los otros servicios de la VPS se sienten
+lentos. A cambio no hace falta transferir nada: cero `scp`, cero imágenes por tubería,
+un solo comando.
 
 ```bash
-# 1. LOCAL: construir la imagen
-cd /home/carloso/Projects/2026/MAIN/recetario
+cd /home/ubuntu/recetarioMongo/Recetario_mongodb
+
+# 1. Construir (usa frontend/Dockerfile.prod, no el de desarrollo)
 docker compose build frontend
 
-# 2. LOCAL: transferirla (95 MB comprimido por el pipe)
-docker save recetario_mongodb-frontend:latest \
-  | gzip | ssh ubuntu@161.153.28.223 'gunzip | docker load'
+# 2. Confirmar que salió la imagen correcta
+docker images recetario_mongodb-frontend --format '{{.ID}} {{.Size}}'
+# Debe pesar ~95 MB. Si pesa ~1.5 GB, se compiló el dev server: revisa que el
+# compose apunte a `dockerfile: Dockerfile.prod`.
 
-# 3. VPS: levantar sin reconstruir
-cd /home/ubuntu/recetarioMongo/Recetario_mongodb
-docker compose up -d --no-build frontend
+# 3. Recrear el contenedor (toma la imagen recién construida)
+docker compose up -d --no-build --force-recreate frontend
 
-# 4. VPS: verificar
+# 4. Verificar
+docker exec recetario-frontend netstat -ltn | grep LISTEN    # debe listen en :80
 docker exec caddy-central-caddy-1 wget -qO- http://recetario-frontend/healthz
 ```
 
-> `--no-build` es importante: sin él, si la imagen no llegara, Docker intentaría
-> compilar Angular en la VPS y se quedaría sin memoria.
+> **Regla dura: verificar el peso de la imagen antes de levantar.** Si el build
+> generó la imagen de desarrollo (~1.5 GB), el frontend volverá a `ng serve` en el
+> 4200 y Caddy no encontrará nada en el 80. La causa es que el compose apuntara a
+> `frontend/Dockerfile` (dev) en vez de `Dockerfile.prod`.
+
+> **Un contenedor no cambia de imagen aunque reetiquetes la etiqueta.** Por eso el
+> paso 3 lleva `--force-recreate`.
+
+> `--no-build` evita que `up` intente recompilar. Sin él, y sin la imagen presente,
+> Docker intentaría compilar Angular otra vez.
+
+#### Alternativa más rápida (si molesta esperar)
+
+Compilar en local y copiar solo los archivos estáticos. Evita el swap en la VPS, pero
+necesita una segunda pestaña con `scp` y deja el contenedor dependiendo de archivos
+del host:
+
+```bash
+# local
+cd frontend && npm run build
+scp -r dist/recetario-app/browser ubuntu@IP:/home/ubuntu/recetarioMongo/Recetario_mongodb/frontend/dist/
+```
+
+### Trampa de nombres de imagen
+
+| Nombre | Dónde | Qué es |
+|--------|-------|--------|
+| `recetario_mongodb-frontend` | local y VPS | La de producción (nginx, 95 MB) |
+| `recetario-frontend` | solo local | La vieja de desarrollo (1.54 GB), del nombre de proyecto anterior |
+
+Por eso el `name: recetario_mongodb` en el compose: sin él, cada máquina nombra la
+imagen distinto y las referencias cruzadas no cuadran.
 
 
 ### 3.4 Comandos de esta VPS
@@ -394,13 +436,29 @@ docker exec caddy-central-caddy-1 caddy fmt      --config /etc/caddy/Caddyfile  
 sudo nano /home/ubuntu/gestionInventario/gestion-inventario-sprinReact/caddy-central/Caddyfile
 ```
 
-### 3.5 Pendientes técnicos del código (bloquean funcionalidad en prod)
+### 3.5 Pendientes técnicos del código
+
+**Resueltos (verificado con `npm test` en `backend/`, 10 casos):**
+
+| Tema | Causa raíz | Solución | Archivo |
+|------|------------|----------|---------|
+| Subida de imágenes | `multer-gridfs-storage` solo leía `MONGO_URI`; el compose define `MONGODB_URI` | Aceptar ambos: `process.env.MONGODB_URI \|\| process.env.MONGO_URI` | `backend/src/middleware/upload.js` |
+| Validación de imagen | `sharp(req.file.buffer)`; GridFS consume el archivo por streaming y no deja buffer | Validación movida al cliente (mide con `new Image()`), y se eliminó la dependencia nativa `sharp` | `backend/src/middleware/upload.js`, `frontend/src/app/components/recipe-form/recipe-form.ts` |
+| Servir imagen | La ruta estaba **después** de `router.use(auth)`; `<img src>` no puede enviar cabeceras → 401 | Declarar `GET /image/:fileId` **antes** de `router.use(auth)` | `backend/src/routes/recipes.js` |
+| Subida de imagen (método) | El frontend enviaba `PUT /:id/image`; el backend solo tenía `POST` | `http.post` en `uploadImage()` | `frontend/src/app/services/recipe.service.ts` |
+| Mass-assignment | `update` pasaba `req.body` crudo a `findOneAndUpdate`; un `{"usuario": "..."}` robaba la receta y `{"likesCount": 9999}` falseaba métricas | Allowlist `EDITABLE_FIELDS` en `create` y `update` + `runValidators` | `backend/src/controllers/recipeController.js` |
+| Visibilidad dinámica | La casilla "pública" solo se podía cambiar reabriendo el editor | Badge como botón + modal de confirmación, en la tarjeta y en el modal de detalle | `frontend/src/app/components/dashboard/dashboard.{ts,html,css}` |
+
+> **Por qué no se guardó base64 en la receta:** el 401 ocurre *antes* de mirar los
+> bytes, así que cambiar el formato no habría arreglado nada. Además, 5 MB de
+> imagen son ~6.7 MB de texto (MongoDB corta en 16 MB por documento), inflaría
+> cada `GET /api/recipes` y quitaría la caché independiente del navegador. Servir
+> el binario desde GridFS sin cabeceras es lo correcto.
+
+**Pendientes:**
 
 | Tema | Problema | Archivo |
 |------|----------|---------|
-| Subida de imágenes | `middleware/upload.js` lee `MONGO_URI`, el compose define `MONGODB_URI` | `backend/src/middleware/upload.js` |
-| Validación de imagen | Valida con `req.file.buffer`, pero GridFS no deja el archivo ahí | `backend/src/middleware/upload.js` |
-| Servir imagen | Ruta bajo JWT; `<img src>` no puede enviarlo → imágenes no cargan | `backend/src/routes/recipes.js` |
 | Imagen huérfana | Reemplazar imagen no borra la anterior de GridFS | `backend/src/controllers/recipeController.js` |
 | Perfil | Ruta `/profile/:username` pero `User` no tiene `username` | `backend/src/models/User.js` |
 | Respuestas anidadas | `getByRecipe` solo trae respuestas de primer nivel | `backend/src/controllers/commentController.js` |
@@ -409,8 +467,14 @@ sudo nano /home/ubuntu/gestionInventario/gestion-inventario-sprinReact/caddy-cen
 | Rate limit | `uploadLimiter` definido y no aplicado | `backend/src/routes/recipes.js` |
 | Sanitización | `sanitizeBody` existe y no se aplica globalmente | `backend/src/middleware/sanitize.js` |
 | Trust proxy | Falta configurar para que el rate limit no vea todo como la IP de Caddy | `backend/src/server.js` |
+| Magic bytes | El filtro se basa en el `Content-Type` que envía el cliente (fácil de falsear) | `backend/src/middleware/upload.js` |
 | Secretos | `docker-compose.yml` tiene Atlas URI y `JWT_SECRET` en claro | `docker-compose.yml` |
 | Build context | Sin `.dockerignore`, `COPY . .` puede incrustar `backend/.env` | `backend/.dockerignore` |
+
+**Regresión de seguridad que conviene añadir a `backend/test/recipes.test.js`**
+cuando se toque cualquiera de estos archivos: el orden de las capas del router
+(es decir, que la imagen siga siendo pública y el resto no) y la allowlist de
+campos editables.
 
 ---
 
@@ -450,6 +514,10 @@ docker exec caddy-central-caddy-1 caddy reload   --config /etc/caddy/Caddyfile
 | `anyComponentStyle exceeded maximum budget` | Un CSS de componente pasó el límite de producción | Subir el presupuesto en `angular.json` **o** dividir el CSS; en desarrollo no salta |
 | `wget: can't connect to remote host: Connection refused` dentro de un contenedor | BusyBox resuelve `localhost` a `::1` y nginx escucha solo en IPv4 | Usar `http://127.0.0.1/...` en vez de `localhost` |
 | `docker compose up` intenta recompilar en la VPS | Falta la imagen transferida | `docker compose up -d --no-build` y transferir antes con `docker save \| ssh docker load` |
+| El contenedor corre la imagen vieja después de un `docker load` | **Un contenedor conserva la imagen con la que nació**; reetiquetar no lo afecta | `docker compose up -d --no-build --force-recreate <servicio>` |
+| El frontend responde en 4200 en vez de 80 | Se compiló `frontend/Dockerfile` (dev) en vez de `Dockerfile.prod` | `docker images ... --format '{{.Size}}'`: ~95 MB = nginx, ~1.5 GB = dev |
+| 404 en todas las rutas de la API | Usaste `handle_path /api/*` en vez de `handle /api/*` | `handle_path` **elimina** el prefijo y el backend espera la ruta completa |
+| Comandos enviados al equipo equivocado | Terminal nueva abierta en local | Encabezar todo bloque con `hostname`; debe decir `vpn-wireguard-server` |
 | El nombre de imagen difiere entre local y VPS | El nombre del proyecto se deriva del directorio | Fijar `name:` en el compose |
 | `git push` → *Permission denied (publickey)* | Sin llave SSH en la VPS | `ssh-keygen` + `ssh-copy-id` al repo, o usar HTTPS con token |
 | Cambios de `package.json` no se aplican | Volumen anónimo `/app/node_modules` con dependencias viejas | `docker compose down -v` y volver a levantar |
@@ -472,3 +540,45 @@ docker exec caddy-central-caddy-1 caddy reload   --config /etc/caddy/Caddyfile
 | 2026-09-25 | Step 4 | `Dockerfile.prod` + `nginx.conf` + `.dockerignore` creados |
 | 2026-09-25 | Step 4 | **Bloqueo encontrado**: presupuesto `anyComponentStyle` de Angular rechazaba `dashboard.css` (19.7 kB > 16 kB). Subido a 24/32 kB |
 | 2026-09-25 | Step 4 | Imagen construida y verificada: `/healthz` → `ok`, `/receta/123` → fallback SPA OK, 95 MB |
+| 2026-09-25 | Step 5 | Diagnóstico: el contenedor corría la imagen de **desarrollo** (`ng serve` en 4200) porque un `--build` en la VPS reetiquetó `recetario_mongodb-frontend` |
+| 2026-09-25 | Step 5 | Build en la VPS con `Dockerfile.prod` (311 s) → imagen 94.2 MB → nginx en `:80`, `/healthz` OK desde Caddy |
+| 2026-09-25 | Step 5 | Dominio confirmado: `recetario.duckdns.org` apunta a `188.65.93.134` (**otra IP, en desuso**). Se usa `foodloopc.duckdns.org` |
+| 2026-09-25 | Step 6 | Caddy: `Valid configuration` → `reload` sin downtime → HTTP 308 a HTTPS → **HTTP/2 200** con health check de Atlas |
+| 2026-09-25 | Step 6 | Frontend público verificado: 200 en `/` y en `/login` (fallback SPA), título `Recetario - Tus recetas de cocina` |
+
+---
+
+## 7. Estado final del deploy (2026-09-25)
+
+| Componente | Estado | Verificación |
+|------------|--------|--------------|
+| DNS | ✅ | `foodloopc.duckdns.org` → `161.153.28.223` |
+| Caddy + TLS | ✅ | HTTP/2, certificado Let's Encrypt automático |
+| Frontend | ✅ | nginx sirviendo el build de Angular, fallback SPA OK |
+| Backend | ✅ | Express en `recetario-backend:3000` |
+| Atlas | ✅ | `mongodb: conectado`, db `recetario` |
+| Rate limiting | ✅ | Cabeceras `ratelimit-*` presentes |
+| Red compartida | ✅ | Ambos servicios en `caddy-central_default` |
+| Reinicio automático | ✅ | `restart: unless-stopped` en ambos servicios |
+
+**URL pública:** https://foodloopc.duckdns.org
+**Usuario de prueba:** `demo@test.com` / `12345678`
+
+### Pendiente antes de considerar el deploy cerrado
+
+| # | Tema | Prioridad |
+|---|------|-----------|
+| 1 | La VPS despliega desde `desa`, no desde `pro` | Alta |
+| 2 | Commit de `Dockerfile.prod` existe solo en `desa` | Alta |
+| 3 | `middleware/upload.js` lee `MONGO_URI` y el compose define `MONGODB_URI` → la **subida de imágenes falla** | Alta |
+| 4 | `sharp(req.file.buffer)` no funciona con GridFS (no deja `buffer`) | Alta |
+| 5 | `GET /api/recipes/image/:fileId` exige JWT y `<img src>` no lo envía → **las imágenes no se ven** | Alta |
+| 6 | Validación de dimensiones sin revisar | Media |
+| 7 | `sanitizeBody` definido y no aplicado globalmente | Media |
+| 8 | `uploadLimiter` definido y no aplicado | Media |
+| 9 | Sin `trust proxy`: el rate limit ve siempre la IP de Caddy | Media |
+| 10 | Atlas URI y `JWT_SECRET` en claro en `docker-compose.yml` | Media |
+| 11 | Sin `.dockerignore` en `backend/` → `COPY . .` puede incrustar `.env` | Media |
+| 12 | Caché `.angular/cache` versionada en git | Baja |
+| 13 | `caddy fmt --overwrite` para normalizar la indentación | Baja |
+| 14 | Respuestas anidadas y perfil por `username` sin soporte real | Baja |

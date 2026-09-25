@@ -331,3 +331,68 @@ del tráfico. `curl localhost:3000` desde el host falla siempre que el servicio 
 publique puertos, y eso es intencional.
 
 **Documentación:** `docs/guia-deploy-vps.md` (sección 5, Troubleshooting)
+
+---
+
+## 2026-09-25 — Las imágenes no se veían en el navegador
+
+**Síntoma:** la receta cargaba bien (título, descripción, imagen en la tarjeta) pero
+la foto no aparecía; se veía el texto `alt`.
+
+**Diagnóstico:** no era un problema de calidad ni de formato de imagen (la primera
+sospecha fue base64, que **no** lo arregla). Eran cuatro bugs encadenados:
+
+1. **Ruta bajo JWT.** `backend/src/routes/recipes.js` tenía
+   `router.use(auth)` en la línea 19, y la ruta `GET /image/:fileId` estaba
+   *debajo*. El navegador pide las imágenes con `<img src>`, y ese tipo de
+   petición **no puede enviar la cabecera `Authorization`**, así que Express
+   respondía 401 y nunca se pintaba el binario.
+   → La ruta se movió **antes** de `router.use(auth)`. Es público a propósito:
+   las fotos de recetas no son un secreto, y los ObjectId de GridFS no se
+   enumeran.
+
+2. **Variable de entorno distinta.** `upload.js` leía `process.env.MONGO_URI`,
+   pero `docker-compose.yml` define `MONGODB_URI`. `multer-gridfs-storage`
+   fallaba al inicializar. → Ahora `MONGODB_URI || MONGO_URI`, igual que
+   `server.js`.
+
+3. **Validación imposible.** `sharp(req.file.buffer)` no puede funcionar: con
+   `multer-gridfs-storage` el archivo se escribe por streaming a GridFS y nunca
+   existe `req.file.buffer`. → Se eliminó el middleware y la dependencia nativa
+   `sharp` (~40 MB); la comprobación de dimensiones se hizo en el cliente con
+   `new Image()`, que sí tiene los bytes en memoria.
+
+4. **Método HTTP equivocado.** El frontend llamaba
+   `this.http.put('/api/recipes/:id/image')` pero el backend solo declaraba
+   `POST /:id/image`. El 404 era silencioso. → `http.post`.
+
+**Por qué no base64:** el 401 se produce *antes* de leer el cuerpo de la
+respuesta, así que ningún cambio de formato lo evita. Además.base64 en el
+documento de la receta traería tres problemas nuevos: 5 MB de imagen se
+convierten en ~6.7 MB de texto (MongoDB corta en 16 MB por documento), cada
+`GET /api/recipes` devolvería megabytes, y la imagen perdería su caché
+independiente en el navegador.
+
+## 2026-09-25 — Mass-assignment en la actualización de recetas
+
+**Síntoma:** detectado al revisar por qué la casilla "pública" obligaba a reentrar
+al editor.
+
+**Diagnóstico:** `recipeController.update` pasaba `req.body` **completo** a
+`Recipe.findOneAndUpdate`. Un `PUT` con `{"usuario": "<id de otro>"}` transfería
+la receta a otro usuario, y `{"likesCount": 9999, "reportes": [...]}` falseaba
+las métricas sociales. El frontend ya provocaba esto sin querer: `toggleFavorite`
+mandaba la receta entera (`{ ...cleanRecipe, favorito }`).
+
+**Solución:** allowlist `EDITABLE_FIELDS` (12 campos) aplicada en `create` y en
+`update`, con `runValidators: true` y un `400` si no llega ningún campo editable.
+`toggleFavorite` ahora envía solo `{ favorito }`.
+
+**Bonus:** la misma sesión añadió el toggle de visibilidad pedido — el badge
+"🔓 Pública / 🔒 Privada" es un botón, tanto en la tarjeta como en el modal de
+detalle, y abre un modal de confirmación antes de aplicar el cambio.
+
+**Verificación:** `npm test` en `backend/` (10 casos con `node:test`, sin
+framework externo) cubre el orden de las capas del router —que la imagen siga
+siendo pública y todo lo demás no— y la allowlist de campos. Añadido como
+`npm test` en `backend/package.json`.

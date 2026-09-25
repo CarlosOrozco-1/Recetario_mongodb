@@ -7,3 +7,8 @@ mongo-data/
 keys-mongoAtlas/
 *.env
 !.env.example
+
+# Caché de compilación de Angular
+.angular/
+*.tsbuildinfo
+angular-compiler.db-lock

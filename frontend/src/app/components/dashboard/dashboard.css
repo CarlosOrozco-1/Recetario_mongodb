@@ -288,6 +288,63 @@
   border-radius: 4px;
   backdrop-filter: blur(4px);
 }
+.privacy-badge.is-public {
+  background-color: rgba(16, 185, 129, 0.85);
+}
+button.privacy-badge {
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  cursor: pointer;
+  font-family: inherit;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+}
+button.privacy-badge:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+button.privacy-badge:active {
+  transform: translateY(0);
+}
+button.privacy-badge:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
+/* Toggle de privacidad dentro del modal de detalle */
+.privacy-toggle-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #b45309;
+  background-color: rgba(245, 158, 11, 0.12);
+  border: 1px dashed rgba(245, 158, 11, 0.6);
+  border-radius: var(--radius-sm);
+  padding: 5px 10px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background-color 0.15s ease, transform 0.15s ease;
+}
+.privacy-toggle-inline.is-public {
+  color: #047857;
+  background-color: rgba(16, 185, 129, 0.12);
+  border-color: rgba(16, 185, 129, 0.6);
+}
+.privacy-toggle-inline:hover {
+  transform: translateY(-1px);
+  background-color: rgba(245, 158, 11, 0.22);
+}
+.privacy-toggle-inline.is-public:hover {
+  background-color: rgba(16, 185, 129, 0.22);
+}
+.privacy-toggle-hint {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  opacity: 0.7;
+}
+
 
 .privacy-badge.is-public {
   background-color: rgba(16, 185, 129, 0.85);

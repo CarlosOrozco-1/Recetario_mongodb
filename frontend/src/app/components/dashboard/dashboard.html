@@ -125,9 +125,17 @@
         
         <!-- Owner quick indicators (public/private + favorite toggle) -->
         <div class="card-badges-top">
-          <span *ngIf="isOwner(recipe)" class="privacy-badge" [class.is-public]="recipe.publica">
+          <button
+            *ngIf="isOwner(recipe)"
+            type="button"
+            class="privacy-badge"
+            [class.is-public]="recipe.publica"
+            (click)="askTogglePublic(recipe, $event)"
+            [attr.aria-label]="recipe.publica ? 'Hacer privada esta receta' : 'Hacer pública esta receta'"
+            [title]="recipe.publica ? 'Clic para hacer privada' : 'Clic para hacer pública'"
+          >
             {{ recipe.publica ? '🔓 Pública' : '🔒 Privada' }}
-          </span>
+          </button>
           <button
             *ngIf="isOwner(recipe)"
             type="button"
@@ -258,6 +266,50 @@
     </div>
   </div>
 
+  <!-- Confirmar cambio de visibilidad -->
+  <div class="modal-backdrop" *ngIf="recipeToTogglePublic()" (click)="cancelTogglePublic()">
+    <div class="modal-content animate-slide-up" (click)="$event.stopPropagation()">
+      <div class="modal-header" [class.warning-header]="!recipeToTogglePublic()?.publica">
+        <svg
+          *ngIf="!recipeToTogglePublic()?.publica"
+          xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+        >
+          <rect x="3" y="11" width="18" height="11" rx="2"></rect>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+        </svg>
+        <svg
+          *ngIf="recipeToTogglePublic()?.publica"
+          xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+        >
+          <rect x="3" y="11" width="18" height="11" rx="2"></rect>
+          <path d="M7 11V7a5 5 0 0 1 9.9-1"></path>
+        </svg>
+        <h3>{{ recipeToTogglePublic()?.publica ? '¿Hacer privada?' : '¿Hacer pública?' }}</h3>
+      </div>
+      <div class="modal-body">
+        <p *ngIf="!recipeToTogglePublic()?.publica">
+          Estás a punto de hacer pública <strong>"{{ recipeToTogglePublic()?.titulo }}"</strong>.
+          Cualquier usuario de FoodLoop podrá verla, buscarla y añadirle comentarios.
+        </p>
+        <p *ngIf="recipeToTogglePublic()?.publica">
+          Estás a punto de hacer privada <strong>"{{ recipeToTogglePublic()?.titulo }}"</strong>.
+          Dejará de aparecer en el feed público y solo tú podrás verla.
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" (click)="cancelTogglePublic()">Cancelar</button>
+        <button
+          type="button"
+          class="btn-primary"
+          [disabled]="isTogglingPublic()"
+          (click)="confirmTogglePublic()"
+        >
+          {{ isTogglingPublic() ? 'Guardando...' : (recipeToTogglePublic()?.publica ? 'Sí, hacer privada' : 'Sí, hacer pública') }}
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Recipe Detail Modal -->
   <div class="modal-backdrop" *ngIf="selectedRecipe()" (click)="closeRecipeModal()">
     <div class="modal-content recipe-detail-modal animate-slide-up" (click)="$event.stopPropagation()">
@@ -287,7 +339,17 @@
           <span>⏰ <strong>T. Preparación:</strong> {{ selectedRecipe()?.tiempoPreparacion || 15 }} min</span>
           <span>👥 <strong>Porciones:</strong> {{ selectedRecipe()?.porciones || 2 }}</span>
           <span *ngIf="selectedRecipe() && !isOwner(selectedRecipe()!)">🧑‍🍳 <strong>Autor:</strong> {{ getChefName(selectedRecipe()!) }}</span>
-          <span *ngIf="selectedRecipe() && isOwner(selectedRecipe()!)">🔓 <strong>Compartido:</strong> {{ selectedRecipe()?.publica ? 'Público' : 'Privado' }}</span>
+          <button
+            *ngIf="selectedRecipe() && isOwner(selectedRecipe()!)"
+            type="button"
+            class="privacy-toggle-inline"
+            [class.is-public]="selectedRecipe()?.publica"
+            (click)="askTogglePublic(selectedRecipe()!, $event)"
+            [title]="selectedRecipe()?.publica ? 'Clic para hacer privada' : 'Clic para hacer pública'"
+          >
+            {{ selectedRecipe()?.publica ? '🔓 Compartido: Público' : '🔒 Compartido: Privado' }}
+            <span class="privacy-toggle-hint">cambiar</span>
+          </button>
         </div>
       </div>
       
