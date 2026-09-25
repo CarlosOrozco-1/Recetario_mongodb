@@ -4,3 +4,5 @@ dist/
 uploads/
 mongo-data/
 *.log
+keys-mongoAtlas/
+*.env
