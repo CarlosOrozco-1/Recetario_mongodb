@@ -6,3 +6,4 @@ mongo-data/
 *.log
 keys-mongoAtlas/
 *.env
+!.env.example
