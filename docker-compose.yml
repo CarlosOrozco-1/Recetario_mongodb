@@ -1,30 +1,32 @@
-version: '3.8'
+version: "3.8"
 
 services:
-  mongo:
-    image: mongo:8
-    container_name: recetario-mongo
-    ports:
-      - "27017:27017"
-    volumes:
-      - mongo-data:/data/db
-    restart: unless-stopped
+  # mongo:
+  #   image: mongo:8
+  #   container_name: recetario-mongo
+  #   ports:
+  #     - "27017:27017"
+  #   volumes:
+  #       - mongo-data:/data/db
+  #   restart: unless-stopped
 
   backend:
     build: ./backend
     container_name: recetario-backend
-    ports:
-      - "3000:3000"
+    # ports:
+    #   - "3000:3000"
     volumes:
       - ./backend:/app
       - /app/node_modules
     environment:
-      - MONGO_URI=mongodb://mongo:27017/recetario
+      - MONGODB_URI=mongodb+srv://carlosorozcok_db_user:kDKmctCQQdQIw7Eg@recetario-cluster.plsosta.mongodb.net/recetario
       - JWT_SECRET=nn&SFFeHKyeIoI6ubo@D)7,txuw0NnlC
       - PORT=3000
-    depends_on:
-      - mongo
+    # depends_on:
+    #   - mongo
     command: sh -c "if [ ! -d node_modules ] || [ ! -f node_modules/.package-lock.json ]; then npm install; fi && npm run dev"
+    networks:
+      - caddy-network
 
   frontend:
     build: ./frontend
@@ -38,5 +40,10 @@ services:
       - backend
     command: npm start
 
-volumes:
-  mongo-data:
+networks:
+  caddy-network:
+    external: true
+    name: caddy-central_default
+
+# volumes:
+#   mongo-data:
