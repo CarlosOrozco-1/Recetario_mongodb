@@ -1,0 +1,12 @@
+# Contexto de build de la imagen de producción del frontend.
+# Sin esto se envían node_modules, dist y la caché de Angular al daemon
+# (cientos de MB) y se hornean dentro de la imagen sin necesidad.
+
+node_modules
+dist
+.angular
+.git
+.gitignore
+*.log
+npm-debug.log*
+Dockerfile

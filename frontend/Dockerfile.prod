@@ -1,0 +1,26 @@
+# Imagen de PRODUCCIÓN del frontend: build de Angular + nginx sirviendo estáticos.
+# NO se usa en desarrollo (para eso está frontend/Dockerfile con `ng serve`).
+#
+# Esta imagen se construye en la MÁQUINA LOCAL y se transfiere a la VPS con:
+#   docker save recetario_mongodb-frontend:latest | ssh ubuntu@IP 'docker load'
+# La VPS solo tiene 956 MiB de RAM y el build de Angular pide ~1.5 GB.
+
+FROM node:22-alpine AS build
+
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm ci
+
+COPY . .
+RUN npm run build
+
+
+FROM nginx:alpine
+
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=build /app/dist/recetario-app/browser /usr/share/nginx/html
+
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]

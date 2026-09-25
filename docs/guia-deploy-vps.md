@@ -311,6 +311,9 @@ git checkout <commit-bueno> && docker compose up -d --build
 | Origen | `foodloopc.duckdns.org` | Necesario para TLS; Caddy no emite certificados para IPs |
 | Frontend | Build estático en local + `nginx:alpine` en la VPS | El build de Angular (~1.5 GB) no cabe en 956 MiB |
 | Backend | `npm start` (no `npm run dev`) en producción | `nodemon` añade vigilancia de archivos innecesaria en prod |
+| Nombre del proyecto | `name: recetario_mongodb` fijado en el compose | Sin esto la imagen local se llama `recetario-frontend` y la de la VPS `recetario_mongodb-frontend`, y la transferencia `docker save`/`load` no cuadra |
+| Dockerfile frontend | `Dockerfile.prod` multi-stage (no el de desarrollo) | Permite `ng serve` en local y nginx estático en prod con el mismo repo |
+| Presupuesto CSS | `anyComponentStyle` subido a 24 kB / 32 kB | `dashboard.css` pesa 25 KB y **bloqueaba** el build de producción |
 | Orígenes API | Relativos (`/api/...`) | Obliga a mismo origen: por eso Caddy enruta frontend y API juntos |
 
 > Por qué el frontend **no** puede vivir suelto en Render: los servicios Angular usan
@@ -327,8 +330,8 @@ git checkout <commit-bueno> && docker compose up -d --build
 | Atlas whitelist | ✅ | `161.153.28.223/32` agregada |
 | Backend + Atlas | ✅ | `{"status":"ok","mongodb":"conectado"}` |
 | Backend en red de Caddy | ✅ | `recetario-backend` → `172.20.0.3` |
-| Frontend estático | ⏳ | Falta build local + servicio nginx |
-| Red del frontend | ❌ | Está en `recetario_mongodb_default`, Caddy no lo ve |
+| Frontend estático | ✅ | Imagen `recetario_mongodb-frontend` (95 MB) construida y probada |
+| Red del frontend | ✅ | Ambos servicios en `caddy-central_default` |
 | Bloque en Caddy | ❌ | Falta escribirlo y recargar |
 | Verificación pública | ⏳ | Pendiente |
 
@@ -338,11 +341,38 @@ git checkout <commit-bueno> && docker compose up -d --build
 - [x] **Step 1** — Diagnóstico completo
 - [x] **Step 1b** — IP `161.153.28.223/32` en Atlas Network Access
 - [x] **Step 2** — Backend arriba y verificado desde la red de Caddy
-- [ ] **Step 3** — Quitar red default: `frontend` también en `caddy-central_default`
-- [ ] **Step 4** — `frontend/Dockerfile` multi-stage + `nginx.conf`
-- [ ] **Step 5** — Build local del frontend + `rsync` a la VPS
+- [x] **Step 3** — Ambos servicios en la red externa `caddy-central_default`
+- [x] **Step 4** — `frontend/Dockerfile.prod` + `nginx.conf` + `.dockerignore`
+- [x] **Step 4** — Build de producción verificado en local (`/healthz` y fallback SPA OK)
+- [x] **Step 4** — Presupuesto CSS de Angular corregido (bloqueaba el build)
+- [ ] **Step 5** — Transferir imagen a la VPS y levantar el frontend
 - [ ] **Step 6** — Bloque de Caddy + `caddy validate` + `caddy reload`
 - [ ] **Step 7** — Verificación pública end-to-end
+
+### 3.4 Procedimiento de deploy del frontend (build local → VPS)
+
+La imagen se construye **en local** y se transfiere. La VPS nunca compila Angular.
+
+```bash
+# 1. LOCAL: construir la imagen
+cd /home/carloso/Projects/2026/MAIN/recetario
+docker compose build frontend
+
+# 2. LOCAL: transferirla (95 MB comprimido por el pipe)
+docker save recetario_mongodb-frontend:latest \
+  | gzip | ssh ubuntu@161.153.28.223 'gunzip | docker load'
+
+# 3. VPS: levantar sin reconstruir
+cd /home/ubuntu/recetarioMongo/Recetario_mongodb
+docker compose up -d --no-build frontend
+
+# 4. VPS: verificar
+docker exec caddy-central-caddy-1 wget -qO- http://recetario-frontend/healthz
+```
+
+> `--no-build` es importante: sin él, si la imagen no llegara, Docker intentaría
+> compilar Angular en la VPS y se quedaría sin memoria.
+
 
 ### 3.4 Comandos de esta VPS
 
@@ -416,7 +446,11 @@ docker exec caddy-central-caddy-1 caddy reload   --config /etc/caddy/Caddyfile
 | `docker stats` con muchos PIDs | Son hilos de Node, no procesos | `docker top <app>` para el conteo real |
 | 404 al recargar una ruta interna | Falta `try_files $uri /index.html` en nginx | Agregar el `location /` de la SPA |
 | TLS no se emite | El DNS no apunta a la VPS, o el puerto 443 está cerrado en el NSG | `getent hosts <dominio>` y revisar reglas de Oracle |
-| Build Angular se muere | RAM insuficiente (build pide ~1.5 GB) | Compilar en local y subir `dist/` |
+| Build Angular se muere | RAM insuficiente (build pide ~1.5 GB) | Compilar en local y transferir la imagen |
+| `anyComponentStyle exceeded maximum budget` | Un CSS de componente pasó el límite de producción | Subir el presupuesto en `angular.json` **o** dividir el CSS; en desarrollo no salta |
+| `wget: can't connect to remote host: Connection refused` dentro de un contenedor | BusyBox resuelve `localhost` a `::1` y nginx escucha solo en IPv4 | Usar `http://127.0.0.1/...` en vez de `localhost` |
+| `docker compose up` intenta recompilar en la VPS | Falta la imagen transferida | `docker compose up -d --no-build` y transferir antes con `docker save \| ssh docker load` |
+| El nombre de imagen difiere entre local y VPS | El nombre del proyecto se deriva del directorio | Fijar `name:` en el compose |
 | `git push` → *Permission denied (publickey)* | Sin llave SSH en la VPS | `ssh-keygen` + `ssh-copy-id` al repo, o usar HTTPS con token |
 | Cambios de `package.json` no se aplican | Volumen anónimo `/app/node_modules` con dependencias viejas | `docker compose down -v` y volver a levantar |
 | `nodemon` reiniciando en loop | Volumen de código montado sobre algo que escribe en `/app` | Quitar bind mount en producción |
@@ -434,3 +468,7 @@ docker exec caddy-central-caddy-1 caddy reload   --config /etc/caddy/Caddyfile
 | 2026-09-25 | Step 1b | **Root cause del fallo**: IP de la VPS ausente en whitelist de Atlas |
 | 2026-09-25 | Step 2 | Backend arriba: `{"status":"ok","mongodb":"conectado"}` |
 | 2026-09-25 | Step 2 | Detectado: frontend quedó en `recetario_mongodb_default` (red incorrecta) |
+| 2026-09-25 | Step 3 | `frontend` movido a `caddy-central_default`; `name: recetario_mongodb` fijado en compose |
+| 2026-09-25 | Step 4 | `Dockerfile.prod` + `nginx.conf` + `.dockerignore` creados |
+| 2026-09-25 | Step 4 | **Bloqueo encontrado**: presupuesto `anyComponentStyle` de Angular rechazaba `dashboard.css` (19.7 kB > 16 kB). Subido a 24/32 kB |
+| 2026-09-25 | Step 4 | Imagen construida y verificada: `/healthz` → `ok`, `/receta/123` → fallback SPA OK, 95 MB |

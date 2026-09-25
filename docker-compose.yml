@@ -1,4 +1,4 @@
-version: "3.8"
+name: recetario_mongodb
 
 services:
   # mongo:
@@ -24,21 +24,22 @@ services:
       - PORT=3000
     # depends_on:
     #   - mongo
-    command: sh -c "if [ ! -d node_modules ] || [ ! -f node_modules/.package-lock.json ]; then npm install; fi && npm run dev"
+    command: sh -c "if [ ! -d node_modules ] || [ ! -f node_modules/.package-lock.json ]; then npm install; fi && npm start"
+    restart: unless-stopped
     networks:
       - caddy-network
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.prod
     container_name: recetario-frontend
-    ports:
-      - "4200:4200"
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
+    # Sin ports: Caddy enruta por la red de Docker.
+    # Sin volumes: el build se hace dentro de la imagen, no en el host.
+    # Sin command: nginx escucha en el puerto 80 por defecto.
     depends_on:
       - backend
-    command: npm start
+    restart: unless-stopped
     networks:
       - caddy-network
 
