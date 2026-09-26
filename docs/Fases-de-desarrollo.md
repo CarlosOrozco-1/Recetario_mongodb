@@ -7,6 +7,46 @@
 
 ---
 
+## 🗺️ Estado General (2026-09-26)
+
+| Fase | Tema | Estado |
+|---|---|---|
+| 0 | Preparación del entorno | ✅ Completada |
+| 1 | Backend API | ✅ Completada |
+| 2 | Frontend Angular | ✅ Completada |
+| 3 | Integración y pruebas | ✅ Completada |
+| 4 | Finalización | ⚠️ Parcial (deploy hecho; paginación, búsqueda y filtros no) |
+| 5 | Imágenes GridFS | ✅ Completada |
+| 6 | Red social | ⚠️ En curso (faltan perfil público y búsqueda) |
+| 7 | Validación de notificaciones | 🚧 Pendiente (no implementado) |
+| 8 | Especificación de schemas | 🚧 Pendiente |
+| 9 | Diagramas del sistema | 🚧 Pendiente (hay uno básico desactualizado) |
+
+### Dónde nos quedamos
+
+El recetario funciona de punta a punta en local y está desplegado en
+`https://foodloopc.duckdns.org`. Lo último fue cerrar el ciclo de imágenes
+(sustituir y eliminar una imagen que ya existe) y el toggle de privacidad.
+
+Hay dos cosas que conviene tener presentes antes de la entrega:
+
+1. **Las notificaciones no existen.** La campana es una vista del feed, el
+   contador no baja y "marcar como leída" no se guarda. Es la Fase 7.
+2. **Fase 6 está marcada como completada y no lo está.** `GET /api/search` y
+   `GET /api/users/:id/profile` se documentan pero nunca se implementaron.
+
+Pruebas actuales: **14 backend** (`backend/test/recipes.test.js`) y
+**11 frontend** (`frontend/test/dashboard-templates.test.js`).
+
+### Commits locales sin subir
+
+`desa`, `pre` y `pro` están en `cd2441d`. Lo único pendiente de `origin` es el
+commit de este documento. El código de la corrección de imágenes (`33f2f9e`) y su
+explicación (`5d8c37d`) ya están subidos, pero **producción aún no se ha
+reconstruido** con ellos.
+
+---
+
 ## 🐳 Fase 0 - Preparación del Entorno
 
 ### ✅ Paso 1 - Instalar Docker y Docker Compose
@@ -179,33 +219,43 @@
 - [x] Verificar persistencia en MongoDB
 
 ### Paso 28 - Validaciones y Manejo de Errores
-- [ ] Validaciones en backend (campos obligatorios)
-- [ ] Mensajes de error en frontend
-- [ ] Toast/alertas de éxito
+- [x] Validaciones en backend (campos obligatorios)
+- [x] Mensajes de error en frontend
+- [x] Toast/alertas de éxito
+- [ ] Validación de ObjectId en todas las rutas (hoy Mongoose lanza `CastError` en vez de 400)
+- [ ] Saneado global de inputs (hoy `sanitizeFields` se aplica ruta a ruta)
+- [ ] `app.set("trust proxy", 1)` para que el rate limit vea la IP real detrás de Caddy
+- [ ] `uploadLimiter` definido en `rateLimiter.js` pero no aplicado a la subida de imágenes
 
 ---
 
 ## 🚀 Fase 4 - Finalización
 
 ### Paso 29 - Optimizaciones
-- [ ] Paginación de recetas
+- [x] Paginación en el feed (`?page`/`?limit` en `GET /api/activity/feed`)
+- [ ] Paginación en el listado de recetas del dashboard (hoy solo `.sort({ createdAt: -1 })`)
 - [ ] Búsqueda por título
 - [ ] Filtros por categoría
 
 ### Paso 30 - Seguridad
-- [ ] Rate limiting en endpoints
+- [x] Rate limiting en endpoints (`apiLimiter`, `authLimiter`, `socialLimiter`, `createLimiter`)
+- [x] Sanitización de inputs (`sanitizeFields` en comentarios, reseñas, reports y recetas)
 - [ ] Validación de ObjectId en rutas
-- [ ] Sanitización de inputs
+- [ ] Aplicar `uploadLimiter` a `POST /api/recipes/:id/image`
+- [ ] Rotar secretos y sacarlos del historial de `docker-compose.yml`
 
 ### Paso 31 - Documentación
-- [ ] Actualizar README.md con instrucciones
-- [ ] Documentar endpoints de la API
+- [x] Actualizar README.md con instrucciones
+- [x] Documentar endpoints de la API (tabla en README)
 - [ ] Capturas de pantalla del funcionamiento
+- [ ] Documentar la estructura de los schemas (ver Fase 8)
+- [ ] Diagramas de flujo y casos de uso al día (ver Fase 8)
 
-### Paso 32 - Deploy (Opcional)
-- [ ] Configurar para producción
-- [ ] Variables de entorno seguras
-- [ ] Imágenes Docker optimizadas
+### Paso 32 - Deploy
+- [x] Configurar para producción (VPS con Caddy + Docker Compose)
+- [x] Imágenes Docker optimizadas (build multi-stage + nginx)
+- [ ] Variables de entorno seguras (secretos aún en texto plano en compose/historial)
+- [ ] `.dockerignore` en `backend/`
 
 ---
 
@@ -232,6 +282,9 @@
 - [x] Preview antes de subir
 - [x] Botón "Subir imagen" llama a `RecipeService.uploadImage(id, file)`
 - [x] Toast éxito/error
+- [x] Permitir **sustituir** una imagen que ya existe (el botón se ocultaba con
+      `*ngIf="selectedFile && !recipe.imagen"`, así que solo se podía subir la primera)
+- [x] Redimensionar en el navegador con `canvas` (lado mayor 1600 px, JPEG 0.8)
 
 ### Paso 37 - Frontend: Visualización
 - [x] En modal detalle y card: `<img [src]="'/api/recipes/image/' + recipe.imagen" />`
@@ -239,53 +292,226 @@
 - [x] Lazy loading (`loading="lazy"`)
 
 ### Paso 38 - Limpieza y Validaciones
-- [ ] Eliminar imagen GridFS al borrar receta (cascade)
-- [ ] Validar tamaño máx (ej. 5MB) y dimensiones
-- [ ] Opcional: redimensionar en servidor (sharp)
+- [x] Eliminar imagen GridFS al borrar receta (cascade)
+- [x] Validar tamaño máx 5 MB y MIME permitido
+- [x] Borrar la imagen anterior al sustituir o quitar la imagen de una receta
+- [x] Endpoint de imagen público solo para poder usar `<img src>` sin montar
+      un Authorization header en cada etiqueta
+- [x] `Content-Type` desde los metadatos de GridFS + `Cache-Control: immutable`
+- [ ] Validar los bytes reales del fichero (magic bytes), no solo el MIME declarado
+- [x] ~~Redimensionar en servidor (sharp)~~: descartado a propósito. Se hace en el
+      navegador y el servidor no necesita `sharp`; medido 2,4 MB → 186 KB
 
 ---
 
-## 🌐 Fase 6 - Red Social de Recetas (Refactoring) ✅ COMPLETADA
+## 🌐 Fase 6 - Red Social de Recetas (Refactoring) ⚠️ EN CURSO
 
 **Objetivo:** Transformar el recetario personal en una red social completa para compartir, descubrir y valorar recetas.
+
+> **Nota de estado (2026-09-26):** la fase se habia marcado como completada, pero al
+> contrastar el documento con lo realmente montado en `server.js` hay endpoints
+> que **no existen**. Se corrige el estado a "en curso".
+
+| Documentado como hecho | Realidad |
+|---|---|
+| `GET /api/users/:id/profile` | ❌ no existe `routes/users.js` |
+| `GET /api/search` | ❌ no existe `routes/search.js` |
+| `GET /api/feed` | ⚠️ existe como `GET /api/activity/feed` |
+| `POST /api/recipes/:id/comments` | ⚠️ existe como `POST /api/comments` (body con `recetaId`) |
+| `POST /api/recipes/:id/reviews` | ⚠️ existe como `POST /api/reviews` (body con `recetaId`) |
+| `POST /api/users/:id/follow` | ⚠️ existe como `POST /api/follows` (body con `seguidoId`) |
+
+El frontend llama a las rutas que sí existen, así que la app funciona; lo que
+queda desfasado es la documentación de la API y las dos funcionalidades ausentes.
 
 ### Paso 39 - Modelo de Datos Social ✅
 - [x] Extender `User`: bio, avatar, seguidores/seguidos, recetas favoritas, stats
 - [x] Extender `Recipe`: likes, saves, shares, comments[], rating promedio, visibilidad
 - [x] Nuevo modelo `Comment`: user, recipe, texto, fecha, respuestas (threaded)
 - [x] Nuevo modelo `Review`: user, recipe, rating (1-5), texto, fecha
-- [x] Nuevo modelo `ActivityFeed`: user, tipo (creó, comentó, puntuó, compartió, siguió), ref, fecha
+- [x] Nuevo modelo `ActivityFeed`: user, tipo, ref, metadata, fecha
+- [ ] Respuestas anidadas a comentarios: el modelo contempla `respuestas[]` pero
+      `comments.js` solo expone listar/crear/editar/borrar en primer nivel
 
-### Paso 40 - Backend: Endpoints Sociales ✅
-- [x] `POST/GET /api/recipes/:id/comments` - comentarios en receta
-- [x] `POST /api/recipes/:id/reviews` - reseña con puntuación
+### Paso 40 - Backend: Endpoints Sociales ⚠️ PARCIAL
+- [x] `POST /api/comments` + `GET /api/comments/receta/:recetaId`
+- [x] `POST /api/reviews` + `GET /api/reviews/receta/:recetaId`
 - [x] `POST /api/recipes/:id/like` - toggle like
 - [x] `POST /api/recipes/:id/save` - toggle guardar (bookmark)
-- [x] `POST /api/users/:id/follow` - seguir/dejar de seguir
-- [x] `GET /api/users/:id/profile` - perfil público con stats
-- [x] `GET /api/feed` - feed personalizado (recetas de seguidos + recomendadas)
-- [x] `GET /api/search` - búsqueda global (recetas, usuarios, hashtags)
+- [x] `POST /api/recipes/:id/share` - incrementar share
+- [x] `POST /api/follows` - seguir/dejar de seguir
+- [x] `GET /api/activity/feed` - feed con paginación
+- [x] `GET /api/follows/followers/:userId` y `/following/:userId`
+- [ ] `GET /api/users/:id/profile` - perfil público con stats (**no implementado**)
+- [ ] `GET /api/search` - búsqueda global de recetas, usuarios y hashtags (**no implementado**)
+- [ ] Registrar `compartio_receta` en `ActivityFeed` al compartir
+- [ ] Reglas de servidor: no darse like a la propia receta ni responderse a uno mismo
+- [ ] Recalcular la valoración promedio al crear/eliminar una reseña
 
 ### Paso 41 - Frontend: Componentes Sociales ✅
 - [x] Perfil de usuario (`/profile/:username`)
-- [x] Feed principal (`/feed`) con infinite scroll
-- [x] Detalle receta con: comments thread, reviews, rating stars, share button
-- [x] Modal de comentario/respuesta
+- [x] Feed principal (`/feed`) con paginación
+- [x] Detalle receta con comentarios, reseñas, rating stars y botón compartir
+- [x] Modal de comentario
 - [x] Componente rating stars (lectura/escritura)
-- [x] Notificaciones (campana) - likes, comments, follows
+- [x] Campana de notificaciones (construida sobre `ActivityFeed`, ver Fase 7)
+- [ ] El perfil se monta con `getUserActivity(username)`, que recibe un id de
+      usuario: falta resolver `username` → `_id` en el backend
 
 ### Paso 42 - UX/UI Social ✅
-- [x] Cards de receta con: autor, rating, likes, saves, comments count
+- [x] Cards de receta con autor, rating, likes, saves y comments count
 - [x] Avatar + username en todas las cards
 - [x] Botones: like (♥), save (🔖), share (🔗), comment (💬)
-- [x] Hashtags en descripción (#postre #facil)
+- [x] Hashtags en descripción
 - [x] Estados vacíos amigables ("Sigue chefs para ver su contenido")
+- [x] Toggle de privacidad pública/privada en tarjeta y en el detalle
 
 ### Paso 43 - Validaciones y Moderación ✅
-- [x] Reportar receta/comentario/usuario
-- [x] Soft delete en contenido reportado
-- [x] Rate limiting estricto en acciones sociales
-- [x] Sanitización XSS en comentarios/biografías
+- [x] Reportar receta/comentario
+- [x] Rate limiting en acciones sociales
+- [x] Sanitización XSS en comentarios y biografías
+
+---
+
+## 🔔 Fase 7 - Validación de las Notificaciones 🆕 🚧 EN CURSO
+
+**Estado actual: NO implementado.** La campana aparenta funcionar, pero es una
+capa de `ActivityFeed`, no notificaciones. `notifications.ts` pide
+`GET /api/activity/feed`, descarta las actividades propias y **marca todo como
+no leído**:
+
+```ts
+this.unreadCount.set(filtered.length); // Simplificado: todas son no leídas
+markAsRead(): void {
+  // TODO: Implementar marcar como leída en backend
+```
+
+Problemas que arrastra:
+
+| Síntoma | Causa |
+|---|---|
+| El contador no baja al abrir la campana | No hay no leídas reales: cuenta la longitud de la lista |
+| "Marcar como leída" no se queda | Solo borra el elemento del array del navegador |
+| Al recargar vuelve todo como no leído | No hay nada persistido |
+| Se mezclan actividades que no te van dirigidas | El feed trae acciones de terceros, no de ti |
+| No distingue tipos relevantes | Un `likio_receta` y un `siguio_usuario` se tratan igual |
+
+### Paso 44 - Modelo de datos
+- [ ] Crear `backend/src/models/Notification.js`:
+      `destinatario` (ref User), `actor` (ref User), `tipo`
+      (`like`/`comment`/`reply`/`follow`/`review`/`share`), `recurso` (ref),
+      `metadata`, `leida` (bool), `timestamps`
+- [ ] Índice `{ destinatario: 1, leida: 1, createdAt: -1 }`
+- [ ] Invariante: nunca generar una notificación dirigida a uno mismo
+- [ ] Evitar duplicados: una sola notificación por (destinatario, actor, tipo, recurso)
+
+### Paso 45 - Backend de notificaciones
+- [ ] `GET /api/notifications` con paginación y contador de no leídas en la misma respuesta
+- [ ] `PUT /api/notifications/:id/read`
+- [ ] `PUT /api/notifications/read-all`
+- [ ] `DELETE /api/notifications/:id`
+- [ ] Emitir desde las acción reales: like, save, comentario, respuesta, reseña, follow, share
+- [ ] Montar `app.use("/api/notifications", notificationsRouter)` en `server.js`
+
+### Paso 46 - Frontend de notificaciones
+- [ ] Añadir `getNotifications()`, `markAsRead()`, `markAllAsRead()` a `SocialService`
+- [ ] Sustituir la lectura de `ActivityFeed` por el endpoint real
+- [ ] `unreadCount` como `signal` alimentado por el servidor, no por `length`
+- [ ] Resolver el `TODO` de `markAsRead()` con una petición real
+- [ ] Marcar al abrir la receta desde la notificación, y al hacer clic
+- [ ] Estados de carga, vacío y error (hay una vista `error` declarada sin usar)
+- [ ] Tests de plantilla: que no queden `TODO` sin resolver
+
+### Paso 47 - Validación de las notificaciones
+- [ ] Casos de prueba del backend: creación al dar like, al comentar, al seguir
+- [ ] No se notifica a uno mismo
+- [ ] Un like, y luego un unlike, no dejan la notificación colgada
+- [ ] Solo el destinatario puede marcar o borrar su notificación (403 al resto)
+- [ ] El contador coincide con el número real de no leídas tras paginar
+- [ ] Recargar la página conserva el estado leído/no leído
+- [ ] Verificar en el navegador que el contador no miente tras marcar leídas
+
+---
+
+## 🏗️ Fase 8 - Especificación de Schemas 🆕 🚧 PENDIENTE
+
+**Estado actual: no existe.** Los schemas se escribieron sin documento de
+referencia, así que la estructura hay que deducirla del código. Objetivo:
+documentar la estructura real de cada colección, válida para la entrega.
+
+### Paso 48 - Especificación de `User`
+- [ ] Extraer los campos reales de `models/User.js` a `docs/specs/User.md`
+- [ ] Tipo, obligatoriedad, valores por defecto, `enum` y `minlength`/`maxlength` de cada campo
+- [ ] Relaciones (`seguidores`, `seguidos`, `recetasFavoritas`) y su `ref`
+- [ ] Índices
+- [ ] Ejemplo de documento JSON de ejemplo
+
+### Paso 49 - Especificación de `Recipe`
+- [ ] Extraer los campos reales de `models/Recipe.js` a `docs/specs/Recipe.md`
+- [ ] Subdocumentos (`ingredientes`, `likes[]`, `guardados[]`)
+- [ ] Campos contadores derivados (`likesCount`, `commentsCount`, `valoracionMedia`)
+- [ ] `visibilidad` (`publica`/`privada`) y su efecto en las consultas
+- [ ] Relación con GridFS: `imagen` es un `ObjectId` de `uploads.files`
+
+### Paso 50 - Especificación del resto de modelos
+- [ ] `Comment` (incluidas las respuestas anidadas pendientes)
+- [ ] `Review` (rango 1-5 y su efecto en la valoración)
+- [ ] `Follow` (ºtil: unicidad de la pareja `seguidor`/`seguido`)
+- [ ] `ActivityFeed` (tipos admitidos y `metadata`)
+- [ ] `Notification` (modelo a crear en la Fase 7)
+- [ ] Colecciones de GridFS: `uploads.files` y `uploads.chunks`
+
+### Paso 51 - Consistencia
+- [ ] Tabla resumen de las 6 colecciones: colección, modelo, ruta y Consumer
+- [ ] Diagramas de relación entre las colecciones
+- [ ] Revisar que el documento no contradiga el código tras cada cambio de schema
+
+---
+
+## 🖼️ Fase 9 - Diagramas del Sistema 🆕 🚧 PENDIENTE
+
+**Estado actual: parcial y desactualizado.** `docs/diagramas/README.md` tiene
+arquitectura, autenticación, CRUD, casos de uso y estructura, pero **solo cubren
+el recetario básico**: no incluyen imágenes, red social, notificaciones,
+privacidad ni despliegue, y los casos de uso documentan rutas que ya no
+coinciden con las reales.
+
+### Paso 52 - Diagramas de flujo por proceso
+- [ ] Autenticación: registro (actualizar, hoy solo hay login dibujado)
+- [ ] Autenticación: login / logout / expiración de token
+- [ ] CRUD de recetas (actualizar: incluir allowlist y `runValidators`)
+- [ ] Ciclo de vida de la imagen: seleccionar → redimensionar → subir → guardar → servir
+- [ ] Sustitución y eliminación de imagen, con la limpieza de GridFS
+- [ ] Publicación:Docker compose → nginx → Caddy → Atlas
+- [ ] Like, save y share (toggle con su desuscribirse)
+- [ ] Seguir / dejar de seguir
+- [ ] Comentar y reseñar
+- [ ] Feed con paginación
+- [ ] Notificaciones (Fase 7): emitir, listar, marcar leída
+- [ ] Registro de usuario y perfil público (Fase 6)
+
+### Paso 53 - Diagrama de casos de uso general
+- [ ] Actor **Usuario registrado**: todos los casos
+- [ ] Actor **Visitante**: ver recetas públicas, registro, login
+- [ ] Actor **Administrador**: moderación de reportes (si se implementa)
+- [ ] Sistema de ficheros externo actor: Atlás (GridFS)
+- [ ] Relaciones `<<include>>` y `<<extend>>` (p. ej. login requerido para casi todo)
+- [ ] Tabla de casos de uso **con las rutas reales**, no con las documentadas en la Fase 6
+
+### Paso 54 - Diagrama de flujo general del sistema
+- [ ] Diagrama de flujo de los grandes del sistema: petición → Caddy → nginx →
+      Express → middleware → controlador → MongoDB → respuesta
+- [ ] Decisiones: ·Token válido? ·Receta pública? ·Es el dueño? ·Es válido el ObjectId?
+- [ ] Rutas de error con los códigos reales (400/401/403/404/413/429/500)
+- [ ] Ramas especiales: subida multipart, servir imagen desde GridFS, rate limit
+- [ ] Mantenerlo legible: si no cabe en una pantalla, dividir en subdiagramas
+
+### Paso 55 - Cierre de la documentación gráfica
+- [ ] Revisar `docs/diagramas/README.md` como índice
+- [ ] Un fichero por diagrama si crecen: `docs/diagramas/<proceso>.md`
+- [ ] Validar la sintaxis Mermaid de todos (el que no renderiza no sirve)
+- [ ] Corregir la tabla de casos de uso con las rutas reales
+- [ ] Capturas de pantalla del funcionamiento (pendiente del Paso 31)
 
 ---
 
