@@ -92,6 +92,14 @@ const update = async (req, res) => {
     if (Object.keys(changes).length === 0) {
       return res.status(400).json({ message: "No se envió ningún campo editable" });
     }
+    // El id anterior de la imagen hay que leerlo ANTES de actualizar: con
+    // returnDocument "after" el documento devuelto ya trae el valor nuevo, y
+    // compararlo contra changes no detectaría nunca el cambio.
+    const anterior = await Recipe.findOne({
+      _id: req.params.id,
+      usuario: req.user._id,
+    }).select("imagen");
+
     const recipe = await Recipe.findOneAndUpdate(
       { _id: req.params.id, usuario: req.user._id },
       changes,
@@ -99,6 +107,11 @@ const update = async (req, res) => {
     );
     if (!recipe) {
       return res.status(404).json({ message: "Receta no encontrada o no tienes permisos para editarla" });
+    }
+    // Quitar o cambiar la imagen desde el formulario la dejaba huérfana en
+    // GridFS. El reemplazo vía POST /:id/image ya limpia la suya por su cuenta.
+    if (changes.imagen !== undefined && changes.imagen !== anterior?.imagen) {
+      await deleteImageFromGridFS(anterior?.imagen);
     }
     res.json(recipe);
   } catch (error) {

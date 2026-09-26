@@ -7,6 +7,10 @@ const dir = path.join(__dirname, "..", "src", "app", "components", "dashboard");
 const html = fs.readFileSync(path.join(dir, "dashboard.html"), "utf8");
 const css = fs.readFileSync(path.join(dir, "dashboard.css"), "utf8");
 
+const formDir = path.join(__dirname, "..", "src", "app", "components", "recipe-form");
+const formHtml = fs.readFileSync(path.join(formDir, "recipe-form.html"), "utf8");
+const formTs = fs.readFileSync(path.join(formDir, "recipe-form.ts"), "utf8");
+
 const zIndexOf = (selector) => {
   const block = css.match(new RegExp(`\\${selector}\\s*\\{([^}]*)\\}`));
   if (!block) return null;
@@ -92,4 +96,53 @@ test("los demas botones del contenedor tambien la tienen", () => {
       `${selector} necesita pointer-events: auto`
     );
   }
+});
+
+// --- 6. Sustituir una imagen que ya existe debe ser posible ---------------
+// El boton se ocultaba con *ngIf="selectedFile && !recipe.imagen", de modo que
+// en una receta que ya tenia foto no se podia reemplazar: se veia la vista
+// previa (un blob: local que nunca sube) y al guardar se reenviaba el id viejo.
+const uploadButton = () =>
+  formHtml.match(
+    /<button[^>]*\(click\)="uploadImage\(\)"[^>]*>([\s\S]*?)<\/button>/
+  );
+
+test("el boton de subir imagen aparece tambien si la receta ya tiene una", () => {
+  const block = uploadButton();
+  assert.ok(block, "no se encuentra el boton de uploadImage()");
+  assert.match(
+    block[0],
+    /\*ngIf="selectedFile"/,
+    'debe mostrarse con selectedFile, no con "selectedFile && !recipe.imagen"'
+  );
+  assert.doesNotMatch(
+    block[0],
+    /!recipe\.imagen/,
+    "no debe condicionarse a que la receta no tenga imagen: impide sustituirla"
+  );
+});
+
+test("el boton distingue entre subir y reemplazar", () => {
+  const block = uploadButton();
+  assert.match(block[1], /recipe\.imagen\s*\?/, "la etiqueta debe cambiar segun haya imagen o no");
+});
+
+test("eliminar la imagen limpia tambien el id del modelo", () => {
+  const remove = formTs.match(/removeImage\(\): void \{([\s\S]*?)\n  \}/);
+  assert.ok(remove, "no se encuentra removeImage()");
+  assert.match(
+    remove[1],
+    /imagen:\s*""/,
+    "removeImage debe vaciar recipe.imagen o al guardar se repone la anterior"
+  );
+});
+
+test("tras subir, el archivo pendiente se suelta", () => {
+  const send = formTs.match(/private sendImage\([\s\S]*?\n  \}/);
+  assert.ok(send, "no se encuentra sendImage()");
+  assert.match(
+    send[0],
+    /this\.selectedFile = null/,
+    "tras subir hay que limpiar selectedFile para que el boton no reaparezca"
+  );
 });

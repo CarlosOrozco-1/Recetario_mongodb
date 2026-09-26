@@ -52,16 +52,30 @@ test("el backend expone POST para subir imagen (el frontend debe usar POST)", ()
 const RecipeModel = require("../src/models/Recipe");
 const controller = require("../src/controllers/recipeController");
 
-const captureUpdate = (body) => {
+const captureUpdate = (body, imagenPrevia = "img-vieja") => {
   let seen = null;
-  const original = RecipeModel.findOneAndUpdate;
+  const originalUpdate = RecipeModel.findOneAndUpdate;
+  const originalFindOne = RecipeModel.findOne;
+
+  // update() lee la receta antes de modificarla para saber qué imagen había.
+  RecipeModel.findOne = () => ({ select: async () => ({ imagen: imagenPrevia }) });
   RecipeModel.findOneAndUpdate = async (_filter, update) => {
     seen = update;
-    return { _id: "x", ...update };
+    return { _id: "x", imagen: imagenPrevia, ...update };
   };
+
   return controller
     .update({ params: { id: "x" }, user: { _id: "u1" }, body }, { json: () => {}, status: () => ({ json: () => {} }) })
-    .then(() => RecipeModel.findOneAndUpdate === original ? seen : seen);
+    .then(() => {
+      RecipeModel.findOneAndUpdate = originalUpdate;
+      RecipeModel.findOne = originalFindOne;
+      return seen;
+    })
+    .catch((e) => {
+      RecipeModel.findOneAndUpdate = originalUpdate;
+      RecipeModel.findOne = originalFindOne;
+      throw e;
+    });
 };
 
 test("update ignora campos no permitidos (robo de receta vía usuario)", async () => {
@@ -135,4 +149,18 @@ test("deleteImageFromGridFS se expone para poder limpiar imagenes huerfanas", ()
 test("deleteImageFromGridFS con id vacio no revienta", async () => {
   await assert.doesNotReject(() => controller.deleteImageFromGridFS(undefined));
   await assert.doesNotReject(() => controller.deleteImageFromGridFS(""));
+});
+
+// --- 5. Cambiar la imagen desde el formulario limpia la anterior ---------
+// Regresión: se comparaba changes.imagen contra el documento devuelto por
+// findOneAndUpdate con returnDocument "after", que ya trae el valor nuevo.
+// La comparación nunca era cierta y el fichero se quedaba en GridFS.
+test("quitar la imagen (imagen vacio) se acepta", async () => {
+  const seen = await captureUpdate({ imagen: "" }, "img-vieja");
+  assert.equal(seen.imagen, "", "imagen vacio debe pasar a la base de datos");
+});
+
+test("no se intenta borrar la imagen cuando el id no cambia", async () => {
+  const seen = await captureUpdate({ imagen: "img-vieja" }, "img-vieja");
+  assert.equal(seen.imagen, "img-vieja");
 });

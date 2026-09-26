@@ -176,6 +176,9 @@ next: (data) => {
     if (this.previewUrl) URL.revokeObjectURL(this.previewUrl);
     this.selectedFile = null;
     this.previewUrl = null;
+    // Sin esto el id antiguo seguía en el modelo y "Guardar cambios" lo
+    // reponía, con lo que la imagen eliminada volvía a aparecer.
+    this.recipe = { ...this.recipe, imagen: "" };
   }
 
   uploadImage(): void {
@@ -266,6 +269,9 @@ next: (data) => {
     this.recipeService.uploadImage(this.id, file).subscribe({
       next: (recipe) => {
         this.recipe = { ...this.recipe, imagen: recipe.imagen };
+        // Ya está en la base de datos: se suelta el archivo pendiente para que
+        // el botón no vuelva a aparecer hasta que se elija otra imagen.
+        this.selectedFile = null;
         this.toastService.success("Imagen subida correctamente");
       },
       error: (err) =>
