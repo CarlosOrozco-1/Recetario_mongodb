@@ -440,3 +440,33 @@ navegador no puede exportar, se sube el original como recurso.
 **Aviso:** el límite de 5 MB del servidor sigue vigente como red de seguridad,
 pero la app ya no se acerca a él. En una demostración universitaria el margen
 es amplio; conviene no subir rafjes de video ni originales sin retocar.
+
+## 2026-09-26 — La imagen de una receta no se sustituía al guardar
+
+**Síntoma:** al editar una receta que ya tenía foto, se elegía un archivo nuevo,
+se veía la vista previa y al guardar los cambios la imagen se quedaba igual.
+
+**Causa:** el botón de subida se ocultaba con
+`*ngIf="selectedFile && !recipe.imagen"`. Al existir ya una imagen, la condición
+era falsa y el botón no se renderizaba nunca. La "vista previa" es un `blob:`
+creado en el navegador con `URL.createObjectURL`, no el fichero subido: daba la
+impresión de haberlo enviado, pero la petición nunca salía. Al guardar se
+reenviaba el `imagen` antiguo y el backend lo aceptaba con normalidad, por eso
+la API respondía 200 y no se veía ningún error.
+
+Enlazado con ello, `removeImage()` solo limpiaba la vista previa, no
+`recipe.imagen`. Aun sin subir nada, "Guardar cambios" repone la imagen.
+
+**Solución:** mostrar el botón con cualquier archivo pendiente y etiquetarlo
+"Reemplazar imagen" cuando ya existe una; vaciar `recipe.imagen` al eliminar;
+soltar `selectedFile` tras subir para que el botón no reaparezca.
+
+**Limpieza en GridFS:** `update` ahora borra la imagen anterior cuando esta
+cambia o se quita. Hay que leerla *antes* de actualizar: con
+`returnDocument: "after"` el documento devuelto ya trae el valor nuevo, así que
+compararlo contra `changes.imagen` no detectaba nunca el cambio y el fichero
+se quedaba huérfano. La primera versión del arreglo tenía justo ese fallo; la
+prueba E2E lo destapó (la imagen respondía 200 tras "quitarla").
+
+Comprobado contra Atlas: sustituir deja la receta con el id nuevo, la imagen
+antigua responde 404, quitarla también la borra y no deja ficheros huérfanos.
