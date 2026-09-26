@@ -122,3 +122,17 @@ test("upload ya no expone la validación sharp que leía req.file.buffer", () =>
   const upload = require("../src/middleware/upload");
   assert.equal(upload.validateImageDimensions, undefined, "el middleware roto debe eliminarse");
 });
+
+// --- 4. Reemplazar una imagen no debe dejar la anterior en GridFS ---------
+test("deleteImageFromGridFS se expone para poder limpiar imagenes huerfanas", () => {
+  assert.equal(
+    typeof controller.deleteImageFromGridFS,
+    "function",
+    "recipes.js lo necesita para borrar la imagen reemplazada"
+  );
+});
+
+test("deleteImageFromGridFS con id vacio no revienta", async () => {
+  await assert.doesNotReject(() => controller.deleteImageFromGridFS(undefined));
+  await assert.doesNotReject(() => controller.deleteImageFromGridFS(""));
+});

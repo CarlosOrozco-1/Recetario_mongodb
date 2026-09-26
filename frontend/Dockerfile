@@ -5,4 +5,6 @@ COPY package*.json ./
 RUN npm install
 COPY . .
 EXPOSE 4200
-CMD ["npm", "start"]
+# Dentro de Docker el backend se llama "backend" en la red de compose,
+# no localhost: por eso el arranque de contenedor usa su propio proxy.
+CMD ["npm", "run", "start:docker"]

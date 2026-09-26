@@ -15,8 +15,10 @@ function getUpload() {
     file: (req, file) => ({
       filename: `${Date.now()}-${file.originalname}`,
       bucketName: "uploads",
-      contentType: file.mimetype,
-      metadata: { usuario: req.user._id },
+      // Esta versión de multer-gridfs-storage descarta el contentType de nivel
+      // superior, así que el tipo se guarda dentro de metadata para poder
+      // servirlo después con el Content-Type correcto.
+      metadata: { usuario: req.user._id, contentType: file.mimetype },
     })
   });
 
