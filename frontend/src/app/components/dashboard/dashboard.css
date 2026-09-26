@@ -621,6 +621,14 @@ button.privacy-badge:focus-visible {
   padding: 20px;
 }
 
+/* Capa superior para los modales de confirmación que se abren desde dentro de
+   otro modal (p. ej. cambiar la visibilidad desde el detalle de la receta).
+   Sin esto compiten con el de detalle y, al declararse antes en el HTML, el
+   detalle se pinta encima: el clic parece no hacer nada. */
+.modal-backdrop-top {
+  z-index: 1100;
+}
+
 .modal-content {
   background-color: var(--surface);
   border-radius: var(--radius-lg);
@@ -648,6 +656,15 @@ button.privacy-badge:focus-visible {
 .warning-header h3 {
   color: #ef4444;
   margin: 0;
+}
+
+/* Confirmación de privacidad: público en verde, privada en rojo */
+.modal-header h3 {
+  color: #16a34a;
+  margin: 0;
+}
+.modal-header.action-private h3 {
+  color: #ef4444;
 }
 
 .modal-body {

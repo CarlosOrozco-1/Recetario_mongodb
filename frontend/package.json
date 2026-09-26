@@ -6,7 +6,8 @@
     "start": "ng serve --host 0.0.0.0 --proxy-config src/proxy.conf.json",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "node --test test/*.test.js",
+    "test:karma": "ng test"
   },
   "private": true,
   "packageManager": "npm@10.8.2",

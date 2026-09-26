@@ -267,9 +267,9 @@
   </div>
 
   <!-- Confirmar cambio de visibilidad -->
-  <div class="modal-backdrop" *ngIf="recipeToTogglePublic()" (click)="cancelTogglePublic()">
+  <div class="modal-backdrop modal-backdrop-top" *ngIf="recipeToTogglePublic()" (click)="cancelTogglePublic()">
     <div class="modal-content animate-slide-up" (click)="$event.stopPropagation()">
-      <div class="modal-header" [class.warning-header]="!recipeToTogglePublic()?.publica">
+      <div class="modal-header" [class.action-private]="recipeToTogglePublic()?.publica">
         <svg
           *ngIf="!recipeToTogglePublic()?.publica"
           xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
