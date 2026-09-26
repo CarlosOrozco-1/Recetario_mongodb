@@ -292,6 +292,9 @@
   background-color: rgba(16, 185, 129, 0.85);
 }
 button.privacy-badge {
+  /* .card-badges-top desactiva los clics para que la imagen de debajo siga
+     siendo clicable; sin esto el botón se ve pero no responde. */
+  pointer-events: auto;
   border: 1px solid rgba(255, 255, 255, 0.25);
   cursor: pointer;
   font-family: inherit;

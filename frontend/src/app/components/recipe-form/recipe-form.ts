@@ -6,6 +6,11 @@ import { firstValueFrom } from "rxjs";
 import { RecipeService, Recipe } from "../../services/recipe.service";
 import { ToastService } from "../../services/toast.service";
 
+/** Lado mayor máximo de la imagen antes de subirla. */
+const MAX_IMAGE_EDGE = 1600;
+/** Calidad JPEG: 0.8 baja de 3-5 MB a ~250 KB sin que se note en la tarjeta. */
+const IMAGE_QUALITY = 0.8;
+
 @Component({
   selector: "app-recipe-form",
   imports: [CommonModule, FormsModule, RouterModule],
@@ -157,8 +162,8 @@ next: (data) => {
       input.value = "";
       return;
     }
-    if (file.size > 5 * 1024 * 1024) {
-      this.toastService.error("La imagen supera el tamaño máximo de 5 MB");
+    if (file.size > 25 * 1024 * 1024) {
+      this.toastService.error("La imagen supera el tamaño máximo de 25 MB");
       input.value = "";
       return;
     }
@@ -175,27 +180,85 @@ next: (data) => {
 
   uploadImage(): void {
     if (!this.selectedFile || !this.id) return;
+    const original = this.selectedFile;
+    const originalUrl = URL.createObjectURL(original);
 
-    const file = this.selectedFile;
+    // El plan gratis de Atlas da 500 MB. Un JPEG de 1600px ronda los 250 KB,
+    // mientras que una foto de móvil pesa 3-5 MB: sin reescalar, 100 imágenes
+    // agotarían el plan. Se redimensiona en el navegador antes de subir.
+    this.resizeImage(original)
+      .then(({ file, width, height, originalSize }) => {
+        URL.revokeObjectURL(originalUrl);
+
+        if (file.size < originalSize) {
+          this.selectedFile = file;
+          this.previewUrl = URL.createObjectURL(file);
+          this.toastService.info(
+            `Imagen optimizada: ${this.formatBytes(originalSize)} → ${this.formatBytes(file.size)} (${width}x${height})`
+          );
+        } else {
+          this.toastService.info(
+            `La imagen ya era ligera (${width}x${height}, ${this.formatBytes(file.size)}). Se sube sin cambios.`
+          );
+        }
+        this.sendImage(file);
+      })
+      .catch(() => {
+        URL.revokeObjectURL(originalUrl);
+        // Si el navegador no deja redimensionar, se sube el original.
+        this.sendImage(original);
+      });
+  }
+
+  private resizeImage(file: File): Promise<{ file: File; width: number; height: number; originalSize: number }> {
     const url = URL.createObjectURL(file);
-    const probe = new Image();
+    return new Promise((resolve, reject) => {
+      const image = new Image();
+      image.onload = () => {
+        try {
+          const scale = Math.min(1, MAX_IMAGE_EDGE / Math.max(image.naturalWidth, image.naturalHeight));
+          const width = Math.round(image.naturalWidth * scale);
+          const height = Math.round(image.naturalHeight * scale);
 
-    probe.onload = () => {
-      URL.revokeObjectURL(url);
-      // El backend ya no puede leer el buffer (GridFS consume el stream),
-      // así que el límite de dimensiones se aplica aquí.
-      if (probe.naturalWidth > 1920 || probe.naturalHeight > 1080) {
-        this.toastService.warning(
-          `La imagen mide ${probe.naturalWidth}x${probe.naturalHeight}px. Se subirá igual, pero se verá mejor si no supera 1920x1080.`
-        );
-      }
-      this.sendImage(file);
-    };
-    probe.onerror = () => {
-      URL.revokeObjectURL(url);
-      this.toastService.error("No se pudo leer la imagen seleccionada");
-    };
-    probe.src = url;
+          const canvas = document.createElement("canvas");
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d");
+          if (!ctx) throw new Error("no hay contexto 2d");
+          ctx.fillStyle = "#ffffff";
+          ctx.fillRect(0, 0, width, height);
+          ctx.drawImage(image, 0, 0, width, height);
+
+          canvas.toBlob(
+            (blob) => {
+              if (!blob) throw new Error("no se pudo exportar");
+              const name = file.name.replace(/\.[^.]+$/, "") || "receta";
+              resolve({
+                file: new File([blob], `${name}.jpg`, { type: "image/jpeg" }),
+                width,
+                height,
+                originalSize: file.size,
+              });
+            },
+            "image/jpeg",
+            IMAGE_QUALITY
+          );
+        } catch (error) {
+          reject(error);
+        }
+      };
+      image.onerror = () => {
+        URL.revokeObjectURL(url);
+        reject(new Error("no se pudo leer la imagen"));
+      };
+      image.src = url;
+    });
+  }
+
+  private formatBytes(bytes: number): string {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   }
 
   private sendImage(file: File): void {

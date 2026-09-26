@@ -57,3 +57,39 @@ test("hay exactamente un modal de confirmación de privacidad", () => {
   const count = (html.match(/recipeToTogglePublic\(\)"\s*\(click\)/g) || []).length;
   assert.equal(count, 1, "no debe haber dos modales de privacidad compitiendo entre sí");
 });
+
+// --- 5. pointer-events: el fallo que dejó el badge sin respuesta ----------
+// .card-badges-top pone pointer-events: none para que la imagen de debajo siga
+// siendo clicable, y cada botón hijo lo revierte con auto. Si un botón se
+// añade al contenedor sin esa línea, se ve pero no hace nada.
+test("los botones dentro de .card-badges-top reactivan los clics", () => {
+  const block = css.match(/\.card-badges-top\s*\{([^}]*)\}/);
+  assert.ok(block, "no se encuentra .card-badges-top");
+  assert.match(
+    block[1],
+    /pointer-events:\s*none/,
+    "el contenedor debe seguir desactivando clics para no tapar la imagen"
+  );
+
+  const badge = css.match(/(?:^|\n)button\.privacy-badge\s*\{([^}]*)\}/);
+  assert.ok(badge, "falta la regla button.privacy-badge");
+  assert.match(
+    badge[1],
+    /pointer-events:\s*auto/,
+    "button.privacy-badge necesita pointer-events: auto o el clic no llega"
+  );
+});
+
+test("los demas botones del contenedor tambien la tienen", () => {
+  for (const selector of [".favorite-star-btn", ".social-btn"]) {
+    const block = css.match(
+      new RegExp(`\\${selector}\\s*\\{([^}]*)\\}`)
+    );
+    assert.ok(block, `falta la regla ${selector}`);
+    assert.match(
+      block[1],
+      /pointer-events:\s*auto/,
+      `${selector} necesita pointer-events: auto`
+    );
+  }
+});

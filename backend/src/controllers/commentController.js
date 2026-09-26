@@ -68,7 +68,7 @@ const update = async (req, res) => {
     const comment = await Comment.findOneAndUpdate(
       { _id: req.params.id, usuario: req.user._id, eliminado: false },
       { texto: req.body.texto },
-      { new: true }
+      { returnDocument: "after" }
     ).populate("usuario", "name avatar");
     if (!comment) return res.status(404).json({ message: "Comentario no encontrado" });
     res.json(comment);
@@ -82,7 +82,7 @@ const remove = async (req, res) => {
     const comment = await Comment.findOneAndUpdate(
       { _id: req.params.id, usuario: req.user._id },
       { eliminado: true },
-      { new: true }
+      { returnDocument: "after" }
     );
     if (!comment) return res.status(404).json({ message: "Comentario no encontrado" });
 

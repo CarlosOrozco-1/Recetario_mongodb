@@ -64,7 +64,7 @@ const incrementShare = async (req, res) => {
     const recipe = await Recipe.findByIdAndUpdate(
       req.params.id,
       { $inc: { compartidosCount: 1 } },
-      { new: true }
+      { returnDocument: "after" }
     ).select("compartidosCount");
     if (!recipe) return res.status(404).json({ message: "Receta no encontrada" });
 
@@ -90,7 +90,7 @@ const reportRecipe = async (req, res) => {
         $push: { reportes: { usuario: req.user._id, motivo } },
         $set: { reportado: true },
       },
-      { new: true }
+      { returnDocument: "after" }
     ).select("reportado reportes");
     if (!recipe) return res.status(404).json({ message: "Receta no encontrada" });
 

@@ -55,7 +55,7 @@ const update = async (req, res) => {
     const review = await Review.findOneAndUpdate(
       { _id: req.params.id, usuario: req.user._id },
       { puntuacion: req.body.puntuacion, texto: req.body.texto || "" },
-      { new: true }
+      { returnDocument: "after" }
     ).populate("usuario", "name avatar");
     if (!review) return res.status(404).json({ message: "Reseña no encontrada" });
 

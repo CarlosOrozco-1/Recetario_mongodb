@@ -42,7 +42,7 @@ const update = async (req, res) => {
     const recipe = await Recipe.findOneAndUpdate(
       { _id: req.params.id, usuario: req.user._id },
       req.body,
-      { new: true }
+      { returnDocument: "after" }
     );
     if (!recipe) {
       return res.status(404).json({ message: "Receta no encontrada" });

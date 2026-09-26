@@ -95,7 +95,7 @@ const update = async (req, res) => {
     const recipe = await Recipe.findOneAndUpdate(
       { _id: req.params.id, usuario: req.user._id },
       changes,
-      { new: true, runValidators: true }
+      { returnDocument: "after", runValidators: true }
     );
     if (!recipe) {
       return res.status(404).json({ message: "Receta no encontrada o no tienes permisos para editarla" });

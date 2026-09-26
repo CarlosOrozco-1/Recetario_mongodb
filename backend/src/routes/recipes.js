@@ -98,7 +98,7 @@ router.post("/:id/image", uploadMiddleware, async (req, res) => {
     const recipe = await Recipe.findByIdAndUpdate(
       req.params.id,
       { imagen: nuevaImagen },
-      { new: true },
+      { returnDocument: "after" },
     );
 
     if (anterior.imagen && anterior.imagen !== nuevaImagen) {

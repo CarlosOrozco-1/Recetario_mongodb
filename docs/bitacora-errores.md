@@ -396,3 +396,47 @@ detalle, y abre un modal de confirmación antes de aplicar el cambio.
 framework externo) cubre el orden de las capas del router —que la imagen siga
 siendo pública y todo lo demás no— y la allowlist de campos. Añadido como
 `npm test` en `backend/package.json`.
+
+## 2026-09-26 — El botón de privacidad se veía pero no respondía
+
+**Síntoma:** el badge "🔓 Pública / 🔒 Privada" aparecía en la tarjeta y en el
+modal de detalle, con el aspecto de un botón, pero al pulsarlo no pasaba nada:
+había que editar la receta y marcar la casilla.
+
+**Causa:** `.card-badges-top` declara `pointer-events: none` para que la imagen
+de debajo de la tarjeta siga siendo clicable. Los hijos interactivos lo
+revirtieron con `pointer-events: auto`, uno a uno: `.favorite-star-btn` y
+`.social-btn` lo tienen, `.privacy-badge` no.
+
+El badge era un `<span>` cuando se diseñó el contenedor, así que no necesitaba
+recibir eventos. Al convertirlo en `<button>` en un cambio anterior, se olvidó
+reactivarlos: el elemento pasó a ser clicable en apariencia y a seguir siendo
+inerte en la práctica.
+
+**Solución:** `pointer-events: auto` en `button.privacy-badge`.
+
+**Lección sobre los tests:** la suite de plantillas comprobaba el HTML y el
+z-index del modal, y ambos estaban bien. El fallo estaba en el CSS, que nadie
+miraba. Se añadieron dos casos que verifican que todo botón dentro de un
+contenedor con `pointer-events: none` declara su propio `auto`.
+
+## 2026-09-26 — Almacenamiento de Atlas (500 MB) y compresión de imágenes
+
+El plan M0 da 500 MB. Subiendo fotos tal cual, del móvil, el margen es corto:
+una imagen de 3000x2000 en JPEG ronda los 2,4 MB.
+
+| Estrategia | Peso por imagen | Imágenes en 500 MB |
+|-----------|------------------|---------------------|
+| Sin redimensionar | ~2,4 MB | ~212 |
+| Con redimensionado | ~186 KB | ~2.746 |
+
+Medido sobre una imagen de 3000x2000: pasarla por 1600 px de lado mayor y JPEG
+calidad 0,8 la deja en 186 KB, **12,9 veces más pequeña**.
+
+Por eso `recipe-form.ts` ahora redimensiona en el navegador con `canvas` antes
+de subir, sustituyendo el aviso de dimensiones que solo informaba. Si el
+navegador no puede exportar, se sube el original como recurso.
+
+**Aviso:** el límite de 5 MB del servidor sigue vigente como red de seguridad,
+pero la app ya no se acerca a él. En una demostración universitaria el margen
+es amplio; conviene no subir rafjes de video ni originales sin retocar.
