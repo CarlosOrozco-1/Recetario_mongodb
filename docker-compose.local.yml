@@ -1,0 +1,33 @@
+# Override para levantar el stack COMPLETO en local, sin Caddy central.
+#
+# La VPS usa docker-compose.yml a secas: depende de la red externa
+# `caddy-central_default`, que la crea el proyecto Caddy central y solo existe
+# alli. En local esa red no esta, de ahi el error
+#   "network caddy-central_default declared as external, but could not be found".
+#
+# Uso:
+#   docker compose -f docker-compose.yml -f docker-compose.local.yml up --build
+#
+# Luego:
+#   Frontend -> http://localhost:8080
+#   Backend  -> http://localhost:3000/api/health
+#
+# Diferencias con produccion:
+#   - `caddy-network` deja de ser externa: Compose la crea como red normal.
+#   - Se publican puertos (80 y 3000 quedaban sin publicar; los abria Caddy).
+#   - nginx.local.conf montado encima para proxear /api -> backend:3000.
+
+services:
+  backend:
+    ports:
+      - "3000:3000"
+
+  frontend:
+    ports:
+      - "8080:80"
+    volumes:
+      - ./frontend/nginx.local.conf:/etc/nginx/conf.d/default.conf:ro
+
+networks:
+  caddy-network:
+    external: false

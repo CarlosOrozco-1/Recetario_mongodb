@@ -9,7 +9,13 @@
 
 ## Diagrama
 
+![Diagrama Entidad-Relación de las colecciones](./diagrama-er.svg)
+
+<details>
+<summary>Código Mermaid (editable)</summary>
+
 ```mermaid
+%%{init: {"htmlLabels": false}}%%
 erDiagram
     USER ||--o{ RECIPE : "crea (usuario)"
     USER ||--o{ COMMENT : "escribe (usuario)"
@@ -140,6 +146,11 @@ erDiagram
         Buffer data
     }
 ```
+
+</details>
+
+> El `%%{init}%%` fuerza etiquetas SVG en vez de `<foreignObject>`. GitHub
+> elimina `foreignObject` por seguridad y el diagrama sale en blanco.
 
 ## Colecciones y modelos
 
