@@ -142,7 +142,8 @@ El sistema usa **JWT (JSON Web Tokens)** con expiración de 30 días.
 ## 📚 Documentación
 
 - [Fases de Desarrollo](docs/Fases-de-desarrollo.md) - Plan de aprendizaje
-- [Instrucciones de despliegue](docs/instrucciones.md) - Guía de servicios
+- [Levantar los servicios individualmente](docs/levantar-servicios.md) - Desarrollo local
+- [Instrucciones](docs/instrucciones.md) - Levantar servicios y despliegue
 - [Convenciones de código](docs/convenciones.md) - Nomenclatura
 - [Diagramas](docs/diagramas/) - Flujo y casos de uso
 - [Diagrama ER](docs/diagramas/diagrama-er.md) - Colecciones, relaciones e índices
