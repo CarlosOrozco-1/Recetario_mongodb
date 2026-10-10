@@ -19,8 +19,8 @@
 | 5 | Imágenes GridFS | ✅ Completada |
 | 6 | Red social | ⚠️ En curso (faltan perfil público y búsqueda) |
 | 7 | Validación de notificaciones | 🚧 Pendiente (no implementado) |
-| 8 | Especificación de schemas | 🚧 Pendiente |
-| 9 | Diagramas del sistema | 🚧 Pendiente (hay uno básico desactualizado) |
+| 8 | Especificación de schemas | 🚧 En curso (diagrama ER hecho) |
+| 9 | Diagramas del sistema | 🚧 En curso (ER hecho; faltan flujos y casos de uso) |
 
 ### Dónde nos quedamos
 
@@ -410,7 +410,7 @@ Problemas que arrastra:
 - [ ] `PUT /api/notifications/:id/read`
 - [ ] `PUT /api/notifications/read-all`
 - [ ] `DELETE /api/notifications/:id`
-- [ ] Emitir desde las acción reales: like, save, comentario, respuesta, reseña, follow, share
+- [ ] Emitir desde las acciones reales: like, save, comentario, respuesta, reseña, follow, share
 - [ ] Montar `app.use("/api/notifications", notificationsRouter)` en `server.js`
 
 ### Paso 46 - Frontend de notificaciones
@@ -433,11 +433,13 @@ Problemas que arrastra:
 
 ---
 
-## 🏗️ Fase 8 - Especificación de Schemas 🆕 🚧 PENDIENTE
+## 🏗️ Fase 8 - Especificación de Schemas 🆕 🚧 EN CURSO
 
-**Estado actual: no existe.** Los schemas se escribieron sin documento de
-referencia, así que la estructura hay que deducirla del código. Objetivo:
-documentar la estructura real de cada colección, válida para la entrega.
+**Estado actual: parcial.** Los schemas se escribieron sin documento de
+referencia, así que la estructura hay que deducirla del código. El **diagrama ER
+ya existe** (`docs/diagramas/diagrama-er.md`), con las relaciones, índices y
+enumeraciones de las 6 colecciones y GridFS; falta el detalle campo a campo.
+Objetivo: documentar la estructura real de cada colección, válida para la entrega.
 
 ### Paso 48 - Especificación de `User`
 - [ ] Extraer los campos reales de `models/User.js` a `docs/specs/User.md`
@@ -451,30 +453,34 @@ documentar la estructura real de cada colección, válida para la entrega.
 - [ ] Subdocumentos (`ingredientes`, `likes[]`, `guardados[]`)
 - [ ] Campos contadores derivados (`likesCount`, `commentsCount`, `valoracionMedia`)
 - [ ] `visibilidad` (`publica`/`privada`) y su efecto en las consultas
-- [ ] Relación con GridFS: `imagen` es un `ObjectId` de `uploads.files`
+- [x] Relación con GridFS documentada: `imagen` es un `String` con el `_id` de
+      `uploads.files` (no un `ObjectId`), en `docs/diagramas/diagrama-er.md`
 
 ### Paso 50 - Especificación del resto de modelos
 - [ ] `Comment` (incluidas las respuestas anidadas pendientes)
 - [ ] `Review` (rango 1-5 y su efecto en la valoración)
-- [ ] `Follow` (ºtil: unicidad de la pareja `seguidor`/`seguido`)
+- [ ] `Follow` (unicidad de la pareja `seguidor`/`seguido`)
 - [ ] `ActivityFeed` (tipos admitidos y `metadata`)
 - [ ] `Notification` (modelo a crear en la Fase 7)
 - [ ] Colecciones de GridFS: `uploads.files` y `uploads.chunks`
 
 ### Paso 51 - Consistencia
-- [ ] Tabla resumen de las 6 colecciones: colección, modelo, ruta y Consumer
-- [ ] Diagramas de relación entre las colecciones
+- [x] Tabla de colecciones y modelos en `docs/diagramas/diagrama-er.md`
+- [x] Diagrama ER de las colecciones con relaciones, cardinalidades, índices y enumeraciones
+- [ ] Detectar relaciones que Mongoose no puede imponer (borrado en cascada ausente)
 - [ ] Revisar que el documento no contradiga el código tras cada cambio de schema
 
 ---
 
-## 🖼️ Fase 9 - Diagramas del Sistema 🆕 🚧 PENDIENTE
+## 🖼️ Fase 9 - Diagramas del Sistema 🆕 🚧 EN CURSO
 
 **Estado actual: parcial y desactualizado.** `docs/diagramas/README.md` tiene
 arquitectura, autenticación, CRUD, casos de uso y estructura, pero **solo cubren
 el recetario básico**: no incluyen imágenes, red social, notificaciones,
 privacidad ni despliegue, y los casos de uso documentan rutas que ya no
-coinciden con las reales.
+coinciden con las reales. El **diagrama ER ya está hecho**
+(`docs/diagramas/diagrama-er.md`); lo que falta en esta fase son los diagramas de
+flujo, el de casos de uso general y el de flujo general del sistema.
 
 ### Paso 52 - Diagramas de flujo por proceso
 - [ ] Autenticación: registro (actualizar, hoy solo hay login dibujado)
@@ -482,8 +488,8 @@ coinciden con las reales.
 - [ ] CRUD de recetas (actualizar: incluir allowlist y `runValidators`)
 - [ ] Ciclo de vida de la imagen: seleccionar → redimensionar → subir → guardar → servir
 - [ ] Sustitución y eliminación de imagen, con la limpieza de GridFS
-- [ ] Publicación:Docker compose → nginx → Caddy → Atlas
-- [ ] Like, save y share (toggle con su desuscribirse)
+- [ ] Despliegue: Docker Compose → nginx → Caddy → Atlas
+- [ ] Like, save y share (toggle y su reverso)
 - [ ] Seguir / dejar de seguir
 - [ ] Comentar y reseñar
 - [ ] Feed con paginación
@@ -494,14 +500,14 @@ coinciden con las reales.
 - [ ] Actor **Usuario registrado**: todos los casos
 - [ ] Actor **Visitante**: ver recetas públicas, registro, login
 - [ ] Actor **Administrador**: moderación de reportes (si se implementa)
-- [ ] Sistema de ficheros externo actor: Atlás (GridFS)
+- [ ] Sistema de ficheros externo actor: atlas (GridFS)
 - [ ] Relaciones `<<include>>` y `<<extend>>` (p. ej. login requerido para casi todo)
 - [ ] Tabla de casos de uso **con las rutas reales**, no con las documentadas en la Fase 6
 
 ### Paso 54 - Diagrama de flujo general del sistema
-- [ ] Diagrama de flujo de los grandes del sistema: petición → Caddy → nginx →
+- [ ] Diagrama de flujo general: petición → Caddy → nginx →
       Express → middleware → controlador → MongoDB → respuesta
-- [ ] Decisiones: ·Token válido? ·Receta pública? ·Es el dueño? ·Es válido el ObjectId?
+- [ ] Decisiones: ¿Token válido? ¿Receta pública? ¿Es el dueño? ¿ObjectId válido?
 - [ ] Rutas de error con los códigos reales (400/401/403/404/413/429/500)
 - [ ] Ramas especiales: subida multipart, servir imagen desde GridFS, rate limit
 - [ ] Mantenerlo legible: si no cabe en una pantalla, dividir en subdiagramas

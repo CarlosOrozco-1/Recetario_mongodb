@@ -145,6 +145,7 @@ El sistema usa **JWT (JSON Web Tokens)** con expiración de 30 días.
 - [Instrucciones de despliegue](docs/instrucciones.md) - Guía de servicios
 - [Convenciones de código](docs/convenciones.md) - Nomenclatura
 - [Diagramas](docs/diagramas/) - Flujo y casos de uso
+- [Diagrama ER](docs/diagramas/diagrama-er.md) - Colecciones, relaciones e índices
 
 ## 🚧 Estado del Proyecto
 

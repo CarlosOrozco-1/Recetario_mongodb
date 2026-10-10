@@ -1,5 +1,10 @@
 # 📊 Diagramas de la Aplicación - Recetario
 
+> **Índice de diagramas**
+> - [Diagrama Entidad-Relación de las colecciones](./diagrama-er.md) — modelos reales, relaciones e índices
+> - Los diagramas de abajo cubren el recetario básico; la red social, imágenes y
+>   despliegue aún no están aquí (ver Fase 9 en `../Fases-de-desarrollo.md`)
+
 ## 🏗️ Diagrama de Arquitectura (Stack MEAN)
 
 ```mermaid
