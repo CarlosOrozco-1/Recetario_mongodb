@@ -81,5 +81,5 @@ El proxy (`frontend/src/proxy.conf.json`) reenvía cualquier petición `/api/*` 
 ## Nota
 
 Nada de esto es necesario en la VPS: allí el stack se despliega completo con
-Docker Compose y Caddy (ver `docs/guia-deploy-vps.md`). Este flujo es
+Docker Compose y Caddy (ver `docs/operacion/guia-deploy-vps.md`). Este flujo es
 únicamente para desarrollar y probar en local.

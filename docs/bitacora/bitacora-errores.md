@@ -200,7 +200,7 @@ Inconsistencia: `RecipeController.js` (PascalCase) vs `authController.js` (camel
 Convenciones no documentadas al inicio del proyecto.
 
 ### Solución Aplicada
-1. Documentar convenciones en `docs/convenciones.md`
+1. Documentar convenciones en `docs/desarrollo/convenciones.md`
 2. Renombrar archivos a camelCase:
    - `RecipeController.js` → `recipeController.js`
    - `Recipes.js` → `recipes.js`
@@ -208,7 +208,7 @@ Convenciones no documentadas al inicio del proyecto.
 3. Ajustar imports en `server.js` y rutas
 
 **Archivos:**
-- `docs/convenciones.md` - nuevo
+- `docs/desarrollo/convenciones.md` - nuevo
 - `backend/src/controllers/*.js` - renombrados
 - `backend/src/routes/*.js` - renombrados
 - `backend/src/server.js` - imports actualizados
@@ -330,7 +330,7 @@ El test válido es **desde dentro de la red de Caddy**, porque ese es el origen 
 del tráfico. `curl localhost:3000` desde el host falla siempre que el servicio no
 publique puertos, y eso es intencional.
 
-**Documentación:** `docs/guia-deploy-vps.md` (sección 5, Troubleshooting)
+**Documentación:** `docs/operacion/guia-deploy-vps.md` (sección 5, Troubleshooting)
 
 ---
 

@@ -1,0 +1,142 @@
+\chapter{Procesos a sistematizar}
+\label{ch:procesos}
+
+Los procesos utilizan los identificadores P01 a P06 y se describen con los campos del modelo de referencia: nombre, descripción, actores, entradas, salidas, especificaciones de funcionamiento y restricciones adicionales. Las referencias detalladas por endpoints están en \path{docs/referencia/api.md}, los diagramas de flujo en el capítulo \ref{ch:flujo} y los casos de uso en el capítulo \ref{ch:casos-uso}.
+
+\section{P01: Autenticación y sesión}
+
+\begin{center}
+\begin{longtable}{p{3.6cm}p{9.9cm}}
+  \toprule
+  Campo & Contenido \\
+  \midrule
+  \endfirsthead
+  \toprule
+  Campo & Contenido \\
+  \midrule
+  \endhead
+  Nombre & P01: Autenticación y sesión. \\
+  Descripción & Registro, inicio de sesión y cierre local de sesión. \\
+  Actores & Visitante y usuario registrado. \\
+  Entradas & Nombre, correo y contraseña. \\
+  Salidas & Identificador, nombre, correo y token JWT. \\
+  Especificaciones de funcionamiento & \path{POST /api/auth/register} crea el usuario con hash bcrypt; \path{POST /api/auth/login} compara el hash y emite un token de 30 días. El cierre de sesión elimina el token del navegador. Alcance: acceso a la aplicación y a las rutas protegidas. El correo debe ser único y la contraseña debe tener al menos 8 caracteres. \\
+  Restricciones adicionales & Límite de 10 intentos cada 15 minutos y saneado de nombre y correo en el registro. Respuestas \texttt{201}, \texttt{200}, \texttt{400}, \texttt{429} y \texttt{500}. \\
+  \bottomrule
+\end{longtable}
+\end{center}
+
+\section{P02: Gestión de recetas y visibilidad}
+
+\begin{center}
+\begin{longtable}{p{3.6cm}p{9.9cm}}
+  \toprule
+  Campo & Contenido \\
+  \midrule
+  \endfirsthead
+  \toprule
+  Campo & Contenido \\
+  \midrule
+  \endhead
+  Nombre & P02: Gestión de recetas y visibilidad. \\
+  Descripción & Creación, consulta, edición, eliminación y cambio de visibilidad de recetas. \\
+  Actores & Usuario registrado y propietario. \\
+  Entradas & Título, descripción, ingredientes, instrucciones, categoría y visibilidad. \\
+  Salidas & Receta creada, lista filtrada, detalle permitido o confirmación de borrado. \\
+  Especificaciones de funcionamiento & \path{POST /api/recipes}, \path{GET /api/recipes}, \path{GET /api/recipes?scope=public}, \path{GET /api/recipes/:id}, \path{PUT /api/recipes/:id} y \path{DELETE /api/recipes/:id}. El servidor asigna el propietario y acepta únicamente 12 campos editables. Las recetas nacen privadas; el detalle permite recetas propias o públicas; la edición y el borrado exigen propiedad. Alcance: tablero personal, recetas públicas y detalle. \\
+  Restricciones adicionales & Lista de campos editables, validadores Mongoose, límite de creación y saneado parcial. No hay búsqueda ni paginación en el servidor. Respuestas \texttt{201}, \texttt{200}, \texttt{400}, \texttt{404}, \texttt{429} y \texttt{500}. \\
+  \bottomrule
+\end{longtable}
+\end{center}
+
+\section{P03: Gestión de imágenes}
+
+\begin{center}
+\begin{longtable}{p{3.6cm}p{9.9cm}}
+  \toprule
+  Campo & Contenido \\
+  \midrule
+  \endfirsthead
+  \toprule
+  Campo & Contenido \\
+  \midrule
+  \endhead
+  Nombre & P03: Gestión de imágenes. \\
+  Descripción & Selección, optimización, subida, reemplazo, eliminación y visualización de imágenes. \\
+  Actores & Propietario para la gestión; cualquier persona con la URL para la visualización. \\
+  Entradas & Archivo de imagen e identificador de receta. \\
+  Salidas & Identificador GridFS asociado o receta sin imagen. \\
+  Especificaciones de funcionamiento & \path{POST /api/recipes/:id/image} con \texttt{multipart/form-data}; \path{PUT /api/recipes/:id} con imagen vacía; \path{GET /api/recipes/image/:fileId} público. Solamente se conserva la imagen vigente; la anterior se borra al reemplazar, quitar o eliminar la receta. Alcance: formulario de edición, tarjetas, detalle y enlace directo. \\
+  Restricciones adicionales & MIME de imagen, 25 MB en el navegador, 5 MB en el servidor y propiedad de la receta. No se verifican los bytes reales. Respuestas \texttt{200}, \texttt{400}, \texttt{404} y \texttt{500}. \\
+  \bottomrule
+\end{longtable}
+\end{center}
+
+\section{P04: Interacciones sociales}
+
+\begin{center}
+\begin{longtable}{p{3.6cm}p{9.9cm}}
+  \toprule
+  Campo & Contenido \\
+  \midrule
+  \endfirsthead
+  \toprule
+  Campo & Contenido \\
+  \midrule
+  \endhead
+  Nombre & P04: Interacciones sociales. \\
+  Descripción & Alternar me gusta, guardar, compartir y reportar recetas. \\
+  Actores & Usuario registrado. \\
+  Entradas & Identificador de receta y, para reportes, motivo. \\
+  Salidas & Estado alternado y contadores actualizados. \\
+  Especificaciones de funcionamiento & \path{POST /api/recipes/:id/like}, \path{/save}, \path{/share} y \path{/report}. El me gusta sincroniza favoritos del usuario; guardar solamente actualiza la receta. Las acciones son alternables; compartir debe registrar actividad. Alcance: tarjetas y modal del tablero. \\
+  Restricciones adicionales & Límite social de 30 acciones por minuto, límite de creación para reportes y saneado del motivo. Compartir tiene un defecto conocido: incrementa el contador y luego puede devolver \texttt{500}. Respuestas \texttt{200}, \texttt{404}, \texttt{429} y \texttt{500}. \\
+  \bottomrule
+\end{longtable}
+\end{center}
+
+\section{P05: Comentarios y reseñas}
+
+\begin{center}
+\begin{longtable}{p{3.6cm}p{9.9cm}}
+  \toprule
+  Campo & Contenido \\
+  \midrule
+  \endfirsthead
+  \toprule
+  Campo & Contenido \\
+  \midrule
+  \endhead
+  Nombre & P05: Comentarios y reseñas. \\
+  Descripción & Conversación y calificación de una receta. \\
+  Actores & Usuario registrado y autor del contenido. \\
+  Entradas & Texto, identificador de receta, comentario padre y puntuación. \\
+  Salidas & Comentario o reseña creado, promedio actualizado y contadores. \\
+  Especificaciones de funcionamiento & \path{POST /api/comments}, \path{GET /api/comments/receta/:recetaId}, \path{PUT /api/comments/:id}, \path{DELETE /api/comments/:id}, y las rutas equivalentes en \path{/api/reviews}. Un usuario puede publicar una sola reseña por receta; el promedio se redondea a un decimal; el borrado de comentarios es lógico. Alcance: modal de detalle. \\
+  Restricciones adicionales & Texto obligatorio, límites de longitud, puntuación de 1 a 5 y control de autor. La lectura solamente expone un nivel de respuestas y la edición o borrado aún no tiene botones. Respuestas \texttt{201}, \texttt{200}, \texttt{400}, \texttt{404}, \texttt{429} y \texttt{500}. \\
+  \bottomrule
+\end{longtable}
+\end{center}
+
+\section{P06: Seguimiento, feed y notificaciones}
+
+\begin{center}
+\begin{longtable}{p{3.6cm}p{9.9cm}}
+  \toprule
+  Campo & Contenido \\
+  \midrule
+  \endfirsthead
+  \toprule
+  Campo & Contenido \\
+  \midrule
+  \endhead
+  Nombre & P06: Seguimiento, feed y notificaciones. \\
+  Descripción & Relaciones de seguimiento, descubrimiento mediante feed, perfil y campana provisional. \\
+  Actores & Usuario registrado. \\
+  Entradas & Identificador del usuario seguido, página y límite del feed. \\
+  Salidas & Estado de seguimiento, listas, actividades y contador provisional. \\
+  Especificaciones de funcionamiento & \path{POST /api/follows}, listas y comprobación de seguimiento, \path{GET /api/activity/feed} y \path{GET /api/activity/user/:userId}. No existe colección de notificaciones. El seguimiento es alternable; el feed incluye actividades dirigidas a seguidos y al propio usuario. Alcance: rutas \texttt{/feed} y \texttt{/profile/:username}, además de la campana del tablero. \\
+  Restricciones adicionales & Prohibición de seguirse a sí mismo, pareja única de seguimiento, paginación del feed y trabajo pendiente para resolver perfiles por nombre y persistir lectura. Respuestas \texttt{200}, \texttt{400}, \texttt{404}, \texttt{429} y \texttt{500}. \\
+  \bottomrule
+\end{longtable}
+\end{center}

@@ -141,12 +141,15 @@ El sistema usa **JWT (JSON Web Tokens)** con expiración de 30 días.
 
 ## 📚 Documentación
 
-- [Fases de Desarrollo](docs/Fases-de-desarrollo.md) - Plan de aprendizaje
-- [Levantar los servicios individualmente](docs/levantar-servicios.md) - Desarrollo local
-- [Instrucciones](docs/instrucciones.md) - Levantar servicios y despliegue
-- [Convenciones de código](docs/convenciones.md) - Nomenclatura
+- [Fases de Desarrollo](docs/desarrollo/Fases-de-desarrollo.md) - Plan de aprendizaje
+- [Levantar los servicios individualmente](docs/desarrollo/levantar-servicios.md) - Desarrollo local
+- [Instrucciones](docs/operacion/instrucciones.md) - Levantar servicios y despliegue
+- [Convenciones de código](docs/desarrollo/convenciones.md) - Nomenclatura
+- [Referencia de la API](docs/referencia/api.md) - Endpoints reales
+- [Modelo de datos](docs/modelo-datos/README.md) - Colecciones, campos e índices
 - [Diagramas](docs/diagramas/) - Flujo y casos de uso
 - [Diagrama ER](docs/diagramas/diagrama-er.md) - Colecciones, relaciones e índices
+- [DERCAS](docs/dercas/dercas.tex) - Documento formal en LaTeX
 
 ## 🚧 Estado del Proyecto
 

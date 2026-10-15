@@ -91,7 +91,7 @@ docker compose up -d
 
 > En la VPS hay RAM limitada: si el build de Angular no termina por falta de
 > memoria, se compila en local y se suben el bundle o la imagen. Ver
-> `docs/guia-deploy-vps.md`.
+> `docs/operacion/guia-deploy-vps.md`.
 
 ## 🧪 Pruebas con Postman
 
@@ -111,7 +111,7 @@ docker compose up -d
 
 | Problema | Solución |
 |----------|----------|
-| `network caddy-central_default ... could not be found` | Estás usando el compose de VPS en local. En local los servicios se levantan individualmente (ver `docs/levantar-servicios.md`) |
+| `network caddy-central_default ... could not be found` | Estás usando el compose de VPS en local. En local los servicios se levantan individualmente (ver `docs/desarrollo/levantar-servicios.md`) |
 | Puerto 3000 en uso | Cambiar `PORT` en `backend/.env` o parar el otro backend |
 | Puerto 4200 en uso | Parar el otro `ng serve` |
 | Error de conexión MongoDB | Revisar `MONGODB_URI`/`MONGO_URI` en `backend/.env`; la base es Atlas, no hay contenedor local |

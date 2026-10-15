@@ -1,0 +1,41 @@
+\chapter{Definiciones, Acrónimos y Abreviaturas}
+\label{ch:definiciones}
+
+\begin{center}
+\begin{longtable}{p{4.2cm}p{9.3cm}}
+  \toprule
+  Término & Concepto \\
+  \midrule
+  \endfirsthead
+  \toprule
+  Término & Concepto \\
+  \midrule
+  \endhead
+  Receta & Documento creado por un usuario con título, descripción, ingredientes, instrucciones, categoría, etiquetas y visibilidad. Puede tener una imagen en GridFS. \\
+  Visibilidad & Atributo \texttt{publica} de una receta. Si es verdadero, cualquier usuario autenticado puede verla; si es falso, solo su propietario. \\
+  Propietario & Usuario que creó una receta. Es el único que puede editarla, eliminarla, cambiar su visibilidad y gestionar su imagen. \\
+  Imagen & Archivo binario JPEG, PNG, WebP o GIF guardado en el bucket GridFS \texttt{uploads}. La receta conserva el identificador del archivo. \\
+  Interacción social & Acción alternable sobre una receta: me gusta, guardar o compartir. El reporte escribe un motivo y marca la receta. \\
+  Comentario & Texto asociado a una receta, con posibilidad de respuesta de primer nivel. Su borrado es lógico. \\
+  Reseña & Calificación de 1 a 5 con texto opcional. Un usuario puede dejar una sola reseña por receta. \\
+  Seguimiento & Relación dirigida entre dos usuarios: uno sigue al otro. Es alternable. \\
+  Feed & Lista paginada de actividad propia y de los usuarios seguidos. \\
+  Campana & Vista provisional del feed usada como notificaciones. No persiste el estado de lectura. \\
+  Actividad & Registro de una acción social sobre una receta o usuario, usado para construir el feed. \\
+  Reporte & Marca de contenido inadecuado con un motivo. No hay moderación automática ni cuenta administradora. \\
+  DERCAS & Documento de Especificación de Requerimientos para el Análisis y Diseño del Sistema. \\
+  API & Interfaz de programación de aplicaciones. \\
+  REST & Estilo de arquitectura de servicios basado en recursos y verbos HTTP. \\
+  CRUD & Crear, leer, actualizar y eliminar. \\
+  JWT & Token web JSON usado para autenticar peticiones. \\
+  GridFS & Mecanismo de MongoDB para almacenar archivos binarios en fragmentos. \\
+  MIME & Tipo de medio declarado de un archivo (\texttt{image/jpeg}, etc.). \\
+  VPS & Servidor privado virtual usado para producción. \\
+  TLS & Seguridad de la capa de transporte para HTTPS. \\
+  CORS & Intercambio de recursos de origen cruzado. \\
+  RNF & Requerimiento no funcional. \\
+  \texttt{ObjectId} & Identificador de documentos MongoDB. \\
+  \texttt{CastError} & Error de Mongoose al convertir un identificador inválido. \\
+  \bottomrule
+\end{longtable}
+\end{center}

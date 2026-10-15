@@ -1,0 +1,376 @@
+\chapter{Casos de uso}
+\label{ch:casos-uso}
+
+\section{Autenticación y sesión}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth,height=0.55\textheight,keepaspectratio]{build/casos-uso/casos-uso-autenticacion-y-sesion.pdf}
+  \caption{Casos de uso de autenticación y sesión.}
+  \label{fig:cu-autenticacion}
+\end{figure}
+
+\subsection{CU-01: Registrarse}
+\begin{center}
+\begin{tabular}{p{3.4cm}p{9.9cm}}
+  \toprule
+  \cucampo{Descripción}{Crear una cuenta y recibir un token.}
+  \cucampo{Actores primarios}{Visitante.}
+  \cucampo{Contexto}{P01 Autenticación y sesión.}
+  \cucampo{Condiciones previas}{El correo no debe estar registrado.}
+  \cucampo{Flujo básico}{El visitante envía el formulario. El sistema sanea los campos, comprueba que el correo no exista, aplica el hash bcrypt, crea el usuario y devuelve el token.}
+  \cucampo{Requerimientos especiales}{Contraseña de al menos 8 caracteres y correo único.}
+  \cucampo{Salida}{Usuario creado con \texttt{201} e ingreso al tablero.}
+  \cucampo{Excepciones}{Correo ya registrado (\texttt{400}); contraseña corta (\texttt{500} por validación); exceso de intentos (\texttt{429}).}
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{CU-02: Iniciar sesión}
+\begin{center}
+\begin{tabular}{p{3.4cm}p{9.9cm}}
+  \toprule
+  \cucampo{Descripción}{Autenticarse y recibir un token.}
+  \cucampo{Actores primarios}{Visitante.}
+  \cucampo{Contexto}{P01 Autenticación y sesión.}
+  \cucampo{Condiciones previas}{Tener una cuenta.}
+  \cucampo{Flujo básico}{El visitante envía correo y contraseña. El sistema busca al usuario, compara el hash con \texttt{bcrypt.compare} y emite un JWT de 30 días.}
+  \cucampo{Requerimientos especiales}{Límite de 10 intentos cada 15 minutos.}
+  \cucampo{Salida}{Sesión iniciada con \texttt{200} y token guardado localmente.}
+  \cucampo{Excepciones}{Usuario inexistente (\texttt{400}); contraseña incorrecta (\texttt{400}); exceso de intentos (\texttt{429}).}
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{CU-03: Cerrar sesión}
+\begin{center}
+\begin{tabular}{p{3.4cm}p{9.9cm}}
+  \toprule
+  \cucampo{Descripción}{Terminar la sesión en el navegador.}
+  \cucampo{Actores primarios}{Usuario registrado.}
+  \cucampo{Contexto}{P01 Autenticación y sesión.}
+  \cucampo{Condiciones previas}{Haber iniciado sesión.}
+  \cucampo{Flujo básico}{El usuario pulsa cerrar sesión; el cliente elimina el token local y vuelve a \path{/login}.}
+  \cucampo{Requerimientos especiales}{No invalida el token en el servidor.}
+  \cucampo{Salida}{Sesión cerrada localmente.}
+  \cucampo{Excepciones}{Un token copiado sigue siendo válido hasta expirar.}
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\section{Recetas y visibilidad}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth,height=0.55\textheight,keepaspectratio]{build/casos-uso/casos-uso-recetas-y-visibilidad.pdf}
+  \caption{Casos de uso de recetas y visibilidad.}
+  \label{fig:cu-recetas}
+\end{figure}
+
+\subsection{CU-04: Crear receta}
+\begin{center}
+\begin{tabular}{p{3.4cm}p{9.9cm}}
+  \toprule
+  \cucampo{Descripción}{Guardar una receta propia.}
+  \cucampo{Actores primarios}{Usuario registrado.}
+  \cucampo{Contexto}{P02 Gestión de recetas y visibilidad.}
+  \cucampo{Condiciones previas}{Sesión válida.}
+  \cucampo{Flujo básico}{El usuario envía el formulario. El sistema conserva solo los campos editables, asigna el propietario y devuelve \texttt{201}; la receta nace privada.}
+  \cucampo{Requerimientos especiales}{Límite de 10 creaciones por minuto.}
+  \cucampo{Salida}{Receta creada y visible en el tablero.}
+  \cucampo{Excepciones}{Exceso de creaciones (\texttt{429}); error de validación (\texttt{500}).}
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{CU-05: Listar y ver recetas}
+\begin{center}
+\begin{tabular}{p{3.4cm}p{9.9cm}}
+  \toprule
+  \cucampo{Descripción}{Consultar recetas propias o públicas.}
+  \cucampo{Actores primarios}{Usuario registrado.}
+  \cucampo{Contexto}{P02 Gestión de recetas y visibilidad.}
+  \cucampo{Condiciones previas}{Sesión válida.}
+  \cucampo{Flujo básico}{El tablero solicita las recetas propias o, con \texttt{scope=public}, las públicas; el detalle permite la receta propia o una pública.}
+  \cucampo{Requerimientos especiales}{Sin paginación ni búsqueda en el servidor.}
+  \cucampo{Salida}{Lista y detalle mostrados.}
+  \cucampo{Excepciones}{Receta privada ajena (\texttt{404}); identificador inválido puede producir \texttt{500}.}
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{CU-06: Editar, eliminar y cambiar visibilidad}
+\begin{center}
+\begin{tabular}{p{3.4cm}p{9.9cm}}
+  \toprule
+  \cucampo{Descripción}{Actualizar, borrar o publicar una receta.}
+  \cucampo{Actores primarios}{Propietario.}
+  \cucampo{Contexto}{P02 Gestión de recetas y visibilidad.}
+  \cucampo{Condiciones previas}{Ser propietario de la receta.}
+  \cucampo{Flujo básico}{El propietario guarda cambios, confirma el borrado o alterna la visibilidad. El sistema valida la propiedad, aplica la lista de campos editables y ejecuta los validadores.}
+  \cucampo{Requerimientos especiales}{El borrado físico deja huérfanos comentarios, reseñas y actividad.}
+  \cucampo{Salida}{Receta actualizada, eliminada o publicada.}
+  \cucampo{Excepciones}{Sin campos editables (\texttt{400}); receta ajena o inexistente (\texttt{404}).}
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\section{Imágenes}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth,height=0.55\textheight,keepaspectratio]{build/casos-uso/casos-uso-imagenes.pdf}
+  \caption{Casos de uso de imágenes.}
+  \label{fig:cu-imagenes}
+\end{figure}
+
+\subsection{CU-07: Subir imagen}
+\begin{center}
+\begin{tabular}{p{3.4cm}p{9.9cm}}
+  \toprule
+  \cucampo{Descripción}{Asociar una imagen optimizada a una receta existente.}
+  \cucampo{Actores primarios}{Propietario.}
+  \cucampo{Contexto}{P03 Gestión de imágenes.}
+  \cucampo{Condiciones previas}{Receta propia creada.}
+  \cucampo{Flujo básico}{El usuario elige un archivo; el navegador valida y optimiza a 1600 px JPEG 0.8; se envía como \texttt{multipart/form-data}; el servidor guarda el nuevo identificador y borra la imagen anterior.}
+  \cucampo{Requerimientos especiales}{MIME de imagen, 25 MB en el navegador y 5 MB en el servidor.}
+  \cucampo{Salida}{Receta con imagen actualizada (\texttt{200}).}
+  \cucampo{Excepciones}{Tipo no permitido o tamaño excedido (\texttt{400}); receta ajena (\texttt{404}).}
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{CU-08: Reemplazar o quitar imagen}
+\begin{center}
+\begin{tabular}{p{3.4cm}p{9.9cm}}
+  \toprule
+  \cucampo{Descripción}{Mantener una sola imagen vigente o dejar la receta sin imagen.}
+  \cucampo{Actores primarios}{Propietario.}
+  \cucampo{Contexto}{P03 Gestión de imágenes.}
+  \cucampo{Condiciones previas}{Receta propia.}
+  \cucampo{Flujo básico}{El propietario elige otra imagen o elimina la actual; el sistema registra el nuevo identificador o cadena vacía y elimina el archivo anterior de GridFS.}
+  \cucampo{Requerimientos especiales}{Solo una imagen vigente por receta.}
+  \cucampo{Salida}{Imagen reemplazada o eliminada.}
+  \cucampo{Excepciones}{Un fallo de subida conserva el identificador anterior.}
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{CU-09: Ver imagen}
+\begin{center}
+\begin{tabular}{p{3.4cm}p{9.9cm}}
+  \toprule
+  \cucampo{Descripción}{Mostrar la imagen en tarjetas, detalle o enlace.}
+  \cucampo{Actores primarios}{Cualquier persona con la URL pública.}
+  \cucampo{Contexto}{P03 Gestión de imágenes.}
+  \cucampo{Condiciones previas}{Conocer el identificador del archivo.}
+  \cucampo{Flujo básico}{El sistema valida el identificador, lee GridFS, devuelve el tipo de contenido y aplica caché inmutable.}
+  \cucampo{Requerimientos especiales}{Lectura pública sin cabecera de autorización.}
+  \cucampo{Salida}{Imagen servida con \texttt{200}.}
+  \cucampo{Excepciones}{Identificador inválido (\texttt{400}); archivo inexistente (\texttt{404}).}
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\section{Interacciones sociales}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth,height=0.55\textheight,keepaspectratio]{build/casos-uso/casos-uso-interacciones-sociales.pdf}
+  \caption{Casos de uso de interacciones sociales.}
+  \label{fig:cu-interacciones}
+\end{figure}
+
+\subsection{CU-10: Dar o quitar me gusta}
+\begin{center}
+\begin{tabular}{p{3.4cm}p{9.9cm}}
+  \toprule
+  \cucampo{Descripción}{Expresar aprobación y mantener el contador.}
+  \cucampo{Actores primarios}{Usuario registrado.}
+  \cucampo{Contexto}{P04 Interacciones sociales.}
+  \cucampo{Condiciones previas}{Sesión válida.}
+  \cucampo{Flujo básico}{El usuario pulsa el corazón; el sistema alterna el estado, sincroniza la receta y los favoritos del usuario y registra actividad para el autor.}
+  \cucampo{Requerimientos especiales}{Límite social de 30 acciones por minuto.}
+  \cucampo{Salida}{Estado alternado con \texttt{liked} y \texttt{likesCount}.}
+  \cucampo{Excepciones}{Receta inexistente (\texttt{404}); la interfaz evita el me gusta propio, pero la API no lo impide.}
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{CU-11: Guardar o quitar guardado}
+\begin{center}
+\begin{tabular}{p{3.4cm}p{9.9cm}}
+  \toprule
+  \cucampo{Descripción}{Conservar una receta para consulta posterior.}
+  \cucampo{Actores primarios}{Usuario registrado.}
+  \cucampo{Contexto}{P04 Interacciones sociales.}
+  \cucampo{Condiciones previas}{Sesión válida.}
+  \cucampo{Flujo básico}{El usuario pulsa guardar; el sistema alterna el arreglo \texttt{guardados} y su contador.}
+  \cucampo{Requerimientos especiales}{No sincroniza el arreglo \texttt{favoritos} del usuario.}
+  \cucampo{Salida}{Estado alternado con \texttt{saved} y \texttt{guardadosCount}.}
+  \cucampo{Excepciones}{Receta inexistente (\texttt{404}).}
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{CU-12: Compartir}
+\begin{center}
+\begin{tabular}{p{3.4cm}p{9.9cm}}
+  \toprule
+  \cucampo{Descripción}{Aumentar el contador de compartidos y registrar actividad.}
+  \cucampo{Actores primarios}{Usuario registrado.}
+  \cucampo{Contexto}{P04 Interacciones sociales.}
+  \cucampo{Condiciones previas}{Sesión válida.}
+  \cucampo{Flujo básico esperado}{El usuario pulsa compartir; el sistema incrementa el contador y crea la actividad \texttt{compartio\_receta}.}
+  \cucampo{Requerimientos especiales}{Defecto conocido: el tipo no está en la enumeración de actividad.}
+  \cucampo{Salida}{Contador incrementado.}
+  \cucampo{Excepciones}{Puede devolver \texttt{500} después de incrementar el contador.}
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{CU-13: Reportar}
+\begin{center}
+\begin{tabular}{p{3.4cm}p{9.9cm}}
+  \toprule
+  \cucampo{Descripción}{Informar contenido inapropiado.}
+  \cucampo{Actores primarios}{Usuario registrado.}
+  \cucampo{Contexto}{P04 Interacciones sociales.}
+  \cucampo{Condiciones previas}{Sesión válida.}
+  \cucampo{Flujo básico}{El usuario envía un motivo; el sistema lo sanea, guarda el reporte y marca la receta como reportada.}
+  \cucampo{Requerimientos especiales}{Admite reportes repetidos; no hay moderación.}
+  \cucampo{Salida}{Receta marcada como reportada.}
+  \cucampo{Excepciones}{Receta inexistente (\texttt{404}).}
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\section{Comentarios y reseñas}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth,height=0.55\textheight,keepaspectratio]{build/casos-uso/casos-uso-comentarios-y-resenas.pdf}
+  \caption{Casos de uso de comentarios y reseñas.}
+  \label{fig:cu-comentarios}
+\end{figure}
+
+\subsection{CU-14: Leer comentarios y reseñas}
+\begin{center}
+\begin{tabular}{p{3.4cm}p{9.9cm}}
+  \toprule
+  \cucampo{Descripción}{Ver la conversación y la valoración de una receta.}
+  \cucampo{Actores primarios}{Usuario registrado.}
+  \cucampo{Contexto}{P05 Comentarios y reseñas.}
+  \cucampo{Condiciones previas}{Sesión válida.}
+  \cucampo{Flujo básico}{Al abrir el detalle, el sistema pide los comentarios principales con un nivel de respuestas y las reseñas ordenadas.}
+  \cucampo{Requerimientos especiales}{Solo un nivel de respuestas.}
+  \cucampo{Salida}{Comentarios, reseñas y promedio mostrados.}
+  \cucampo{Excepciones}{Errores de lectura muestran mensajes genéricos.}
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{CU-15: Comentar y responder}
+\begin{center}
+\begin{tabular}{p{3.4cm}p{9.9cm}}
+  \toprule
+  \cucampo{Descripción}{Participar en la conversación de una receta.}
+  \cucampo{Actores primarios}{Usuario registrado.}
+  \cucampo{Contexto}{P05 Comentarios y reseñas.}
+  \cucampo{Condiciones previas}{Sesión válida y texto no vacío.}
+  \cucampo{Flujo básico}{El usuario publica un comentario o respuesta; el sistema lo guarda, incrementa el contador, crea actividades y lo muestra en el modal.}
+  \cucampo{Requerimientos especiales}{Límite de 10 creaciones por minuto; borrado lógico.}
+  \cucampo{Salida}{Comentario creado con \texttt{201}.}
+  \cucampo{Excepciones}{Texto vacío o excesivo; no se comprueba que la receta exista o sea visible.}
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{CU-16: Reseñar}
+\begin{center}
+\begin{tabular}{p{3.4cm}p{9.9cm}}
+  \toprule
+  \cucampo{Descripción}{Calificar una receta de 1 a 5 estrellas.}
+  \cucampo{Actores primarios}{Usuario registrado.}
+  \cucampo{Contexto}{P05 Comentarios y reseñas.}
+  \cucampo{Condiciones previas}{Sesión válida y puntuación distinta de cero.}
+  \cucampo{Flujo básico}{El usuario envía la reseña; el sistema la guarda, recalcula el promedio y el total, crea actividad y la muestra.}
+  \cucampo{Requerimientos especiales}{Una sola reseña por usuario y receta; promedio redondeado a un decimal.}
+  \cucampo{Salida}{Reseña creada con \texttt{201} y promedio actualizado.}
+  \cucampo{Excepciones}{Segunda reseña del mismo usuario (\texttt{400}); puntuación inválida puede producir \texttt{500}.}
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{CU-17: Editar o borrar contenido propio}
+\begin{center}
+\begin{tabular}{p{3.4cm}p{9.9cm}}
+  \toprule
+  \cucampo{Descripción}{Corregir o retirar el comentario o reseña propio.}
+  \cucampo{Actores primarios}{Autor del contenido.}
+  \cucampo{Contexto}{P05 Comentarios y reseñas.}
+  \cucampo{Condiciones previas}{Ser autor.}
+  \cucampo{Flujo básico}{El autor actualiza el texto o aplica el borrado lógico; el sistema recalcula métricas.}
+  \cucampo{Requerimientos especiales}{Existe en la API, pero actualmente no tiene botones en la interfaz.}
+  \cucampo{Salida}{Comentario o reseña actualizado o retirado.}
+  \cucampo{Excepciones}{Control de autor; recurso inexistente (\texttt{404}).}
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\section{Seguimiento, feed y notificaciones}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth,height=0.55\textheight,keepaspectratio]{build/casos-uso/casos-uso-seguimiento-feed-y-notificaciones.pdf}
+  \caption{Casos de uso de seguimiento, feed y notificaciones.}
+  \label{fig:cu-seguimiento}
+\end{figure}
+
+\subsection{CU-18: Seguir o dejar de seguir}
+\begin{center}
+\begin{tabular}{p{3.4cm}p{9.9cm}}
+  \toprule
+  \cucampo{Descripción}{Suscribirse o cancelar la suscripción a otro usuario.}
+  \cucampo{Actores primarios}{Usuario registrado.}
+  \cucampo{Contexto}{P06 Seguimiento, feed y notificaciones.}
+  \cucampo{Condiciones previas}{Sesión válida y no ser el mismo usuario.}
+  \cucampo{Flujo básico}{El usuario pulsa seguir; el sistema alterna el documento \texttt{Follow}, actualiza ambos contadores y registra actividad para el usuario seguido.}
+  \cucampo{Requerimientos especiales}{Pareja única de seguimiento; límite de 10 creaciones por minuto.}
+  \cucampo{Salida}{Estado alternado con \texttt{isFollowing}.}
+  \cucampo{Excepciones}{Seguirse a sí mismo (\texttt{400}).}
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{CU-19: Ver seguidores, seguidos, feed y perfil}
+\begin{center}
+\begin{tabular}{p{3.4cm}p{9.9cm}}
+  \toprule
+  \cucampo{Descripción}{Explorar relaciones y actividad.}
+  \cucampo{Actores primarios}{Usuario registrado.}
+  \cucampo{Contexto}{P06 Seguimiento, feed y notificaciones.}
+  \cucampo{Condiciones previas}{Sesión válida.}
+  \cucampo{Flujo básico}{El sistema devuelve seguidores, seguidos, actividades paginadas y actividad por usuario.}
+  \cucampo{Requerimientos especiales}{Defecto conocido: \path{/profile/:username} envía un nombre donde el backend espera un identificador.}
+  \cucampo{Salida}{Listas y feed mostrados.}
+  \cucampo{Excepciones}{El perfil no resuelve correctamente usuario, recetas ni seguimiento.}
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{CU-20: Consultar campana}
+\begin{center}
+\begin{tabular}{p{3.4cm}p{9.9cm}}
+  \toprule
+  \cucampo{Descripción}{Revisar la actividad reciente.}
+  \cucampo{Actores primarios}{Usuario registrado.}
+  \cucampo{Contexto}{P06 Seguimiento, feed y notificaciones.}
+  \cucampo{Condiciones previas}{Sesión válida.}
+  \cucampo{Flujo básico}{La campana reutiliza el feed, descarta las actividades propias y cuenta todas como no leídas.}
+  \cucampo{Requerimientos especiales}{Provisional; marcar como leída solo modifica la memoria local.}
+  \cucampo{Salida}{Contador y lista provisional.}
+  \cucampo{Excepciones}{Pendiente modelo, endpoints y persistencia (Fase 7).}
+  \bottomrule
+\end{tabular}
+\end{center}

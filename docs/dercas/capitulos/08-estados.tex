@@ -1,0 +1,54 @@
+\chapter{Diagramas de estado}
+\label{ch:estados}
+
+Los diagramas de estado describen el ciclo de vida de los recursos con estados propios. Las fuentes editables están en \path{docs/diagramas/estado}.
+
+\section{Ciclo de vida de la receta}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{build/estado/estado-receta.pdf}
+  \caption{Estados de una receta: visibilidad, reporte y eliminación.}
+  \label{fig:estado-receta}
+\end{figure}
+
+La receta nace privada. La visibilidad y el reporte son atributos del documento, y el borrado es físico: no hay borrado lógico ni cascada.
+
+\begin{itemize}[leftmargin=*]
+  \item \texttt{reportado} es un booleano independiente; una receta reportada no cambia de visibilidad ni deja de ser consultable.
+  \item No existe estado de moderación ni cuenta administradora.
+  \item Al eliminar, se borra la receta y su imagen GridFS, pero quedan huérfanos los comentarios, reseñas y actividades asociados.
+\end{itemize}
+
+\section{Ciclo de vida de la imagen}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{build/estado/estado-imagen.pdf}
+  \caption{Estados de la imagen de una receta.}
+  \label{fig:estado-imagen}
+\end{figure}
+
+Solo se conserva una imagen vigente por receta. El archivo anterior se elimina de GridFS al reemplazar, quitar o borrar la receta.
+
+\begin{itemize}[leftmargin=*]
+  \item La lectura \path{GET /api/recipes/image/:fileId} es pública y usa caché inmutable.
+  \item La validación real de bytes (magic bytes) está pendiente; solo se comprueba el tipo MIME declarado y un máximo de 5 MB en el servidor.
+\end{itemize}
+
+\section{Estado de la campana de notificaciones}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{build/estado/estado-campana-notificaciones.pdf}
+  \caption{Estado provisional de la campana de notificaciones.}
+  \label{fig:estado-campana}
+\end{figure}
+
+La campana es provisional: reutiliza el feed y no persiste el estado de lectura.
+
+\begin{itemize}[leftmargin=*]
+  \item El contador de no leídas es la longitud de la lista, no un estado real.
+  \item \texttt{markAsRead()} solo modifica el arreglo en memoria del navegador.
+  \item El modelo \texttt{Notification} con \texttt{destinatario}, \texttt{leida} e índice \texttt{\{ destinatario: 1, leida: 1, createdAt: -1 \}} está especificado pero no implementado (Fase 7).
+\end{itemize}

@@ -433,90 +433,87 @@ Problemas que arrastra:
 
 ---
 
-## 🏗️ Fase 8 - Especificación de Schemas 🆕 🚧 EN CURSO
+## 🏗️ Fase 8 - Especificación de Schemas ✅ COMPLETADA
 
-**Estado actual: parcial.** Los schemas se escribieron sin documento de
-referencia, así que la estructura hay que deducirla del código. El **diagrama ER
-ya existe** (`docs/diagramas/diagrama-er.md`), con las relaciones, índices y
-enumeraciones de las 6 colecciones y GridFS; falta el detalle campo a campo.
-Objetivo: documentar la estructura real de cada colección, válida para la entrega.
+**Estado actual: especificaciones creadas en `docs/modelo-datos/`.** Los schemas
+se escribieron sin documento de referencia, así que la estructura se dedujo del
+código. El **diagrama ER ya existe** (`docs/diagramas/diagrama-er.md`), con las
+relaciones, índices y enumeraciones de las 6 colecciones implementadas y GridFS.
+La especificación propuesta de notificaciones solo describe el modelo necesario
+para la Fase 7.
 
 ### Paso 48 - Especificación de `User`
-- [ ] Extraer los campos reales de `models/User.js` a `docs/specs/User.md`
-- [ ] Tipo, obligatoriedad, valores por defecto, `enum` y `minlength`/`maxlength` de cada campo
-- [ ] Relaciones (`seguidores`, `seguidos`, `recetasFavoritas`) y su `ref`
-- [ ] Índices
-- [ ] Ejemplo de documento JSON de ejemplo
+- [x] Extraer los campos reales de `models/User.js` a `docs/modelo-datos/usuario.md`
+- [x] Tipo, obligatoriedad, valores por defecto y `maxlength` de cada campo
+- [x] Relaciones (`favoritos`) y su `ref`
+- [x] Índices
+- [x] Ejemplo de documento JSON de ejemplo
 
 ### Paso 49 - Especificación de `Recipe`
-- [ ] Extraer los campos reales de `models/Recipe.js` a `docs/specs/Recipe.md`
-- [ ] Subdocumentos (`ingredientes`, `likes[]`, `guardados[]`)
-- [ ] Campos contadores derivados (`likesCount`, `commentsCount`, `valoracionMedia`)
-- [ ] `visibilidad` (`publica`/`privada`) y su efecto en las consultas
+- [x] Extraer los campos reales de `models/Recipe.js` a `docs/modelo-datos/receta.md`
+- [x] Subdocumentos (`ingredientes`, `likes[]`, `guardados[]`)
+- [x] Campos contadores derivados (`likesCount`, `guardadosCount`, `comentariosCount`, `ratingPromedio`, `ratingCount`, `compartidosCount`)
+- [x] `visibilidad` (`publica`/`privada`) y su efecto en las consultas
 - [x] Relación con GridFS documentada: `imagen` es un `String` con el `_id` de
       `uploads.files` (no un `ObjectId`), en `docs/diagramas/diagrama-er.md`
 
 ### Paso 50 - Especificación del resto de modelos
-- [ ] `Comment` (incluidas las respuestas anidadas pendientes)
-- [ ] `Review` (rango 1-5 y su efecto en la valoración)
-- [ ] `Follow` (unicidad de la pareja `seguidor`/`seguido`)
-- [ ] `ActivityFeed` (tipos admitidos y `metadata`)
-- [ ] `Notification` (modelo a crear en la Fase 7)
-- [ ] Colecciones de GridFS: `uploads.files` y `uploads.chunks`
+- [x] `Comment` en `docs/modelo-datos/comentario.md`, incluidas las respuestas anidadas pendientes
+- [x] `Review` en `docs/modelo-datos/resena.md`, con rango 1-5 y su efecto en la valoración
+- [x] `Follow` en `docs/modelo-datos/seguimiento.md`, con unicidad de la pareja `seguidor`/`seguido`
+- [x] `ActivityFeed` en `docs/modelo-datos/actividad-feed.md`, con tipos admitidos y `metadata`
+- [x] Especificación propuesta de `Notification` en `docs/modelo-datos/notificacion.md`, pendiente de implementar en la Fase 7
+- [x] Colecciones de GridFS en `docs/modelo-datos/gridfs-e-indices.md`, con `uploads.files` y `uploads.chunks`
 
 ### Paso 51 - Consistencia
 - [x] Tabla de colecciones y modelos en `docs/diagramas/diagrama-er.md`
 - [x] Diagrama ER de las colecciones con relaciones, cardinalidades, índices y enumeraciones
-- [ ] Detectar relaciones que Mongoose no puede imponer (borrado en cascada ausente)
+- [x] Relaciones no impuestas documentadas: borrar una receta no elimina comentarios, reseñas ni actividad asociada.
 - [ ] Revisar que el documento no contradiga el código tras cada cambio de schema
 
 ---
 
-## 🖼️ Fase 9 - Diagramas del Sistema 🆕 🚧 EN CURSO
+## 🖼️ Fase 9 - Diagramas del Sistema 🚧 EN CURSO
 
-**Estado actual: parcial y desactualizado.** `docs/diagramas/README.md` tiene
-arquitectura, autenticación, CRUD, casos de uso y estructura, pero **solo cubren
-el recetario básico**: no incluyen imágenes, red social, notificaciones,
-privacidad ni despliegue, y los casos de uso documentan rutas que ya no
-coinciden con las reales. El **diagrama ER ya está hecho**
-(`docs/diagramas/diagrama-er.md`); lo que falta en esta fase son los diagramas de
-flujo, el de casos de uso general y el de flujo general del sistema.
+**Estado actual: procesos implementados documentados.** Los diagramas de flujo y
+casos de uso por proceso están en `docs/diagramas/flujo/` y
+`docs/diagramas/casos-uso/`, con rutas y defectos reales. Quedan pendientes el
+despliegue detallado como proceso independiente y los procesos no implementados.
 
 ### Paso 52 - Diagramas de flujo por proceso
-- [ ] Autenticación: registro (actualizar, hoy solo hay login dibujado)
-- [ ] Autenticación: login / logout / expiración de token
-- [ ] CRUD de recetas (actualizar: incluir allowlist y `runValidators`)
-- [ ] Ciclo de vida de la imagen: seleccionar → redimensionar → subir → guardar → servir
-- [ ] Sustitución y eliminación de imagen, con la limpieza de GridFS
-- [ ] Despliegue: Docker Compose → nginx → Caddy → Atlas
-- [ ] Like, save y share (toggle y su reverso)
-- [ ] Seguir / dejar de seguir
-- [ ] Comentar y reseñar
-- [ ] Feed con paginación
-- [ ] Notificaciones (Fase 7): emitir, listar, marcar leída
-- [ ] Registro de usuario y perfil público (Fase 6)
+- [x] Autenticación: registro, inicio de sesión y cierre local de sesión
+- [x] CRUD de recetas con lista de campos editables, propiedad y visibilidad
+- [x] Ciclo de vida de la imagen: seleccionar, redimensionar, subir, guardar y servir
+- [x] Sustitución y eliminación de imagen, con limpieza de GridFS
+- [x] Like, save, share y reportar, con defecto conocido de compartir
+- [x] Seguir, dejar de seguir, seguidores y seguidos
+- [x] Comentar, responder en primer nivel y reseñar
+- [x] Feed con paginación y campana provisional
+- [x] Perfil actual con defecto conocido de resolución por nombre de usuario
+- [ ] Despliegue detallado como proceso operativo independiente
+- [ ] Búsqueda global y perfil público cuando se implementen
 
 ### Paso 53 - Diagrama de casos de uso general
-- [ ] Actor **Usuario registrado**: todos los casos
-- [ ] Actor **Visitante**: ver recetas públicas, registro, login
-- [ ] Actor **Administrador**: moderación de reportes (si se implementa)
-- [ ] Sistema de ficheros externo actor: atlas (GridFS)
-- [ ] Relaciones `<<include>>` y `<<extend>>` (p. ej. login requerido para casi todo)
-- [ ] Tabla de casos de uso **con las rutas reales**, no con las documentadas en la Fase 6
+- [x] Actor **Usuario registrado**
+- [x] Actor **Visitante**
+- [x] Actor **Propietario**
+- [x] Sistema de almacenamiento externo: Atlas y GridFS
+- [ ] Actor **Administrador**, solamente si se implementa moderación
+- [ ] Relaciones `<<include>>` y `<<extend>>` en la versión UML formal del DERCAS
+- [x] Casos de uso con rutas reales en `docs/diagramas/casos-uso/`
 
 ### Paso 54 - Diagrama de flujo general del sistema
-- [ ] Diagrama de flujo general: petición → Caddy → nginx →
-      Express → middleware → controlador → MongoDB → respuesta
-- [ ] Decisiones: ¿Token válido? ¿Receta pública? ¿Es el dueño? ¿ObjectId válido?
-- [ ] Rutas de error con los códigos reales (400/401/403/404/413/429/500)
-- [ ] Ramas especiales: subida multipart, servir imagen desde GridFS, rate limit
-- [ ] Mantenerlo legible: si no cabe en una pantalla, dividir en subdiagramas
+- [x] Diagrama de flujo general con proxy local, Caddy, Express, middleware, controlador, MongoDB y GridFS
+- [x] Decisiones: ruta protegida, token válido, receta pública y propiedad
+- [x] Rutas de error con códigos reales, incluidos `400`, `401`, `404`, `429` y `500`
+- [x] Ramas especiales: subida `multipart`, imagen pública, límites y defectos conocidos
+- [x] Diagramas divididos por proceso para conservar la legibilidad
 
 ### Paso 55 - Cierre de la documentación gráfica
-- [ ] Revisar `docs/diagramas/README.md` como índice
-- [ ] Un fichero por diagrama si crecen: `docs/diagramas/<proceso>.md`
-- [ ] Validar la sintaxis Mermaid de todos (el que no renderiza no sirve)
-- [ ] Corregir la tabla de casos de uso con las rutas reales
+- [x] Revisar `docs/diagramas/README.md` como índice
+- [x] Separar diagramas por proceso en `docs/diagramas/flujo/` y `docs/diagramas/casos-uso/`
+- [ ] Validar automáticamente la sintaxis Mermaid de todos los diagramas
+- [x] Corregir las tablas con rutas reales
 - [ ] Capturas de pantalla del funcionamiento (pendiente del Paso 31)
 
 ---

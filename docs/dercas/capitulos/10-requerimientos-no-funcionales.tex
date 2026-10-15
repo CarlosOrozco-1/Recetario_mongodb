@@ -1,0 +1,48 @@
+\chapter{Requerimientos no funcionales}
+\label{ch:rnf}
+
+El desarrollo sigue una arquitectura de tres capas: Frontend, Backend y Base de Datos. En la capa de base de datos se utiliza MongoDB como DBMS, con GridFS para archivos binarios. En la capa de Backend se usan servicios REST implementados en Node.js con Express y Mongoose, bajo el patrón Modelo Vista Controlador, consumidos desde la capa de Frontend. En la capa de Frontend se desarrollan componentes con Angular y TypeScript bajo el patrón de aplicación de página única (SPA), que se comunica con la base de datos a través de los servicios REST del Backend.
+
+\section{Autenticación y autorización}
+
+\begin{itemize}[leftmargin=*]
+  \item El registro y el inicio de sesión se hacen con \path{POST /api/auth/register} y \path{POST /api/auth/login}.
+  \item Las contraseñas se almacenan con hash bcrypt de 10 rondas; nunca en texto claro.
+  \item La sesión se representa con un JWT de 30 días que viaja en la cabecera \texttt{Authorization: Bearer}.
+  \item Todas las rutas salvo \texttt{/api/health}, las de autenticación y la lectura pública de imagen exigen un token válido; la ausencia o invalidez del token produce \texttt{401}.
+  \item La autorización es por propiedad: solo el propietario puede editar, eliminar, cambiar la visibilidad o gestionar la imagen de su receta. Una operación sobre un recurso ajeno o inexistente produce \texttt{404}.
+  \item El límite original de reintentos es de 10 intentos cada 15 minutos en registro e inicio de sesión.
+  \item \textbf{Deuda conocida:} el cierre de sesión no invalida el token en el servidor; el \texttt{AuthGuard} del cliente comprueba la presencia del token, pero no su expiración antes de llamar al backend.
+\end{itemize}
+
+\section{Seguridad de datos}
+
+\begin{itemize}[leftmargin=*]
+  \item El servidor conserva la propiedad de \texttt{\_id}, \texttt{usuario}, contadores, reportes y métricas: nunca se aceptan desde el cliente.
+  \item Se aplica saneado de entradas (\texttt{sanitizeFields}) en comentarios, reseñas, reportes y recetas.
+  \item Se aplican límites de solicitudes: \texttt{apiLimiter} global de 100 solicitudes cada 15 minutos, \texttt{authLimiter} de 10 cada 15 minutos, \texttt{socialLimiter} de 30 por minuto y \texttt{createLimiter} de 10 por minuto.
+  \item Los secretos (\texttt{MONGODB\_URI}, \texttt{JWT\_SECRET}) deben residir en variables de entorno y no en el repositorio.
+  \item Se distinguen explícitamente los errores \texttt{400}, \texttt{401}, \texttt{404}, \texttt{429} y \texttt{500}.
+  \item \textbf{Deuda conocida:} no se valida el \texttt{ObjectId} en todas las rutas (Mongoose lanza \texttt{CastError}); el saneado se aplica ruta a ruta en vez de globalmente; falta \texttt{app.set("trust proxy", 1)} para que el límite vea la IP real detrás de Caddy; \texttt{uploadLimiter} está definido pero no aplicado a la subida de imágenes; y hay secretos en el historial de \texttt{docker-compose.yml} pendientes de rotación.
+\end{itemize}
+
+\section{Almacenamiento}
+
+\begin{itemize}[leftmargin=*]
+  \item Los documentos residen en MongoDB 8 en Atlas y las imágenes en el bucket GridFS \texttt{uploads}.
+  \item Solo se conserva una imagen vigente por receta; al reemplazar, quitar o borrar la receta se elimina el archivo anterior en GridFS.
+  \item La optimización de imagen se hace en el navegador con \texttt{canvas}: lado mayor de 1600 px y JPEG de calidad 0.8 (medido: 2.4 MB a 186 KB). El servidor no usa \texttt{sharp}.
+  \item El límite de carga es de 25 MB en el navegador y 5 MB en el servidor.
+  \item La lectura de imagen es pública (\path{GET /api/recipes/image/:fileId}) y usa \texttt{Cache-Control: immutable}.
+  \item \textbf{Deuda conocida:} no se verifican los bytes reales del archivo (magic bytes), solo el tipo MIME declarado; borrar una receta no elimina en cascada comentarios, reseñas ni actividad asociada.
+\end{itemize}
+
+\section{Integración}
+
+\begin{itemize}[leftmargin=*]
+  \item El cliente Angular consume la API REST bajo el prefijo \texttt{/api}, tanto por el proxy local (\path{proxy.conf.json}) como por Caddy en producción.
+  \item Caddy central actúa como proxy inverso y terminación TLS para \path{https://foodloopc.duckdns.org}.
+  \item Docker Compose construye y opera los contenedores \texttt{recetario-backend} y \texttt{recetario-frontend} sobre la red externa \texttt{caddy-central\_default}.
+  \item El despliegue local usa procesos Node.js y Angular independientes (\texttt{npm run dev} y \texttt{npm start}).
+  \item Los envíos de archivos usan \texttt{multipart/form-data} y \texttt{multer-gridfs-storage}.
+\end{itemize}

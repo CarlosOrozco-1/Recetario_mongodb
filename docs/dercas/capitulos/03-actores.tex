@@ -1,0 +1,22 @@
+\chapter{Definición de actores}
+\label{ch:actores}
+
+\begin{center}
+\begin{longtable}{p{4cm}p{9.5cm}}
+  \toprule
+  Nombre del actor & Descripción \\
+  \midrule
+  \endfirsthead
+  \toprule
+  Nombre del actor & Descripción \\
+  \midrule
+  \endhead
+  Visitante & Persona sin sesión. Puede registrarse, iniciar sesión y, si conoce la URL, ver una imagen pública. No puede llamar a rutas protegidas. \\
+  Usuario registrado & Persona autenticada. Puede crear y gestionar sus recetas, interactuar socialmente, comentar, reseñar, seguir usuarios y consultar el feed. \\
+  Propietario de receta & Usuario registrado con derechos adicionales sobre una receta concreta: editarla, eliminarla, gestionar su imagen y cambiar su visibilidad. La propiedad se determina por receta, no por un rol global. \\
+  Sistema de almacenamiento & MongoDB Atlas y GridFS como actores externos de persistencia para documentos e imágenes. \\
+  \bottomrule
+\end{longtable}
+\end{center}
+
+No existe una cuenta administradora. La distinción entre usuario común y propietario depende de la propiedad de cada receta.

@@ -1,0 +1,83 @@
+%!TEX program = tectonic
+\documentclass[12pt,a4paper]{report}
+
+\usepackage[spanish]{babel}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[a4paper,margin=2.5cm]{geometry}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usepackage{microtype}
+\usepackage[hidelinks]{hyperref}
+
+\usetikzlibrary{arrows.meta,calc,positioning,shapes.geometric,shapes.multipart}
+
+\setlength{\parskip}{0.5em}
+\setlength{\parindent}{0pt}
+\setlength{\emergencystretch}{3em}
+\raggedbottom
+\renewcommand{\arraystretch}{1.15}
+\renewcommand{\contentsname}{Tabla de contenido}
+
+\newcommand{\dercasversion}{1.0}
+\newcommand{\dercasdate}{15 de octubre de 2026}
+\newcommand{\dercasestado}{Borrador para verificación: incluye defectos conocidos y trabajo pendiente.}
+\newcommand{\dercassistema}{FoodLoop: red social de recetas}
+\newcommand{\cucampo}[2]{\textbf{#1} & #2 \\[0.35em]}
+
+\begin{document}
+
+\begin{titlepage}
+  \centering
+  \vspace*{2.5cm}
+  {\Huge\bfseries FOODLOOP\par}
+  \vspace{0.4cm}
+  {\Large Red social de recetas\par}
+  \vspace{1.8cm}
+  {\large Documento de Especificaciones, Requerimientos y\\
+  Criterios de Aceptación de Software - DERCAS\par}
+  \vspace{1.8cm}
+  {\large Departamento de Desarrollo de Sistemas, DTI\par}
+  \vspace{0.5cm}
+  {\large octubre 2026\par}
+  \vfill
+  {\normalsize Versión \dercasversion\par}
+  \vspace{0.4cm}
+  {\small \dercasestado\par}
+\end{titlepage}
+
+\chapter*{Historial de revisiones}
+\addcontentsline{toc}{chapter}{Historial de revisiones}
+
+\begin{center}
+\begin{tabular}{p{3cm}p{2cm}p{8.5cm}}
+  \toprule
+  Fecha & Versión & Descripción \\
+  \midrule
+  15 de octubre de 2026 & 1.0 & Primera versión del DERCAS a partir del código real, la API implementada, los diagramas Markdown y los defectos conocidos. Reestructurado según el modelo de referencia (12 secciones). \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\tableofcontents
+
+\input{capitulos/01-definiciones}
+\input{capitulos/02-descripcion}
+\input{capitulos/03-actores}
+\input{capitulos/04-procesos}
+\input{capitulos/05-flujo}
+\input{capitulos/06-casos-uso}
+\input{capitulos/07-secuencia}
+\input{capitulos/08-estados}
+\input{capitulos/09-modelo-datos}
+\input{capitulos/10-requerimientos-no-funcionales}
+\input{capitulos/11-planificacion}
+\input{capitulos/12-firmas}
+
+\end{document}

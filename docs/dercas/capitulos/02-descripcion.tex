@@ -1,0 +1,15 @@
+\chapter{Descripción del sistema solicitado}
+\label{ch:descripcion}
+
+El proyecto parte de un recetario personal y se transforma en una red social de recetas. Se solicitó el desarrollo e implementación de un sistema para el registro y la gestión de recetas que permita:
+
+\begin{itemize}[leftmargin=*]
+  \item[a.] El registro de usuarios y la autenticación mediante un token JWT de 30 días.
+  \item[b.] La creación, consulta, edición, eliminación y visibilidad pública o privada de recetas.
+  \item[c.] El almacenamiento de una imagen por receta en el bucket GridFS \texttt{uploads}.
+  \item[d.] Las interacciones sociales sobre cada receta: me gusta, guardar, compartir y reportar.
+  \item[e.] Los comentarios, las respuestas de primer nivel y las reseñas con promedio.
+  \item[f.] El seguimiento entre usuarios, el feed de actividad y una campana de notificaciones.
+\end{itemize}
+
+El sistema usa un cliente Angular, una API Express, MongoDB Atlas para documentos y GridFS para imágenes. Implementa la red social básica y conserva los defectos conocidos que se documentan en los capítulos \ref{ch:procesos}, \ref{ch:casos-uso} y \ref{ch:planificacion}.
