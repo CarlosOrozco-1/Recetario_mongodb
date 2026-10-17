@@ -43,7 +43,7 @@ Los procesos utilizan los identificadores P01 a P06 y se describen con los campo
   Actores & Usuario registrado y propietario. \\
   Entradas & Título, descripción, ingredientes, instrucciones, categoría y visibilidad. \\
   Salidas & Receta creada, lista filtrada, detalle permitido o confirmación de borrado. \\
-  Especificaciones de funcionamiento & \path{POST /api/recipes}, \path{GET /api/recipes}, \path{GET /api/recipes?scope=public}, \path{GET /api/recipes/:id}, \path{PUT /api/recipes/:id} y \path{DELETE /api/recipes/:id}. El servidor asigna el propietario y acepta únicamente 12 campos editables. Las recetas nacen privadas; el detalle permite recetas propias o públicas; la edición y el borrado exigen propiedad. Alcance: tablero personal, recetas públicas y detalle. \\
+  Especificaciones de funcionamiento & \path{POST /api/recipes}, \path{GET /api/recipes}, \path{GET /api/recipes?scope=public}, \path{GET /api/recipes/:id}, \path{PUT /api/recipes/:id} y \path{DELETE /api/recipes/:id}. El servidor asigna el propietario y acepta únicamente 11 campos editables. Las recetas nacen privadas; el detalle permite recetas propias o públicas; la edición y el borrado exigen propiedad. Alcance: tablero personal, recetas públicas y detalle. \\
   Restricciones adicionales & Lista de campos editables, validadores Mongoose, límite de creación y saneado parcial. No hay búsqueda ni paginación en el servidor. Respuestas \texttt{201}, \texttt{200}, \texttt{400}, \texttt{404}, \texttt{429} y \texttt{500}. \\
   \bottomrule
 \end{longtable}
@@ -89,8 +89,8 @@ Los procesos utilizan los identificadores P01 a P06 y se describen con los campo
   Actores & Usuario registrado. \\
   Entradas & Identificador de receta y, para reportes, motivo. \\
   Salidas & Estado alternado y contadores actualizados. \\
-  Especificaciones de funcionamiento & \path{POST /api/recipes/:id/like}, \path{/save}, \path{/share} y \path{/report}. El me gusta sincroniza favoritos del usuario; guardar solamente actualiza la receta. Las acciones son alternables; compartir debe registrar actividad. Alcance: tarjetas y modal del tablero. \\
-  Restricciones adicionales & Límite social de 30 acciones por minuto, límite de creación para reportes y saneado del motivo. Compartir tiene un defecto conocido: incrementa el contador y luego puede devolver \texttt{500}. Respuestas \texttt{200}, \texttt{404}, \texttt{429} y \texttt{500}. \\
+  Especificaciones de funcionamiento & \path{POST /api/recipes/:id/like}, \path{/save}, \path{/share} y \path{/report}. El me gusta crea o elimina una fila en \texttt{likes}; guardar usa \texttt{saves}. Las acciones son alternables; dar me gusta a la receta propia responde \texttt{400}; compartir registra actividad. Alcance: tarjetas y modal del tablero. \\
+  Restricciones adicionales & Límite social de 30 acciones por minuto, límite de creación para reportes y saneado del motivo. Respuestas \texttt{200}, \texttt{201} (reporte), \texttt{400} (me gusta propio o reporte duplicado), \texttt{404}, \texttt{429} y \texttt{500}. \\
   \bottomrule
 \end{longtable}
 \end{center}

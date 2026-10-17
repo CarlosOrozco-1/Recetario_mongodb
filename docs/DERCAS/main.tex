@@ -291,7 +291,7 @@ A continuación se describen los procesos que el sistema debe automatizar. Cada 
 \textbf{Actores} & Usuario registrado y propietario. \\ \hline
 \textbf{Entradas} & Título, descripción, ingredientes, instrucciones, categoría y visibilidad. \\ \hline
 \textbf{Salidas} & Receta creada, lista filtrada, detalle permitido o confirmación de borrado. \\ \hline
-\textbf{Especificaciones de funcionamiento} & \texttt{POST /api/recipes}, \texttt{GET /api/recipes}, \texttt{GET /api/recipes?scope=public}, \texttt{GET /api/recipes/:id}, \texttt{PUT /api/recipes/:id} y \texttt{DELETE /api/recipes/:id}. El servidor asigna el propietario y acepta únicamente 12 campos editables. Las recetas nacen privadas; el detalle permite recetas propias o públicas; la edición y el borrado exigen propiedad. \\ \hline
+\textbf{Especificaciones de funcionamiento} & \texttt{POST /api/recipes}, \texttt{GET /api/recipes}, \texttt{GET /api/recipes?scope=public}, \texttt{GET /api/recipes/:id}, \texttt{PUT /api/recipes/:id} y \texttt{DELETE /api/recipes/:id}. El servidor asigna el propietario y acepta únicamente 11 campos editables. Las recetas nacen privadas; el detalle permite recetas propias o públicas; la edición y el borrado exigen propiedad. \\ \hline
 \textbf{Restricciones adicionales} & Lista de campos editables, validadores Mongoose, límite de creación y saneado parcial. No hay búsqueda ni paginación en el servidor. Respuestas \texttt{201}, \texttt{200}, \texttt{400}, \texttt{404}, \texttt{429} y \texttt{500}. \\ \hline
 \end{longtable}
 
@@ -317,8 +317,8 @@ A continuación se describen los procesos que el sistema debe automatizar. Cada 
 \textbf{Actores} & Usuario registrado. \\ \hline
 \textbf{Entradas} & Identificador de receta y, para reportes, motivo. \\ \hline
 \textbf{Salidas} & Estado alternado y contadores actualizados. \\ \hline
-\textbf{Especificaciones de funcionamiento} & \texttt{POST /api/recipes/:id/like}, \texttt{/save}, \texttt{/share} y \texttt{/report}. El me gusta sincroniza los favoritos del usuario; guardar solamente actualiza la receta. Las acciones son alternables; compartir debe registrar actividad. \\ \hline
-\textbf{Restricciones adicionales} & Límite social de 30 acciones por minuto, límite de creación para reportes y saneado del motivo. Compartir tiene un defecto conocido: incrementa el contador y luego puede devolver \texttt{500}. Respuestas \texttt{200}, \texttt{404}, \texttt{429} y \texttt{500}. \\ \hline
+\textbf{Especificaciones de funcionamiento} & \texttt{POST /api/recipes/:id/like}, \texttt{/save}, \texttt{/share} y \texttt{/report}. El me gusta crea o elimina una fila en \texttt{likes}; guardar usa \texttt{saves}. Las acciones son alternables; dar me gusta a la receta propia responde \texttt{400}; compartir registra actividad. \\ \hline
+\textbf{Restricciones adicionales} & Límite social de 30 acciones por minuto, límite de creación para reportes y saneado del motivo. Respuestas \texttt{200}, \texttt{201} (reporte), \texttt{400} (me gusta propio o reporte duplicado), \texttt{404}, \texttt{429} y \texttt{500}. \\ \hline
 \end{longtable}
 
 \subsection{P05: Comentarios y reseñas}
@@ -647,12 +647,12 @@ Los casos de uso describen las interacciones entre los actores y el sistema por 
 \textbf{Flujo básico} &
 \begin{enumerate}
     \item El usuario pulsa el corazón de una receta.
-    \item El sistema alterna el estado del me gusta.
-    \item El sistema sincroniza los favoritos del usuario y la receta, y registra la actividad para el autor.
+    \item El sistema crea o elimina la fila en \texttt{likes} y recalcula el contador.
+    \item El sistema registra la actividad \texttt{likio\_receta} para el autor.
 \end{enumerate} \\ \hline
 \textbf{Requerimientos especiales} & Límite social de 30 acciones por minuto. \\ \hline
 \textbf{Salida} & Estado alternado con \texttt{liked} y \texttt{likesCount}. \\ \hline
-\textbf{Excepciones} & Receta inexistente (\texttt{404}); la API no impide el me gusta propio. \\ \hline
+\textbf{Excepciones} & Receta inexistente (\texttt{404}); dar me gusta a la receta propia (\texttt{400}). \\ \hline
 \end{longtable}
 
 \subsubsection{Caso de uso ``CU-10b: Guardar receta''}
@@ -666,9 +666,9 @@ Los casos de uso describen las interacciones entre los actores y el sistema por 
 \textbf{Flujo básico} &
 \begin{enumerate}
     \item El usuario pulsa el botón de guardar.
-    \item El sistema alterna el estado y actualiza el contador de guardados de la receta.
+    \item El sistema crea o elimina la fila en \texttt{saves} y recalcula el contador de guardados de la receta.
 \end{enumerate} \\ \hline
-\textbf{Requerimientos especiales} & La operación no sincroniza los favoritos del usuario. \\ \hline
+\textbf{Requerimientos especiales} & Es el único mecanismo de favorito personal. \\ \hline
 \textbf{Salida} & Estado alternado con \texttt{saved} y \texttt{guardadosCount}. \\ \hline
 \textbf{Excepciones} & Receta inexistente (\texttt{404}). \\ \hline
 \end{longtable}
@@ -684,11 +684,11 @@ Los casos de uso describen las interacciones entre los actores y el sistema por 
 \textbf{Flujo básico} &
 \begin{enumerate}
     \item El usuario pulsa la opción de compartir.
-    \item El sistema incrementa el contador de compartidos e intenta registrar la actividad.
+    \item El sistema incrementa el contador de compartidos y registra la actividad \texttt{compartio\_receta}.
 \end{enumerate} \\ \hline
-\textbf{Requerimientos especiales} & Defecto conocido: el tipo \texttt{compartio\_receta} no está en la enumeración de actividad y la operación puede fallar. \\ \hline
-\textbf{Salida} & Contador incrementado. \\ \hline
-\textbf{Excepciones} & Puede devolver \texttt{500} después de incrementar el contador. \\ \hline
+\textbf{Requerimientos especiales} & Límite social de 30 acciones por minuto; \texttt{compartio\_receta} es un tipo válido de actividad. \\ \hline
+\textbf{Salida} & Contador incrementado (\texttt{compartidosCount}). \\ \hline
+\textbf{Excepciones} & Receta inexistente (\texttt{404}). \\ \hline
 \end{longtable}
 
 \subsubsection{Caso de uso ``CU-10d: Reportar receta''}
@@ -702,11 +702,11 @@ Los casos de uso describen las interacciones entre los actores y el sistema por 
 \textbf{Flujo básico} &
 \begin{enumerate}
     \item El usuario envía un motivo de reporte.
-    \item El sistema sanea el motivo, guarda el reporte y marca la receta como reportada.
+    \item El sistema sanea el motivo y crea un documento en \texttt{reports} con estado \texttt{pendiente}.
 \end{enumerate} \\ \hline
-\textbf{Requerimientos especiales} & Admite reportes repetidos; no existe moderación ni cuenta administradora. \\ \hline
-\textbf{Salida} & Receta marcada como reportada. \\ \hline
-\textbf{Excepciones} & Receta inexistente (\texttt{404}). \\ \hline
+\textbf{Requerimientos especiales} & Un usuario reporta una receta una sola vez; no existe moderación ni cuenta administradora. \\ \hline
+\textbf{Salida} & Reporte creado con estado \texttt{pendiente}. \\ \hline
+\textbf{Excepciones} & Receta inexistente (\texttt{404}); reporte duplicado del mismo usuario (\texttt{400}). \\ \hline
 \end{longtable}
 
 \subsection{Casos de uso del módulo de comentarios y reseñas}
@@ -914,11 +914,11 @@ Los diagramas de estado describen el ciclo de vida de los recursos con estados p
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.72\textwidth, height=0.78\textheight, keepaspectratio]{figuras/estado/estado-receta.pdf}
-    \captionof{figure}{Estados de una receta: visibilidad, reporte y eliminación.}
+    \captionof{figure}{Estados de una receta: visibilidad y eliminación.}
     \label{fig:estado-receta}
 \end{figure}
 
-La receta nace privada. La visibilidad y el reporte son atributos del documento, y el borrado es físico: no hay borrado lógico ni eliminación en cascada de comentarios, reseñas y actividades.
+La receta nace privada. La visibilidad es un atributo del documento y el borrado es físico: no hay borrado lógico ni eliminación en cascada de comentarios, reseñas y actividades. Los reportes son documentos aparte en \texttt{reports} y no cambian la visibilidad ni el estado de la receta; al eliminar una receta se borran también sus filas en \texttt{likes}, \texttt{saves} y \texttt{reports}.
 
 \subsection{Estados de la imagen}
 
@@ -947,7 +947,7 @@ La campana es provisional: reutiliza las actividades del feed y no persiste el e
 % =====================================================================
 \section{Diagrama ER}
 
-El modelo de datos se representa mediante el diagrama entidad-relación de la base de datos MongoDB. Las colecciones principales son usuarios, recetas, comentarios, reseñas, seguimientos y actividades; las imágenes residen en GridFS.
+El modelo de datos se representa mediante el diagrama entidad-relación de la base de datos MongoDB. Las colecciones principales son usuarios, recetas, interacciones (\texttt{likes}, \texttt{saves}, \texttt{reports}), comentarios, reseñas, seguimientos y actividades; las imágenes residen en GridFS.
 
 \begin{figure}[H]
     \centering

@@ -189,10 +189,10 @@
   \cucampo{Actores primarios}{Usuario registrado.}
   \cucampo{Contexto}{P04 Interacciones sociales.}
   \cucampo{Condiciones previas}{Sesión válida.}
-  \cucampo{Flujo básico}{El usuario pulsa el corazón; el sistema alterna el estado, sincroniza la receta y los favoritos del usuario y registra actividad para el autor.}
+  \cucampo{Flujo básico}{El usuario pulsa el corazón; el sistema crea o elimina una fila en \texttt{likes}, recalcula el contador y registra actividad para el autor.}
   \cucampo{Requerimientos especiales}{Límite social de 30 acciones por minuto.}
   \cucampo{Salida}{Estado alternado con \texttt{liked} y \texttt{likesCount}.}
-  \cucampo{Excepciones}{Receta inexistente (\texttt{404}); la interfaz evita el me gusta propio, pero la API no lo impide.}
+  \cucampo{Excepciones}{Receta inexistente (\texttt{404}); dar me gusta a la receta propia (\texttt{400}).}
   \bottomrule
 \end{tabular}
 \end{center}
@@ -205,8 +205,8 @@
   \cucampo{Actores primarios}{Usuario registrado.}
   \cucampo{Contexto}{P04 Interacciones sociales.}
   \cucampo{Condiciones previas}{Sesión válida.}
-  \cucampo{Flujo básico}{El usuario pulsa guardar; el sistema alterna el arreglo \texttt{guardados} y su contador.}
-  \cucampo{Requerimientos especiales}{No sincroniza el arreglo \texttt{favoritos} del usuario.}
+  \cucampo{Flujo básico}{El usuario pulsa guardar; el sistema crea o elimina una fila en \texttt{saves} y recalcula su contador.}
+  \cucampo{Requerimientos especiales}{Es el único mecanismo de favorito personal.}
   \cucampo{Salida}{Estado alternado con \texttt{saved} y \texttt{guardadosCount}.}
   \cucampo{Excepciones}{Receta inexistente (\texttt{404}).}
   \bottomrule
@@ -221,10 +221,10 @@
   \cucampo{Actores primarios}{Usuario registrado.}
   \cucampo{Contexto}{P04 Interacciones sociales.}
   \cucampo{Condiciones previas}{Sesión válida.}
-  \cucampo{Flujo básico esperado}{El usuario pulsa compartir; el sistema incrementa el contador y crea la actividad \texttt{compartio\_receta}.}
-  \cucampo{Requerimientos especiales}{Defecto conocido: el tipo no está en la enumeración de actividad.}
-  \cucampo{Salida}{Contador incrementado.}
-  \cucampo{Excepciones}{Puede devolver \texttt{500} después de incrementar el contador.}
+  \cucampo{Flujo básico}{El usuario pulsa compartir; el sistema incrementa el contador y crea la actividad \texttt{compartio\_receta}.}
+  \cucampo{Requerimientos especiales}{Límite social de 30 acciones por minuto; \texttt{compartio\_receta} es un tipo válido de actividad.}
+  \cucampo{Salida}{Contador incrementado (\texttt{compartidosCount}).}
+  \cucampo{Excepciones}{Receta inexistente (\texttt{404}).}
   \bottomrule
 \end{tabular}
 \end{center}
@@ -237,10 +237,10 @@
   \cucampo{Actores primarios}{Usuario registrado.}
   \cucampo{Contexto}{P04 Interacciones sociales.}
   \cucampo{Condiciones previas}{Sesión válida.}
-  \cucampo{Flujo básico}{El usuario envía un motivo; el sistema lo sanea, guarda el reporte y marca la receta como reportada.}
-  \cucampo{Requerimientos especiales}{Admite reportes repetidos; no hay moderación.}
-  \cucampo{Salida}{Receta marcada como reportada.}
-  \cucampo{Excepciones}{Receta inexistente (\texttt{404}).}
+  \cucampo{Flujo básico}{El usuario envía un motivo; el sistema lo sanea y crea un documento en \texttt{reports} con estado \texttt{pendiente}.}
+  \cucampo{Requerimientos especiales}{Un usuario reporta una receta una sola vez; no hay moderación implementada.}
+  \cucampo{Salida}{Reporte creado con estado \texttt{pendiente}.}
+  \cucampo{Excepciones}{Receta inexistente (\texttt{404}); reporte duplicado del mismo usuario (\texttt{400}).}
   \bottomrule
 \end{tabular}
 \end{center}

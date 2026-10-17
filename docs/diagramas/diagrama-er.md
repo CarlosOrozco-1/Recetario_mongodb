@@ -1,6 +1,6 @@
 # 🗄️ Diagrama Entidad-Relación (ER) - Colecciones
 
-**Última revisión:** 2026-09-26
+**Última revisión:** 2026-10-17
 **Fuente:** `backend/src/models/*.js` + colecciones GridFS de `uploads`
 **Base de datos:** MongoDB 8 (`recetario`)
 
@@ -23,9 +23,12 @@ erDiagram
     USER ||--o{ FOLLOW : "seguidor"
     USER ||--o{ FOLLOW : "seguido"
     USER ||--o{ ACTIVITY_FEED : "genera (usuario)"
-    USER }o--o{ RECIPE : "likes"
-    USER }o--o{ RECIPE : "guardados"
-    USER }o--o{ RECIPE : "favoritos"
+    USER ||--o{ LIKE : "usuario"
+    RECIPE ||--o{ LIKE : "receta"
+    USER ||--o{ SAVE : "usuario"
+    RECIPE ||--o{ SAVE : "receta"
+    USER ||--o{ REPORT : "usuario"
+    RECIPE ||--o{ REPORT : "receta"
     RECIPE ||--o{ COMMENT : "recibe (receta)"
     RECIPE ||--o{ REVIEW : "recibe (receta)"
     COMMENT ||--o{ COMMENT : "responde (parentComment)"
@@ -44,8 +47,6 @@ erDiagram
         Number recetasCount
         Number seguidoresCount
         Number siguiendoCount
-        Number favoritosCount
-        ObjectIdArray favoritos FK
         Date createdAt
         Date updatedAt
     }
@@ -61,19 +62,41 @@ erDiagram
         Number tiempoPreparacion
         String dificultad
         Number porciones
-        Boolean favorito
         Boolean publica
         ObjectId usuario FK
-        ObjectIdArray likes FK
         Number likesCount
-        ObjectIdArray guardados FK
         Number guardadosCount
         Number comentariosCount
         Number ratingPromedio
         Number ratingCount
         Number compartidosCount
         StringArray hashtags
-        Boolean reportado
+        Date createdAt
+        Date updatedAt
+    }
+
+    LIKE {
+        ObjectId _id PK
+        ObjectId usuario FK
+        ObjectId receta FK
+        Date createdAt
+        Date updatedAt
+    }
+
+    SAVE {
+        ObjectId _id PK
+        ObjectId usuario FK
+        ObjectId receta FK
+        Date createdAt
+        Date updatedAt
+    }
+
+    REPORT {
+        ObjectId _id PK
+        ObjectId usuario FK
+        ObjectId receta FK
+        String motivo
+        String estado
         Date createdAt
         Date updatedAt
     }
@@ -162,6 +185,9 @@ erDiagram
 | `reviews` | `Review.js` | ✅ En uso |
 | `follows` | `Follow.js` | ✅ En uso |
 | `activityfeeds` | `ActivityFeed.js` | ✅ En uso |
+| `likes` | `Like.js` | ✅ En uso |
+| `saves` | `Save.js` | ✅ En uso |
+| `reports` | `Report.js` | ✅ En uso |
 | `notifications` | `Notification.js` | 🚧 **No implementado** (Fase 7) |
 | `uploads.files` | GridFSBucket | ✅ En uso |
 | `uploads.chunks` | GridFSBucket | ✅ En uso |
@@ -176,9 +202,12 @@ erDiagram
 | `Comment.parentComment` → `Comment` | N : 1 (auto) | `ObjectId` + `ref` | `null` si es de primer nivel |
 | `Review.usuario`/`Review.receta` | N : 1 cada uno | `ObjectId` + `ref` | Par único |
 | `Follow.seguidor`/`Follow.seguido` | N : 1 cada uno | `ObjectId` + `ref` | Par único |
-| `Recipe.likes[]` → `User` | N : N | Array de `ObjectId` | Contador `likesCount` |
-| `Recipe.guardados[]` → `User` | N : N | Array de `ObjectId` | Contador `guardadosCount` |
-| `User.favoritos[]` → `Recipe` | N : N | Array de `ObjectId` | Contador `favoritosCount` |
+| `Like.usuario` → `User` | N : 1 | `ObjectId` + `ref` | Par `usuario`+`receta` único |
+| `Like.receta` → `Recipe` | N : 1 | `ObjectId` + `ref` | Contador `Recipe.likesCount` |
+| `Save.usuario` → `User` | N : 1 | `ObjectId` + `ref` | Par `usuario`+`receta` único |
+| `Save.receta` → `Recipe` | N : 1 | `ObjectId` + `ref` | Contador `Recipe.guardadosCount` |
+| `Report.usuario` → `User` | N : 1 | `ObjectId` + `ref` | Par `usuario`+`receta` único |
+| `Report.receta` → `Recipe` | N : 1 | `ObjectId` + `ref` | Estado `pendiente`/`descartado`/`resuelto` |
 | `ActivityFeed.referencia` | Polimórfica | `{ tipo, id }` | Sin `ref` real |
 | `Recipe.imagen` → `uploads.files` | 1 : 0..1 | `String` con el `_id` de GridFS | Se limpia al borrar/sustituir |
 
@@ -195,18 +224,26 @@ erDiagram
 | `Follow` | `{ seguido: 1, createdAt: -1 }` | Listar seguidores |
 | `Follow` | `{ seguidor: 1, createdAt: -1 }` | Listar seguidos |
 | `ActivityFeed` | `{ usuario: 1, createdAt: -1 }` | Feed paginado |
+| `Like` | `{ usuario: 1, receta: 1 }` **unique** | Un “me gusta” por usuario y receta |
+| `Like` | `{ receta: 1 }` | Conteo por receta |
+| `Save` | `{ usuario: 1, receta: 1 }` **unique** | Un guardado por usuario y receta |
+| `Save` | `{ receta: 1 }` | Conteo por receta |
+| `Report` | `{ usuario: 1, receta: 1 }` **unique** | Un reporte por usuario y receta |
+| `Report` | `{ receta: 1, estado: 1 }` | Consultas de moderación |
+| `Recipe` | `{ usuario: 1, createdAt: -1 }` | Tablero personal |
+| `Recipe` | `{ categoria: 1 }` | Filtro por categoría |
+| `Recipe` | `{ publica: 1 }` | Listado público |
 | `User` | `{ email }` **unique** | Login sin duplicados |
 
-**Índices que faltan:** `Recipe` no tiene índice para la lista del dashboard
-(`{ usuario: 1, createdAt: -1 }`) ni para las públicas (`{ publica: 1, createdAt: -1 }`),
-y `Notification` aún no existe.
+**Índices que faltan:** solo `Notification`, que aún no existe.
 
 ## Enumeraciones
 
 | Campo | Valores |
 |---|---|
 | `Recipe.dificultad` | `Fácil`, `Media`, `Difícil` |
-| `ActivityFeed.tipo` | `creo_receta`, `comento_receta`, `reseno_receta`, `likio_receta`, `guardo_receta`, `siguio_usuario` |
+| `Report.estado` | `pendiente`, `descartado`, `resuelto` |
+| `ActivityFeed.tipo` | `creo_receta`, `comento_receta`, `reseno_receta`, `likio_receta`, `guardo_receta`, `compartio_receta`, `siguio_usuario` |
 | `ActivityFeed.referencia.tipo` | `Recipe`, `Comment`, `Review`, `User` |
 | `Notification.tipo` (propuesto) | `like`, `comment`, `reply`, `follow`, `review`, `share` |
 
@@ -217,8 +254,8 @@ y `Notification` aún no existe.
   única relación que no usa `ref` y por eso se marca como texto libre.
 - **Contadores desnormalizados.** `likesCount`, `guardadosCount`,
   `comentariosCount`, `ratingPromedio`, `ratingCount` y `compartidosCount` viven
-  en `Recipe` para no recorrer arrays en cada consulta. Si se recalculan mal,
-  el número miente aunque el array `likes[]` sea correcto.
+  en `Recipe` para no recorrer colecciones en cada consulta. Si se recalculan
+  mal, el número miente aunque las colecciones `likes`/`saves` sean correctas.
 - **`ActivityFeed` es un log, no notificaciones.** Registra acciones de forma
   pública y desnormaliza `recetaTitulo`/`autorNombre`. La Fase 7 añadirá
   `Notification`, que sí tiene `destinatario` y `leida`.
@@ -233,6 +270,5 @@ y `Notification` aún no existe.
 
 - [ ] Cuando se implemente `Notification` (Fase 7), quitar la marca de "no
       implementado" y confirmar sus índices
-- [ ] Añadir los índices que faltan de `Recipe`
 - [ ] Convertir este diagrama en la especificación de detalle (Fase 8),
       con el ejemplo de documento de cada colección

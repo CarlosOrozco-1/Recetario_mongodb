@@ -34,8 +34,8 @@ graph LR
 - **Meta:** expresar aprobación y mantener el contador.
 - **Precondición:** sesión válida.
 - **Activador:** pulsar el corazón.
-- **Escenario:** alternar el estado, sincronizar receta y favoritos del usuario y registrar actividad para el autor.
-- **Excepciones:** receta inexistente (`404`); la interfaz evita el “me gusta” propio, pero la API no lo impide.
+- **Escenario:** crear o eliminar la fila en `likes`, recalcular `likesCount` y registrar actividad para el autor.
+- **Excepciones:** receta inexistente (`404`); dar “me gusta” a la receta propia (`400`, no puedes dar like a tu propia receta).
 
 ## CU-11 — Guardar o quitar guardado
 
@@ -43,8 +43,8 @@ graph LR
 - **Meta:** conservar una receta para consulta posterior.
 - **Precondición:** sesión válida.
 - **Activador:** pulsar guardar.
-- **Escenario:** alternar el arreglo `guardados` y su contador.
-- **Excepciones:** receta inexistente (`404`); no sincroniza el arreglo `favoritos` del usuario.
+- **Escenario:** crear o eliminar la fila en `saves` y recalcular `guardadosCount`.
+- **Excepciones:** receta inexistente (`404`).
 
 ## CU-12 — Compartir
 
@@ -52,8 +52,8 @@ graph LR
 - **Meta:** aumentar el contador de compartidos y registrar actividad.
 - **Precondición:** sesión válida.
 - **Activador:** pulsar compartir.
-- **Escenario esperado:** incrementar el contador y crear actividad `compartio_receta`.
-- **Defecto conocido:** ese tipo no está en la enumeración, por lo que la petición puede incrementar el contador y después devolver `500`.
+- **Escenario esperado:** incrementar `compartidosCount` y crear actividad `compartio_receta`.
+- **Excepciones:** receta inexistente (`404`).
 
 ## CU-13 — Reportar
 
@@ -61,5 +61,5 @@ graph LR
 - **Meta:** informar contenido inapropiado.
 - **Precondición:** sesión válida.
 - **Activador:** enviar un motivo.
-- **Escenario:** guardar el reporte, marcar la receta como reportada y sanear el motivo.
-- **Excepciones:** receta inexistente (`404`); actualmente admite reportes repetidos.
+- **Escenario:** crear un documento en `reports` con `estado: pendiente` y sanear el motivo.
+- **Excepciones:** receta inexistente (`404`); reporte duplicado del mismo usuario (`400`).

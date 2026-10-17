@@ -14,7 +14,7 @@ graph TD
     Dashboard([Abrir dashboard]) --> Tab{Pestaña}
     Tab -->|Mías| Propias[GET /api/recipes]
     Tab -->|Públicas| Publicas[GET /api/recipes?scope=public]
-    Propias --> Filtros[Filtros locales por categoría, texto, favorito y orden]
+    Propias --> Filtros[Filtros locales por categoría, texto, guardado y orden]
     Publicas --> Filtros
     Filtros --> Modal{Abrir detalle?}
     Modal -->|No| Accion[Crear, editar, eliminar o cambiar visibilidad]
@@ -46,9 +46,9 @@ graph TD
 
 | Paso | Detalle real |
 |---|---|
-| Crear | Acepta 12 campos editables; el servidor asigna el propietario y descarta `_id`, `usuario`, contadores, reportes y métricas. |
+| Crear | Acepta 11 campos editables; el servidor asigna el propietario y descarta `_id`, `usuario`, contadores y métricas. |
 | Listar | Sin paginación ni búsqueda en el servidor; los filtros actuales son del navegador. |
 | Detalle | Permite la receta si pertenece al usuario o es pública. |
 | Editar | Exige ser propietario y ejecuta validadores Mongoose; puede devolver `500` con identificadores inválidos. |
-| Eliminar | Exige ser propietario; elimina la receta y su imagen GridFS, pero deja huérfanos comentarios, reseñas y actividad. |
+| Eliminar | Exige ser propietario; elimina la receta, su imagen GridFS y sus filas en `likes`, `saves` y `reports`; deja huérfanos comentarios, reseñas y actividad. |
 | Visibilidad | Campo `publica`; las recetas nacen privadas. Muchas acciones sociales no comprueban actualmente la visibilidad. |

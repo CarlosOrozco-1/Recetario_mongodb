@@ -8,16 +8,16 @@ Los diagramas de estado describen el ciclo de vida de los recursos con estados p
 \begin{figure}[H]
   \centering
   \includegraphics[width=\textwidth]{build/estado/estado-receta.pdf}
-  \caption{Estados de una receta: visibilidad, reporte y eliminación.}
+  \caption{Estados de una receta: visibilidad y eliminación.}
   \label{fig:estado-receta}
 \end{figure}
 
-La receta nace privada. La visibilidad y el reporte son atributos del documento, y el borrado es físico: no hay borrado lógico ni cascada.
+La receta nace privada. La visibilidad es un atributo del documento y el borrado es físico: no hay borrado lógico ni cascada.
 
 \begin{itemize}[leftmargin=*]
-  \item \texttt{reportado} es un booleano independiente; una receta reportada no cambia de visibilidad ni deja de ser consultable.
-  \item No existe estado de moderación ni cuenta administradora.
-  \item Al eliminar, se borra la receta y su imagen GridFS, pero quedan huérfanos los comentarios, reseñas y actividades asociados.
+  \item Los reportes son documentos aparte en \texttt{reports}; no cambian la visibilidad ni el estado de la receta. Cada reporte tiene su propio ciclo (\texttt{pendiente}, \texttt{descartado}, \texttt{resuelto}).
+  \item No existe estado de moderación de recetas ni cuenta administradora.
+  \item Al eliminar, se borra la receta, su imagen GridFS y sus filas en \texttt{likes}, \texttt{saves} y \texttt{reports}; quedan huérfanos los comentarios, reseñas y actividades.
 \end{itemize}
 
 \section{Ciclo de vida de la imagen}

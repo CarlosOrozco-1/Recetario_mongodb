@@ -1,7 +1,7 @@
 # Ciclo de vida de la receta
 
-La receta nace privada. La visibilidad y el reporte son atributos del documento,
-y el borrado es físico: no hay borrado lógico ni cascada.
+La receta nace privada. La visibilidad es un atributo del documento y el borrado
+es físico: no hay borrado lógico ni cascada.
 
 ![Ciclo de vida de la receta](estado-receta.svg)
 
@@ -14,10 +14,6 @@ stateDiagram-v2
     [*] --> Privada: crear receta
     Privada --> Publica: cambiar visibilidad (publica = true)
     Publica --> Privada: ocultar (publica = false)
-    Publica --> Reportada: reportar
-    Privada --> Reportada: reportar
-    Reportada --> Publica: sigue visible (no hay moderación)
-    Reportada --> Privada: sigue visible como privada
     Privada --> Eliminada: eliminar (propietario)
     Publica --> Eliminada: eliminar (propietario)
     Eliminada --> [*]
@@ -28,8 +24,9 @@ stateDiagram-v2
 
 ## Notas
 
-- `reportado` es un booleano independiente; una receta reportada no cambia de
-  visibilidad ni deja de ser consultable.
-- No existe estado de moderación ni cuenta administradora.
-- Al eliminar, se borra la receta y su imagen GridFS, pero quedan huérfanos los
-  comentarios, reseñas y actividades asociados.
+- Los reportes son documentos aparte en `reports`; no cambian la visibilidad ni
+  el estado de la receta. Cada reporte tiene su propio ciclo de moderación
+  (`pendiente`, `descartado`, `resuelto`).
+- No existe estado de moderación de recetas ni cuenta administradora.
+- Al eliminar, se borra la receta, su imagen GridFS y sus filas en `likes`,
+  `saves` y `reports`; quedan huérfanos los comentarios, reseñas y actividades.
