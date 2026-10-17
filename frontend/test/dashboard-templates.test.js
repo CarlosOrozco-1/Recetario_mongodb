@@ -85,7 +85,7 @@ test("los botones dentro de .card-badges-top reactivan los clics", () => {
 });
 
 test("los demas botones del contenedor tambien la tienen", () => {
-  for (const selector of [".favorite-star-btn", ".social-btn"]) {
+  for (const selector of [".social-btn"]) {
     const block = css.match(
       new RegExp(`\\${selector}\\s*\\{([^}]*)\\}`)
     );

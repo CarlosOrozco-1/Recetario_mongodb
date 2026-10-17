@@ -15,24 +15,21 @@ export interface Recipe {
   tiempoPreparacion?: number;
   dificultad?: "Fácil" | "Media" | "Difícil";
   porciones?: number;
-  favorito?: boolean;
   publica?: boolean;
   createdAt?: string;
   updatedAt?: string;
   // --- CAMPOS SOCIALES ---
-  likes?: string[];
+  // Contadores cacheados que devuelve el backend.
   likesCount?: number;
-  liked?: boolean;           // Estado del usuario actual
-  guardados?: string[];
   guardadosCount?: number;
-  saved?: boolean;           // Estado del usuario actual
   comentariosCount?: number;
   ratingPromedio?: number;
   ratingCount?: number;
   compartidosCount?: number;
   hashtags?: string[];
-  reportado?: boolean;
-  reportes?: any[];
+  // Estado del usuario actual (calculado por el backend)
+  liked?: boolean;
+  saved?: boolean;
 }
 
 @Injectable({

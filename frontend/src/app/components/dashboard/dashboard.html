@@ -78,7 +78,7 @@
         </select>
       </div>
 
-      <!-- Favorites toggle (only in mine) -->
+      <!-- Saved filter (only in mine) -->
       <button
         *ngIf="activeTab() === 'mine'"
         type="button"
@@ -86,8 +86,8 @@
         [class.active]="showOnlyFavorites()"
         (click)="showOnlyFavorites.set(!showOnlyFavorites())"
       >
-        <span class="star-icon">{{ showOnlyFavorites() ? '★' : '☆' }}</span>
-        Favoritas
+        <span class="star-icon">🔖</span>
+        Guardadas
       </button>
 
       <!-- Sort selector -->
@@ -123,7 +123,7 @@
           <span *ngIf="!recipe.imagen && (recipe.categoria === 'Otro' || !recipe.categoria)">🍕</span>
         </div>
         
-        <!-- Owner quick indicators (public/private + favorite toggle) -->
+        <!-- Owner quick indicators (public/private) -->
         <div class="card-badges-top">
           <button
             *ngIf="isOwner(recipe)"
@@ -135,16 +135,6 @@
             [title]="recipe.publica ? 'Clic para hacer privada' : 'Clic para hacer pública'"
           >
             {{ recipe.publica ? '🔓 Pública' : '🔒 Privada' }}
-          </button>
-          <button
-            *ngIf="isOwner(recipe)"
-            type="button"
-            class="favorite-star-btn"
-            [class.is-fav]="recipe.favorito"
-            (click)="toggleFavorite(recipe, $event)"
-            title="Marcar como favorita"
-          >
-            ★
           </button>
         </div>
 

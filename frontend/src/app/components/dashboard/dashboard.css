@@ -353,35 +353,6 @@ button.privacy-badge:focus-visible {
   background-color: rgba(16, 185, 129, 0.85);
 }
 
-.favorite-star-btn {
-  pointer-events: auto;
-  background-color: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(4px);
-  border: none;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  color: #cbd5e1;
-  font-size: 16px;
-  transition: var(--transition);
-  box-shadow: var(--shadow-sm);
-  padding: 0;
-}
-
-.favorite-star-btn:hover {
-  transform: scale(1.15);
-  color: #eab308;
-}
-
-.favorite-star-btn.is-fav {
-  color: #eab308;
-  background-color: white;
-}
-
 /* Social Actions on Card */
 .card-social-actions {
   position: absolute;

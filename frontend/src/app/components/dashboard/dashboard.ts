@@ -104,9 +104,9 @@ export class Dashboard implements OnInit {
       filtered = filtered.filter(r => r.categoria === category);
     }
 
-    // 3. Filter by Favorites (only for own recipes, since favorite state is personal)
+    // 3. Filter by saved recipes (only for own recipes, since save state is personal)
     if (onlyFavs && tab === "mine") {
-      filtered = filtered.filter(r => r.favorito);
+      filtered = filtered.filter(r => r.saved);
     }
 
     // 4. Search Filter
@@ -210,28 +210,6 @@ export class Dashboard implements OnInit {
       error: (err) => {
         this.error.set("Error al eliminar la receta");
         this.toastService.error("No se pudo eliminar la receta");
-      }
-    });
-  }
-
-  toggleFavorite(recipe: Recipe, event: Event): void {
-    event.stopPropagation(); // Avoid opening the modal
-    if (!recipe._id || !this.isOwner(recipe)) return;
-
-    const newFavStatus = !recipe.favorito;
-    this.recipeService.update(recipe._id, { favorito: newFavStatus } as Recipe).subscribe({
-      next: () => {
-        this.recipes.update(list => 
-          list.map(r => r._id === recipe._id ? { ...r, favorito: newFavStatus } : r)
-        );
-        if (newFavStatus) {
-          this.toastService.success("¡Añadida a tus recetas favoritas! ❤️");
-        } else {
-          this.toastService.info("Quitada de favoritas");
-        }
-      },
-      error: (err) => {
-        this.toastService.error("Error al actualizar favorito");
       }
     });
   }

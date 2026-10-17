@@ -35,7 +35,6 @@ export class RecipeForm implements OnInit {
     dificultad: "Media",
     porciones: 2,
     publica: false,
-    favorito: false,
   };
 
   isEdit = false;
@@ -67,7 +66,6 @@ export class RecipeForm implements OnInit {
           dificultad: "Media",
           porciones: 2,
           publica: false,
-          favorito: false,
         };
       }
     });
@@ -85,7 +83,6 @@ next: (data) => {
           dificultad: data.dificultad || "Media",
           porciones: data.porciones ?? 2,
           publica: data.publica ?? false,
-          favorito: data.favorito ?? false,
           ingredientes: data.ingredientes && data.ingredientes.length > 0
             ? [...data.ingredientes]
             : [""],
