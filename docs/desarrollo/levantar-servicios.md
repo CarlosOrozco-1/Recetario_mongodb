@@ -8,9 +8,14 @@ solo existe en el servidor de producción.
 ## Requisitos
 
 - Node.js 20+ y npm instalados.
-- `backend/.env` con la cadena de Atlas. **Ya existe** y contiene
-  `MONGODB_URI`, `JWT_SECRET` y `PORT`.
-- La base de datos es el clúster de Atlas; no hay MongoDB local.
+- `backend/.env` con `JWT_SECRET` y la variable `MONGODB_URI` o `MONGO_URI`.
+- En la configuración actual, la URI apunta a MongoDB Atlas. Las pruebas de escritura ejecutadas así modifican Atlas.
+
+## Pendiente: entorno local aislado para pruebas de API
+
+Las pruebas de endpoints deberían ejecutarse primero contra una instancia MongoDB local desechable y separada de Atlas, para evitar depender de la red y no modificar datos reales. Después de aprobar los flujos, los datos que se quieran conservar se registrarán explícitamente en Atlas; no se copiarán automáticamente.
+
+Este entorno local aún no está configurado. La propuesta es levantar MongoDB 8 en `localhost:27017` con una base exclusiva (por ejemplo `recetario_test`) y una URI local seleccionada mediante una variable de entorno de pruebas, sin reemplazar ni versionar las credenciales de `backend/.env`. No usar `docker-compose.yml` de la raíz para esto: está destinado a VPS y contiene configuración de producción. Completar y validar este flujo es una tarea pendiente de Fase 3, Paso 27.
 
 ## Paso 1 — Backend (terminal 1)
 

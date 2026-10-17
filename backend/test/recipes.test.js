@@ -164,3 +164,99 @@ test("no se intenta borrar la imagen cuando el id no cambia", async () => {
   const seen = await captureUpdate({ imagen: "img-vieja" }, "img-vieja");
   assert.equal(seen.imagen, "img-vieja");
 });
+
+// --- 6. Listados por ámbito y errores de validación ------------------------
+const captureResponse = () => {
+  const response = { statusCode: 200, body: undefined };
+  response.status = (code) => {
+    response.statusCode = code;
+    return response;
+  };
+  response.json = (body) => {
+    response.body = body;
+    return response;
+  };
+  return response;
+};
+
+test("GET recipes por defecto filtra por el usuario autenticado", async () => {
+  const Like = require("../src/models/Like");
+  const Save = require("../src/models/Save");
+  const originalFind = RecipeModel.find;
+  const originalLikeFind = Like.find;
+  const originalSaveFind = Save.find;
+  const recipeId = "507f1f77bcf86cd799439011";
+  let filter;
+  const recipe = { _id: recipeId, toObject: () => ({ _id: recipeId }) };
+  RecipeModel.find = (query) => {
+    filter = query;
+    return { populate: () => ({ sort: async () => [recipe] }) };
+  };
+  Like.find = () => ({ select: async () => [] });
+  Save.find = () => ({ select: async () => [] });
+
+  try {
+    const res = captureResponse();
+    await controller.getAll({ user: { _id: "507f1f77bcf86cd799439012" }, query: {} }, res);
+    assert.deepEqual(filter, { usuario: "507f1f77bcf86cd799439012" });
+    assert.deepEqual(res.body, [{ _id: recipeId, liked: false, saved: false }]);
+  } finally {
+    RecipeModel.find = originalFind;
+    Like.find = originalLikeFind;
+    Save.find = originalSaveFind;
+  }
+});
+
+test("GET recipes con scope public incluye públicas y recetas propias", async () => {
+  const Like = require("../src/models/Like");
+  const Save = require("../src/models/Save");
+  const originalFind = RecipeModel.find;
+  const originalLikeFind = Like.find;
+  const originalSaveFind = Save.find;
+  const publicId = "507f1f77bcf86cd799439011";
+  const ownId = "507f1f77bcf86cd799439012";
+  const userId = "507f1f77bcf86cd799439013";
+  let filter;
+  const recipes = [
+    { _id: publicId, toObject: () => ({ _id: publicId }) },
+    { _id: ownId, toObject: () => ({ _id: ownId }) },
+  ];
+  RecipeModel.find = (query) => {
+    filter = query;
+    return { populate: () => ({ sort: async () => recipes }) };
+  };
+  Like.find = () => ({ select: async () => [] });
+  Save.find = () => ({ select: async () => [] });
+
+  try {
+    const res = captureResponse();
+    await controller.getAll({ user: { _id: userId }, query: { scope: "public" } }, res);
+    assert.deepEqual(filter, { $or: [{ publica: true }, { usuario: userId }] });
+    assert.deepEqual(res.body, [
+      { _id: publicId, liked: false, saved: false },
+      { _id: ownId, liked: false, saved: false },
+    ]);
+  } finally {
+    RecipeModel.find = originalFind;
+    Like.find = originalLikeFind;
+    Save.find = originalSaveFind;
+  }
+});
+
+test("create devuelve 400 para errores de validación del modelo", async () => {
+  const originalCreate = RecipeModel.create;
+  RecipeModel.create = async () => {
+    const error = new Error("El título es obligatorio");
+    error.name = "ValidationError";
+    throw error;
+  };
+
+  try {
+    const res = captureResponse();
+    await controller.create({ user: { _id: "user-a" }, body: {} }, res);
+    assert.equal(res.statusCode, 400);
+    assert.equal(res.body.message, "Datos de receta inválidos");
+  } finally {
+    RecipeModel.create = originalCreate;
+  }
+});

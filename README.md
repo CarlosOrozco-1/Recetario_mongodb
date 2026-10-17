@@ -150,6 +150,7 @@ El sistema usa **JWT (JSON Web Tokens)** con expiración de 30 días.
 - [Diagramas](docs/diagramas/) - Flujo y casos de uso
 - [Diagrama ER](docs/diagramas/diagrama-er.md) - Colecciones, relaciones e índices
 - [DERCAS](docs/dercas/dercas.tex) - Documento formal en LaTeX
+- [Análisis de flujos y pruebas de la API](docs/pruebas-api-flujos.md) - Endpoints, orden E2E y casos de prueba
 
 ## 🚧 Estado del Proyecto
 
