@@ -9,11 +9,11 @@
 // Idempotente: usa upserts, se puede correr más de una vez.
 require("dotenv").config({ path: require("path").join(__dirname, "..", ".env") });
 const mongoose = require("mongoose");
-const Like = require("../src/models/Like");
-const Save = require("../src/models/Save");
-const Report = require("../src/models/Report");
 
 const DRY_RUN = process.argv.includes("--dry-run");
+
+// Atlas puede tardar en la primera operación (clúster frío, creación de índices).
+mongoose.set("bufferTimeoutMS", 120000);
 
 const run = async () => {
   if (!process.env.MONGODB_URI) throw new Error("Falta MONGODB_URI en el entorno");
@@ -22,7 +22,15 @@ const run = async () => {
   console.log(`Conectado a "${db.databaseName}"${DRY_RUN ? " (DRY RUN: no se escribe nada)" : ""}`);
 
   if (!DRY_RUN) {
-    await Promise.all([Like.syncIndexes(), Save.syncIndexes(), Report.syncIndexes()]);
+    // createIndex es idempotente y evita el fallo de syncIndexes con Mongoose 9.
+    await Promise.all([
+      db.collection("likes").createIndex({ usuario: 1, receta: 1 }, { unique: true }),
+      db.collection("likes").createIndex({ receta: 1 }),
+      db.collection("saves").createIndex({ usuario: 1, receta: 1 }, { unique: true }),
+      db.collection("saves").createIndex({ receta: 1 }),
+      db.collection("reports").createIndex({ usuario: 1, receta: 1 }, { unique: true }),
+      db.collection("reports").createIndex({ receta: 1, estado: 1 }),
+    ]);
   }
 
   // Se lee la colección cruda: el esquema de Mongoose ya no expone los campos viejos.
