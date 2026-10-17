@@ -448,6 +448,8 @@ sudo nano /home/ubuntu/gestionInventario/gestion-inventario-sprinReact/caddy-cen
 | Subida de imagen (método) | El frontend enviaba `PUT /:id/image`; el backend solo tenía `POST` | `http.post` en `uploadImage()` | `frontend/src/app/services/recipe.service.ts` |
 | Mass-assignment | `update` pasaba `req.body` crudo a `findOneAndUpdate`; un `{"usuario": "..."}` robaba la receta y `{"likesCount": 9999}` falseaba métricas | Allowlist `EDITABLE_FIELDS` en `create` y `update` + `runValidators` | `backend/src/controllers/recipeController.js` |
 | Visibilidad dinámica | La casilla "pública" solo se podía cambiar reabriendo el editor | Badge como botón + modal de confirmación, en la tarjeta y en el modal de detalle | `frontend/src/app/components/dashboard/dashboard.{ts,html,css}` |
+| Secretos en compose | Atlas URI y `JWT_SECRET` en claro en `docker-compose.yml` | Movidos a `env_file: ./backend/.env` (el `.env` sigue en el historial de git → **rotar** credenciales) | `docker-compose.yml`, `docs/bitacora/pendientes.md` |
+| Build context | `COPY . .` podía incrustar `backend/.env` en la imagen | Creado `backend/.dockerignore` que excluye `.env` | `backend/.dockerignore` |
 
 > **Por qué no se guardó base64 en la receta:** el 401 ocurre *antes* de mirar los
 > bytes, así que cambiar el formato no habría arreglado nada. Además, 5 MB de
@@ -468,8 +470,6 @@ sudo nano /home/ubuntu/gestionInventario/gestion-inventario-sprinReact/caddy-cen
 | Sanitización | `sanitizeBody` existe y no se aplica globalmente | `backend/src/middleware/sanitize.js` |
 | Trust proxy | Falta configurar para que el rate limit no vea todo como la IP de Caddy | `backend/src/server.js` |
 | Magic bytes | El filtro se basa en el `Content-Type` que envía el cliente (fácil de falsear) | `backend/src/middleware/upload.js` |
-| Secretos | `docker-compose.yml` tiene Atlas URI y `JWT_SECRET` en claro | `docker-compose.yml` |
-| Build context | Sin `.dockerignore`, `COPY . .` puede incrustar `backend/.env` | `backend/.dockerignore` |
 
 **Regresión de seguridad que conviene añadir a `backend/test/recipes.test.js`**
 cuando se toque cualquiera de estos archivos: el orden de las capas del router

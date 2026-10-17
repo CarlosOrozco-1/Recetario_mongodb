@@ -3,21 +3,20 @@
 ## URI a usar
 En MongoDB Compass → New Connection → Advanced Connection Options → Connection String
 
-Copia esta cadena:
-
-```
-mongodb+srv://carlosorozcok_db_user:kDKmctCQQdQIw7Eg@recetario-cluster.plsosta.mongodb.net/recetario
-```
+Pega la cadena de conexión que está en `backend/.env`, en la variable `MONGODB_URI`
+(tiene el formato `mongodb+srv://<usuario>:<clave>@<cluster>/recetario`). No se
+documenta aquí para no exponer credenciales en el repositorio.
 
 ## Pasos
 1. Abrir MongoDB Compass
-2. Pegar la URI anterior (no tocar credenciales)
+2. Obtener `MONGODB_URI` de `backend/.env` y pegarla
 3. Seleccionar "Use DNS SRV" (mongodb+srv ya lo usa)
 4. Conectar
 5. Seleccionar base `recetario`
 
 ## Verificación
-Deberías ver colecciones: `users`, `recipes`, `comments`, `reviews`, `follows`, `activities`, además de las de `uploads` si hay imágenes (GridFS).
+Deberías ver colecciones: `users`, `recipes`, `comments`, `reviews`, `follows`,
+`activityfeeds`, además de `uploads.files` y `uploads.chunks` (GridFS).
 
 ## Notas
 - IP actual debe estar permitida en Atlas → Network Access. Si falla por IP, añade tu IP actual o temporalmente 0.0.0.0/0 (solo para pruebas puntuales).
