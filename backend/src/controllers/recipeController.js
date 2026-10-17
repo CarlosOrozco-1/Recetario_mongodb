@@ -35,6 +35,9 @@ const create = async (req, res) => {
     });
     res.status(201).json(recipe);
   } catch (error) {
+    if (error.name === "ValidationError" || error.name === "CastError") {
+      return res.status(400).json({ message: "Datos de receta inválidos", error: error.message });
+    }
     res.status(500).json({ message: "Error al crear receta", error: error.message });
   }
 };
@@ -53,13 +56,9 @@ const deleteImageFromGridFS = async (imageId) => {
 
 const getAll = async (req, res) => {
   try {
-    const { scope } = req.query;
-    let query = { usuario: req.user._id };
-
-    if (scope === "public") {
-      // Get all public recipes, including those of other users, and own recipes
-      query = { $or: [{ publica: true }, { usuario: req.user._id }] };
-    }
+    const query = req.query.scope === "public"
+      ? { $or: [{ publica: true }, { usuario: req.user._id }] }
+      : { usuario: req.user._id };
 
     const recipes = await Recipe.find(query)
       .populate("usuario", "name")

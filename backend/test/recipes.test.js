@@ -164,3 +164,77 @@ test("no se intenta borrar la imagen cuando el id no cambia", async () => {
   const seen = await captureUpdate({ imagen: "img-vieja" }, "img-vieja");
   assert.equal(seen.imagen, "img-vieja");
 });
+
+// --- 6. Listados por ámbito y errores de validación ------------------------
+const captureResponse = () => {
+  const response = { statusCode: 200, body: undefined };
+  response.status = (code) => {
+    response.statusCode = code;
+    return response;
+  };
+  response.json = (body) => {
+    response.body = body;
+    return response;
+  };
+  return response;
+};
+
+test("GET recipes por defecto filtra por el usuario autenticado", async () => {
+  const originalFind = RecipeModel.find;
+  let filter;
+  const recipes = [{ _id: "own-recipe" }];
+  RecipeModel.find = (query) => {
+    filter = query;
+    return {
+      populate: () => ({ sort: async () => recipes }),
+    };
+  };
+
+  try {
+    const res = captureResponse();
+    await controller.getAll({ user: { _id: "user-a" }, query: {} }, res);
+    assert.deepEqual(filter, { usuario: "user-a" });
+    assert.deepEqual(res.body, recipes);
+  } finally {
+    RecipeModel.find = originalFind;
+  }
+});
+
+test("GET recipes con scope public incluye públicas y recetas propias", async () => {
+  const originalFind = RecipeModel.find;
+  let filter;
+  const recipes = [{ _id: "public-recipe" }, { _id: "own-private-recipe" }];
+  RecipeModel.find = (query) => {
+    filter = query;
+    return {
+      populate: () => ({ sort: async () => recipes }),
+    };
+  };
+
+  try {
+    const res = captureResponse();
+    await controller.getAll({ user: { _id: "user-a" }, query: { scope: "public" } }, res);
+    assert.deepEqual(filter, { $or: [{ publica: true }, { usuario: "user-a" }] });
+    assert.deepEqual(res.body, recipes);
+  } finally {
+    RecipeModel.find = originalFind;
+  }
+});
+
+test("create devuelve 400 para errores de validación del modelo", async () => {
+  const originalCreate = RecipeModel.create;
+  RecipeModel.create = async () => {
+    const error = new Error("El título es obligatorio");
+    error.name = "ValidationError";
+    throw error;
+  };
+
+  try {
+    const res = captureResponse();
+    await controller.create({ user: { _id: "user-a" }, body: {} }, res);
+    assert.equal(res.statusCode, 400);
+    assert.equal(res.body.message, "Datos de receta inválidos");
+  } finally {
+    RecipeModel.create = originalCreate;
+  }
+});

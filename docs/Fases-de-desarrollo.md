@@ -217,6 +217,9 @@ reconstruido** con ellos.
 - [x] Editar receta
 - [x] Eliminar receta
 - [x] Verificar persistencia en MongoDB
+- [ ] Preparar MongoDB local aislado para pruebas rápidas de API, sin conexión a Atlas
+- [ ] Probar todos los flujos/endpoints contra la base local antes de validar persistencia en Atlas
+- [ ] Documentar el procedimiento para promover datos aprobados a Atlas (sin copiar datos de prueba automáticamente)
 
 ### Paso 28 - Validaciones y Manejo de Errores
 - [x] Validaciones en backend (campos obligatorios)
