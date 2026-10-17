@@ -9,15 +9,24 @@ Añadir:
 - token → (vacío)
 - userId → (vacío)
 - recipeId → (vacío)
+- commentId → (vacío)
+- reviewId → (vacío)
+- fileId → (vacío)
+- otherUserId → (vacío, id de otro usuario para probar follows)
 
 ## 3. Variables para Producción
 - baseUrl → `https://foodloopc.duckdns.org/api`
 - token → (vacío)
 - userId → (vacío)
 - recipeId → (vacío)
+- commentId → (vacío)
+- reviewId → (vacío)
+- fileId → (vacío)
+- otherUserId → (vacío)
 
 ## 4. Usar con la colección
 Importar `postman/Recetario.postman_collection.json` y seleccionar el environment activo.
+La colección trae 8 carpetas (Health, Auth, Recipes, Recipes Social, Comments, Reviews, Follows, Activity) y guarda automáticamente `token`, `userId`, `recipeId`, `commentId`, `reviewId` y `fileId` desde las respuestas.
 
 ## 5. Flujo sugerido
 1. POST /auth/register → guarda token/userId (si hay tests, revisar)
