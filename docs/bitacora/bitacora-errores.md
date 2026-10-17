@@ -470,3 +470,43 @@ prueba E2E lo destapó (la imagen respondía 200 tras "quitarla").
 
 Comprobado contra Atlas: sustituir deja la receta con el id nuevo, la imagen
 antigua responde 404, quitarla también la borra y no deja ficheros huérfanos.
+
+## 2026-10-17 — Normalización de la colección `recipes` (interacciones)
+
+**Síntoma:** `recipes` mezclaba el contenido de la receta con relaciones hacia
+usuarios (`likes[]`, `guardados[]`, `reportes[]`, `reportado`, `favorito`), y
+`users` duplicaba parte de esa información (`favoritos[]`, `stats.favoritosCount`).
+Además, la actividad `compartio_receta` no estaba en la enumeración de
+`ActivityFeed`, por lo que compartir incrementaba el contador y luego fallaba
+con `500`.
+
+**Causa:** el modelo embebía listas de `ObjectId` que crecen sin límite, lo que
+complica el conteo y la consistencia; el booleano `favorito` era de la receta y
+no del usuario que la marcaba. El enum de actividad no contemplaba el tipo que
+el propio controlador escribía.
+
+**Solución aplicada:**
+- Nuevas colecciones `likes`, `saves` y `reports` con índice único
+  `(usuario, receta)`; `reports.estado` con `pendiente`/`descartado`/`resuelto`.
+- `Recipe` conserva solo contadores cacheados y pierde `favorito`, `reportado`
+  y las listas; se añaden índices `{usuario,createdAt}`, `{categoria}`, `{publica}`.
+- `User` pierde `favoritos[]` y `stats.favoritosCount`.
+- `ActivityFeed` incluye `compartio_receta`.
+- `recipeSocialController` calcula contadores con `countDocuments`, bloquea el
+  me gusta propio (`400`), y `reportRecipe` responde `201`/`400` (duplicado).
+- `recipeController` devuelve los flags `liked`/`saved` en los listados y borra
+  `likes`/`saves`/`reports` al eliminar una receta.
+- El "Guardar" (`saves`) pasa a ser el único favorito personal; se elimina la
+  estrella de favorito del tablero y el filtro usa `saved`.
+
+**Archivos:** `backend/src/models/{Like,Save,Report}.js`, `Recipe.js`, `User.js`,
+`ActivityFeed.js`, `backend/src/controllers/{recipeSocialController,recipeController}.js`,
+`frontend/src/app/services/recipe.service.ts`,
+`frontend/src/app/components/dashboard/*`, `frontend/src/app/components/recipe-form/recipe-form.ts`.
+
+**Verificación:**
+- `npm test` (backend): 14/14; `npm test` (frontend): 11/11.
+- `ng build --configuration production`: correcto.
+- `backend/scripts/normalize-interactions.js --dry-run`: 7 recetas, 5 likes,
+  5 guardados, 0 reportes (pendiente aplicar tras desplegar el backend nuevo).
+- Diagramas Mermaid regenerados y ambos DERCAS recompilados.
