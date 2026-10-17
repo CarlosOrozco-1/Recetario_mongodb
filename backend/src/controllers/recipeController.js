@@ -1,9 +1,12 @@
 const Recipe = require("../models/Recipe");
+const Like = require("../models/Like");
+const Save = require("../models/Save");
+const Report = require("../models/Report");
 const mongoose = require("mongoose");
 const { GridFSBucket } = require("mongodb");
 
 // Únicos campos que el cliente puede escribir. Sin esta lista, un PUT podía
-// pisar _id, usuario (robo de receta), likes, likesCount, reportado, etc.
+// pisar _id, usuario (robo de receta), contadores, etc.
 const EDITABLE_FIELDS = [
   "titulo",
   "descripcion",
@@ -13,7 +16,6 @@ const EDITABLE_FIELDS = [
   "tiempoPreparacion",
   "dificultad",
   "porciones",
-  "favorito",
   "publica",
   "hashtags",
   "imagen",
@@ -26,6 +28,25 @@ const pickEditable = (body) => {
   }
   return allowed;
 };
+
+// Añade `liked` y `saved` (del usuario actual) a una lista de recetas,
+// resolviéndolos con una sola consulta a cada colección.
+const withUserFlags = async (recipes, userId) => {
+  const ids = recipes.map((r) => r._id);
+  const [likes, saves] = await Promise.all([
+    Like.find({ usuario: userId, receta: { $in: ids } }).select("receta"),
+    Save.find({ usuario: userId, receta: { $in: ids } }).select("receta"),
+  ]);
+  const likedIds = new Set(likes.map((l) => String(l.receta)));
+  const savedIds = new Set(saves.map((s) => String(s.receta)));
+
+  return recipes.map((r) => ({
+    ...r.toObject(),
+    liked: likedIds.has(String(r._id)),
+    saved: savedIds.has(String(r._id)),
+  }));
+};
+
 
 const create = async (req, res) => {
   try {
@@ -64,7 +85,7 @@ const getAll = async (req, res) => {
     const recipes = await Recipe.find(query)
       .populate("usuario", "name")
       .sort({ createdAt: -1 });
-    res.json(recipes);
+    res.json(await withUserFlags(recipes, req.user._id));
   } catch (error) {
     res.status(500).json({ message: "Error al obtener recetas", error: error.message });
   }
@@ -80,7 +101,8 @@ const getById = async (req, res) => {
     if (!recipe) {
       return res.status(404).json({ message: "Receta no encontrada" });
     }
-    res.json(recipe);
+    const [flags] = await withUserFlags([recipe], req.user._id);
+    res.json(flags);
   } catch (error) {
     res.status(500).json({ message: "Error al obtener receta", error: error.message });
   }
@@ -130,7 +152,14 @@ const remove = async (req, res) => {
     if (recipe.imagen) {
       await deleteImageFromGridFS(recipe.imagen);
     }
-    
+
+    // Limpiar interacciones asociadas para no dejar registros huérfanos
+    await Promise.all([
+      Like.deleteMany({ receta: recipe._id }),
+      Save.deleteMany({ receta: recipe._id }),
+      Report.deleteMany({ receta: recipe._id }),
+    ]);
+
     res.json({ message: "Receta eliminada" });
   } catch (error) {
     res.status(500).json({ message: "Error al eliminar receta", error: error.message });

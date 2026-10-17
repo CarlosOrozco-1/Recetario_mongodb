@@ -1,5 +1,7 @@
 const Recipe = require("../models/Recipe");
-const User = require("../models/User");
+const Like = require("../models/Like");
+const Save = require("../models/Save");
+const Report = require("../models/Report");
 const ActivityFeed = require("../models/ActivityFeed");
 
 const toggleLike = async (req, res) => {
@@ -7,19 +9,19 @@ const toggleLike = async (req, res) => {
     const recipe = await Recipe.findById(req.params.id);
     if (!recipe) return res.status(404).json({ message: "Receta no encontrada" });
 
-    const userId = req.user._id;
-    const liked = recipe.likes.includes(userId);
+    if (String(recipe.usuario) === String(req.user._id)) {
+      return res.status(400).json({ message: "No puedes dar like a tu propia receta" });
+    }
 
-    if (liked) {
-      recipe.likes.pull(userId);
-      recipe.likesCount = Math.max(0, recipe.likesCount - 1);
-      await User.findByIdAndUpdate(userId, { $inc: { "stats.favoritosCount": -1 } });
-      await User.findByIdAndUpdate(userId, { $pull: { favoritos: recipe._id } });
+    const existing = await Like.findOne({ usuario: req.user._id, receta: recipe._id });
+    let liked;
+
+    if (existing) {
+      await Like.deleteOne({ _id: existing._id });
+      liked = false;
     } else {
-      recipe.likes.push(userId);
-      recipe.likesCount += 1;
-      await User.findByIdAndUpdate(userId, { $inc: { "stats.favoritosCount": 1 } });
-      await User.findByIdAndUpdate(userId, { $addToSet: { favoritos: recipe._id } });
+      await Like.create({ usuario: req.user._id, receta: recipe._id });
+      liked = true;
 
       await ActivityFeed.create({
         usuario: recipe.usuario,
@@ -29,8 +31,9 @@ const toggleLike = async (req, res) => {
       });
     }
 
+    recipe.likesCount = await Like.countDocuments({ receta: recipe._id });
     await recipe.save();
-    res.json({ liked: !liked, likesCount: recipe.likesCount });
+    res.json({ liked, likesCount: recipe.likesCount });
   } catch (error) {
     res.status(500).json({ message: "Error en like", error: error.message });
   }
@@ -41,19 +44,20 @@ const toggleSave = async (req, res) => {
     const recipe = await Recipe.findById(req.params.id);
     if (!recipe) return res.status(404).json({ message: "Receta no encontrada" });
 
-    const userId = req.user._id;
-    const saved = recipe.guardados.includes(userId);
+    const existing = await Save.findOne({ usuario: req.user._id, receta: recipe._id });
+    let saved;
 
-    if (saved) {
-      recipe.guardados.pull(userId);
-      recipe.guardadosCount = Math.max(0, recipe.guardadosCount - 1);
+    if (existing) {
+      await Save.deleteOne({ _id: existing._id });
+      saved = false;
     } else {
-      recipe.guardados.push(userId);
-      recipe.guardadosCount += 1;
+      await Save.create({ usuario: req.user._id, receta: recipe._id });
+      saved = true;
     }
 
+    recipe.guardadosCount = await Save.countDocuments({ receta: recipe._id });
     await recipe.save();
-    res.json({ saved: !saved, guardadosCount: recipe.guardadosCount });
+    res.json({ saved, guardadosCount: recipe.guardadosCount });
   } catch (error) {
     res.status(500).json({ message: "Error en guardar", error: error.message });
   }
@@ -65,7 +69,7 @@ const incrementShare = async (req, res) => {
       req.params.id,
       { $inc: { compartidosCount: 1 } },
       { returnDocument: "after" }
-    ).select("compartidosCount");
+    ).select("compartidosCount titulo");
     if (!recipe) return res.status(404).json({ message: "Receta no encontrada" });
 
     await ActivityFeed.create({
@@ -77,25 +81,27 @@ const incrementShare = async (req, res) => {
 
     res.json({ compartidosCount: recipe.compartidosCount });
   } catch (error) {
-    res.status(500).json({ message: "Error en compartir", error: error.message });
+    res.status(500).json({ message: "Error al compartir", error: error.message });
   }
 };
 
 const reportRecipe = async (req, res) => {
   try {
     const { motivo } = req.body;
-    const recipe = await Recipe.findByIdAndUpdate(
-      req.params.id,
-      {
-        $push: { reportes: { usuario: req.user._id, motivo } },
-        $set: { reportado: true },
-      },
-      { returnDocument: "after" }
-    ).select("reportado reportes");
+    const recipe = await Recipe.findById(req.params.id);
     if (!recipe) return res.status(404).json({ message: "Receta no encontrada" });
 
-    res.json({ message: "Receta reportada", reportado: recipe.reportado });
+    await Report.create({
+      usuario: req.user._id,
+      receta: recipe._id,
+      motivo: motivo || "",
+    });
+
+    res.status(201).json({ message: "Receta reportada" });
   } catch (error) {
+    if (error.code === 11000) {
+      return res.status(400).json({ message: "Ya reportaste esta receta" });
+    }
     res.status(500).json({ message: "Error reportando", error: error.message });
   }
 };

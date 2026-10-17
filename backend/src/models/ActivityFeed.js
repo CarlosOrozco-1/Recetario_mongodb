@@ -15,6 +15,7 @@ const ActivityFeedSchema = new mongoose.Schema(
         "reseno_receta",
         "likio_receta",
         "guardo_receta",
+        "compartio_receta",
         "siguio_usuario",
       ],
       required: true,

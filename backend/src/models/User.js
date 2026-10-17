@@ -36,14 +36,7 @@ const UserSchema = new mongoose.Schema(
       recetasCount: { type: Number, default: 0 },
       seguidoresCount: { type: Number, default: 0 },
       siguiendoCount: { type: Number, default: 0 },
-      favoritosCount: { type: Number, default: 0 },
     },
-    favoritos: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Recipe",
-      },
-    ],
   },
   {
     timestamps: true,

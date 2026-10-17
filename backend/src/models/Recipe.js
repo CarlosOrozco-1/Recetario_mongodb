@@ -42,10 +42,6 @@ const RecipeSchema = new mongoose.Schema(
       type: Number,
       default: 1,
     },
-    favorito: {
-      type: Boolean,
-      default: false,
-    },
     publica: {
       type: Boolean,
       default: false,
@@ -56,24 +52,15 @@ const RecipeSchema = new mongoose.Schema(
       required: true,
     },
 
-    // --- CAMPOS SOCIALES ---
-    likes: [{
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-    }],
+    // --- CONTADORES DERIVADOS (caché) ---
+    // La fuente de verdad vive en colecciones propias: Like, Save, Comment,
+    // Review y Report. Estos números se recalculan al escribir para evitar
+    // recalcular en cada lectura.
     likesCount: { type: Number, default: 0 },
-
-    guardados: [{
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-    }],
     guardadosCount: { type: Number, default: 0 },
-
     comentariosCount: { type: Number, default: 0 },
-
     ratingPromedio: { type: Number, default: 0 },
     ratingCount: { type: Number, default: 0 },
-
     compartidosCount: { type: Number, default: 0 },
 
     hashtags: [{
@@ -81,18 +68,12 @@ const RecipeSchema = new mongoose.Schema(
       lowercase: true,
       trim: true,
     }],
-
-    reportado: {
-      type: Boolean,
-      default: false,
-    },
-    reportes: [{
-      usuario: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-      motivo: String,
-      createdAt: { type: Date, default: Date.now },
-    }],
   },
   { timestamps: true }
 );
+
+RecipeSchema.index({ usuario: 1, createdAt: -1 });
+RecipeSchema.index({ categoria: 1 });
+RecipeSchema.index({ publica: 1 });
 
 module.exports = mongoose.model("Recipe", RecipeSchema);
