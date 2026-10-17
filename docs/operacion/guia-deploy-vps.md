@@ -464,8 +464,9 @@ sudo nano /home/ubuntu/gestionInventario/gestion-inventario-sprinReact/caddy-cen
 | Imagen huérfana | Reemplazar imagen no borra la anterior de GridFS | `backend/src/controllers/recipeController.js` |
 | Perfil | Ruta `/profile/:username` pero `User` no tiene `username` | `backend/src/models/User.js` |
 | Respuestas anidadas | `getByRecipe` solo trae respuestas de primer nivel | `backend/src/controllers/commentController.js` |
-| Reglas de negocio | Like propio y responder propio solo se bloquean en el frontend | `recipeSocialController.js`, `commentController.js` |
-| Actividad | Enum sin `compartio_receta`, pero el controlador la crea | `backend/src/models/ActivityFeed.js` |
+| Reglas de negocio | Responder el propio comentario solo se bloquea en el frontend; el like propio ya responde `400` en el backend | `commentController.js` |
+| Actividad | **Resuelto (2026-10-17):** `compartio_receta` añadido al enum de `ActivityFeed` | `backend/src/models/ActivityFeed.js` |
+| Normalización | **Resuelto (2026-10-17):** interacciones movidas a `likes`/`saves`/`reports`; eliminar `recipes.likes[]`, `guardados[]`, `reportes[]`, `reportado`, `favorito` y `users.favoritos[]` | `backend/src/models/*`, `frontend/.../dashboard.*` |
 | Rate limit | `uploadLimiter` definido y no aplicado | `backend/src/routes/recipes.js` |
 | Sanitización | `sanitizeBody` existe y no se aplica globalmente | `backend/src/middleware/sanitize.js` |
 | Trust proxy | Falta configurar para que el rate limit no vea todo como la IP de Caddy | `backend/src/server.js` |
@@ -475,6 +476,47 @@ sudo nano /home/ubuntu/gestionInventario/gestion-inventario-sprinReact/caddy-cen
 cuando se toque cualquiera de estos archivos: el orden de las capas del router
 (es decir, que la imagen siga siendo pública y el resto no) y la allowlist de
 campos editables.
+
+### 3.6 Normalización de interacciones (2026-10-17)
+
+Las interacciones (`likes`, `saves`, `reports`) salieron de `recipes` a colecciones
+propias. **Orden obligatorio: primero el backend nuevo, después la migración.** El
+backend anterior escribía en `recipes.likes[]`/`guardados[]`; migrar antes de actualizar
+el código deja esas rutas fallando con `500`.
+
+```bash
+# 0. En LOCAL: subir los commits de la rama desa (requiere llave SSH de GitHub)
+git push origin desa
+
+# 1. En la VPS: traer el código nuevo
+ssh ubuntu@161.153.28.223
+cd /home/ubuntu/recetarioMongo/Recetario_mongodb
+git pull origin desa
+
+# 2. Recrear backend (aplica env_file y el código nuevo) y frontend
+docker compose up -d --build backend frontend
+
+# 3. Esperar el health check desde la red de Caddy
+docker exec caddy-central-caddy-1 wget -qO- http://recetario-backend:3000/api/health
+# esperado: {"status":"ok","mongodb":"conectado","database":"recetario", ...}
+
+# 4. Ensayo de la migración (no escribe nada)
+docker compose exec backend node scripts/normalize-interactions.js --dry-run
+# esperado: 5 likes, 5 guardados, 0 reportes
+
+# 5. Aplicar la migración
+docker compose exec backend node scripts/normalize-interactions.js
+
+# 6. Repetir el dry-run: debe dar 0/0/0 (los campos viejos ya no existen)
+docker compose exec backend node scripts/normalize-interactions.js --dry-run
+```
+
+La migración es idempotente (upserts) y crea los índices únicos con `syncIndexes()`
+antes de insertar. El backend también crea los índices al arrancar (Mongoose con
+`autoIndex` por defecto; no se define `NODE_ENV=production`).
+
+> Una vez aplicada, el índice único `(usuario, receta)` en `likes`/`saves`/`reports`
+> impide duplicados a nivel de base de datos.
 
 ---
 
