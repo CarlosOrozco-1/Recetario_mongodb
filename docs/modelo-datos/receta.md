@@ -17,7 +17,6 @@ Fuente: `backend/src/models/Recipe.js`
 | `tiempoPreparacion` | `Number` | No | Minutos | `0` |
 | `dificultad` | `String` | No | `Fácil`, `Media` o `Difícil` | `"Media"` |
 | `porciones` | `Number` | No | Porciones estimadas | `1` |
-| `favorito` | `Boolean` | No | Favorito personal del propietario actual | `false` |
 | `publica` | `Boolean` | No | Las recetas son privadas salvo cambio explícito | `false` |
 | `usuario` | `ObjectId` | Sí | Referencia a `User` | — |
 | `createdAt` | `Date` | Sí | Generado por Mongoose | — |
@@ -25,24 +24,33 @@ Fuente: `backend/src/models/Recipe.js`
 
 ## Campos sociales derivados
 
+Los contadores se mantienen como caché para listar sin agregaciones. El detalle
+por usuario vive en colecciones propias (`likes`, `saves`, `comments`, `reviews`,
+`reports`).
+
 | Campo | Tipo | Significado |
 |---|---|---|
-| `likes` | `ObjectId[]` | Usuarios que dieron “me gusta” |
-| `likesCount` | `Number` | Total derivado de “me gusta” |
-| `guardados` | `ObjectId[]` | Usuarios que guardaron la receta |
-| `guardadosCount` | `Number` | Total derivado de guardados |
+| `likesCount` | `Number` | Total de “me gusta”; equivale a `countDocuments` en `likes` |
+| `guardadosCount` | `Number` | Total de guardados; equivale a `countDocuments` en `saves` |
 | `comentariosCount` | `Number` | Total derivado de comentarios |
 | `ratingPromedio` | `Number` | Promedio de reseñas redondeado a un decimal |
 | `ratingCount` | `Number` | Total de reseñas |
 | `compartidosCount` | `Number` | Total derivado de compartir |
 | `hashtags` | `String[]` | Etiquetas normalizadas a minúsculas |
-| `reportado` | `Boolean` | Indica si tiene reportes |
-| `reportes` | `Array` | Cada reporte incluye `usuario`, `motivo` y `createdAt` |
+
+## Índices
+
+| Índice | Uso |
+|---|---|
+| `{ usuario: 1, createdAt: -1 }` | Tablero personal y perfil |
+| `{ categoria: 1 }` | Filtro por categoría |
+| `{ publica: 1 }` | Listado público |
 
 ## Relaciones
 
 - Cada receta pertenece exactamente a un usuario.
-- Cada receta puede tener muchos comentarios, reseñas, “me gusta”, guardados y reportes.
+- Cada receta puede tener muchos comentarios, reseñas, “me gusta”, guardados y reportes,
+  cada uno en su propia colección (ver `like.md`, `guardado.md`, `reporte.md`).
 - `imagen` no usa `ref` de Mongoose; contiene como texto el `_id` del archivo correspondiente en `uploads.files`.
 
 ## Ejemplo
@@ -59,19 +67,14 @@ Fuente: `backend/src/models/Recipe.js`
   "tiempoPreparacion": 30,
   "dificultad": "Media",
   "porciones": 4,
-  "favorito": false,
   "publica": true,
   "usuario": "68ea00000000000000000001",
-  "likes": [],
   "likesCount": 0,
-  "guardados": [],
   "guardadosCount": 0,
   "comentariosCount": 0,
   "ratingPromedio": 0,
   "ratingCount": 0,
   "compartidosCount": 0,
-  "hashtags": ["tradicional"],
-  "reportado": false,
-  "reportes": []
+  "hashtags": ["tradicional"]
 }
 ```

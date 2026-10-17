@@ -27,8 +27,8 @@ El token dura 30 días. No hay cierre de sesión en el servidor: el frontend eli
 | `GET /api/recipes` | Autenticada | `200` con las recetas del usuario |
 | `GET /api/recipes?scope=public` | Autenticada | `200` con las recetas públicas de otros usuarios más las propias |
 | `GET /api/recipes/:id` | Autenticada; permite la receta si es del usuario o es pública | `200` con la receta; `404` si no existe o no es visible |
-| `PUT /api/recipes/:id` | Autenticada; solamente acepta los 12 campos editables | `200` con la receta; `400` si no hay campos editables; `404` si no existe o no pertenece al usuario |
-| `DELETE /api/recipes/:id` | Autenticada | `200` con confirmación; elimina también la imagen asociada en GridFS; `404` si no existe o no pertenece al usuario |
+| `PUT /api/recipes/:id` | Autenticada; solamente acepta los 11 campos editables | `200` con la receta; `400` si no hay campos editables; `404` si no existe o no pertenece al usuario |
+| `DELETE /api/recipes/:id` | Autenticada | `200` con confirmación; elimina también la imagen en GridFS y las filas asociadas en `likes`, `saves` y `reports`; `404` si no existe o no pertenece al usuario |
 
 No existen búsqueda por texto, filtro por categoría en el servidor, paginación de recetas ni perfil por nombre de usuario.
 
@@ -45,10 +45,10 @@ La subida acepta JPEG, PNG, WebP y GIF según el tipo MIME declarado. No valida 
 
 | Método y ruta | Límites | Respuesta principal |
 |---|---|---|
-| `POST /api/recipes/:id/like` | 30 acciones por minuto | `200` con `liked` y `likesCount`; `404` si la receta no existe |
+| `POST /api/recipes/:id/like` | 30 acciones por minuto | `200` con `liked` y `likesCount`; `400` si la receta es del propio usuario; `404` si la receta no existe |
 | `POST /api/recipes/:id/save` | 30 acciones por minuto | `200` con `saved` y `guardadosCount`; `404` si la receta no existe |
-| `POST /api/recipes/:id/share` | 30 acciones por minuto | Hoy incrementa el contador, pero la creación del evento puede devolver `500` porque `compartio_receta` no está en la enumeración de actividad |
-| `POST /api/recipes/:id/report` | 10 creaciones por minuto; sanea `motivo` | `200` con confirmación y estado reportado; `404` si la receta no existe |
+| `POST /api/recipes/:id/share` | 30 acciones por minuto | `200` con `compartidosCount`; registra actividad `compartio_receta`; `404` si la receta no existe |
+| `POST /api/recipes/:id/report` | 10 creaciones por minuto; sanea `motivo` | `201` con confirmación; crea un documento en `reports` con estado `pendiente`; `400` si el usuario ya reportó la receta; `404` si la receta no existe |
 
 ## Comentarios
 

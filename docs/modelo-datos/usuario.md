@@ -16,8 +16,6 @@ Fuente: `backend/src/models/User.js`
 | `stats.recetasCount` | `Number` | No | Contador derivado | `0` |
 | `stats.seguidoresCount` | `Number` | No | Contador derivado | `0` |
 | `stats.siguiendoCount` | `Number` | No | Contador derivado | `0` |
-| `stats.favoritosCount` | `Number` | No | Contador derivado | `0` |
-| `favoritos` | `ObjectId[]` | No | Referencias a `Recipe` mediante los “me gusta” | `[]` |
 | `createdAt` | `Date` | Sí | Generado por Mongoose | — |
 | `updatedAt` | `Date` | Sí | Generado por Mongoose | — |
 
@@ -26,7 +24,8 @@ Fuente: `backend/src/models/User.js`
 - Un usuario puede ser propietario de muchas recetas.
 - Un usuario puede escribir muchos comentarios y reseñas.
 - Un usuario puede seguir a muchos usuarios y ser seguido por muchos usuarios.
-- `favoritos` representa las recetas a las que dio “me gusta”, no necesariamente las guardadas con “Guardar”.
+- Las interacciones sobre recetas (“me gusta”, guardados y reportes) se registran en
+  colecciones propias referenciando al usuario; no se denormalizan en `users`.
 
 ## Ejemplo
 
@@ -40,10 +39,8 @@ Fuente: `backend/src/models/User.js`
   "stats": {
     "recetasCount": 0,
     "seguidoresCount": 0,
-    "siguiendoCount": 0,
-    "favoritosCount": 0
+    "siguiendoCount": 0
   },
-  "favoritos": [],
   "createdAt": "2026-10-15T00:00:00.000Z",
   "updatedAt": "2026-10-15T00:00:00.000Z"
 }

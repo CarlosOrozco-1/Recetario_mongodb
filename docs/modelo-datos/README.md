@@ -4,6 +4,9 @@ Fuente: `backend/src/models/*.js`.
 
 - [Usuario](usuario.md)
 - [Receta](receta.md)
+- [Like](like.md)
+- [Guardado](guardado.md)
+- [Reporte](reporte.md)
 - [Comentario](comentario.md)
 - [Reseña](resena.md)
 - [Seguimiento](seguimiento.md)

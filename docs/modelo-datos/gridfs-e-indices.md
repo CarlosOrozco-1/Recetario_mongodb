@@ -41,9 +41,16 @@ El servicio de imágenes también acepta campos heredados `contentType` o deduce
 | `follows` | `{ seguido: 1, createdAt: -1 }` |
 | `follows` | `{ seguidor: 1, createdAt: -1 }` |
 | `activityfeeds` | `{ usuario: 1, createdAt: -1 }` |
+| `likes` | `{ usuario: 1, receta: 1 }`, único |
+| `likes` | `{ receta: 1 }` |
+| `saves` | `{ usuario: 1, receta: 1 }`, único |
+| `saves` | `{ receta: 1 }` |
+| `reports` | `{ usuario: 1, receta: 1 }`, único |
+| `reports` | `{ receta: 1, estado: 1 }` |
+| `recipes` | `{ usuario: 1, createdAt: -1 }` |
+| `recipes` | `{ categoria: 1 }` |
+| `recipes` | `{ publica: 1 }` |
 
 ## Índices recomendados pendientes
 
-- `recipes`: `{ usuario: 1, createdAt: -1 }` para el tablero personal.
-- `recipes`: `{ publica: 1, createdAt: -1 }` para el listado público.
 - `notifications`: `{ destinatario: 1, leida: 1, createdAt: -1 }`.
