@@ -21,7 +21,7 @@ Problema: `recipes` mezclaba el contenido de la receta con relaciones hacia usua
 - [x] Eliminar el booleano global `favorito` de `Recipe`; el "Guardar" (`saves`) es el único favorito personal.
 - [x] Añadir índices a `recipes`: `{usuario:1, createdAt:-1}`, `{categoria:1}`, `{publica:1}`.
 - [x] Actualizar `recipeSocialController.js`, `recipeController.js` (flags `liked`/`saved`) y `dashboard.ts`/`dashboard.html` (filtro por `saved`, sin estrella).
-- [x] Migrar los datos existentes con `backend/scripts/normalize-interactions.js` (2026-10-17): `likes` 5, `saves` 5, `reports` 0; sin campos viejos en `recipes`/`users`; índices únicos `(usuario, receta)` creados. Idempotente (re-ejecución → 0/0/0).
+- [x] Migrar los datos existentes con `backend/scripts/normalize-interactions.js` (2026-10-17): dry-run previo 5/5/0, aplicada en la VPS tras desplegar el backend nuevo; sin campos viejos en `recipes`/`users`; índices únicos `(usuario, receta)` creados. Idempotente (re-ejecución → 0/0/0).
 - [x] Actualizar `docs/modelo-datos/` (receta, usuario, like, guardado, reporte) y los dos DERCAS (diagrama ER, procesos, casos de uso, estados).
 
 ## 4. Pruebas con Postman
@@ -30,7 +30,7 @@ Problema: `recipes` mezclaba el contenido de la receta con relaciones hacia usua
 - [x] Añadir requests para flujos críticos: auth, recetas, imágenes, likes/saves, comentarios, reseñas, follows, activity (8 carpetas).
 - [x] Guardar scripts de test para obtener token e IDs automáticamente desde las respuestas.
 - [x] Documentar importación y uso en `docs/operacion/postman-environment.md` y enlace desde el README raíz.
-- [ ] Ejecutar pruebas end-to-end contra el remoto (tras desplegar el backend nuevo) y registrar resultados en bitácora.
+- [ ] Ejecutar pruebas end-to-end contra el remoto y registrar resultados en bitácora. **Progreso 2026-10-17:** 27/28 PASS con dos usuarios de prueba; el fallo (`POST /follows` → 500) era un defecto en `Follow.js` ya corregido localmente, pendiente de desplegar y reejecutar el E2E.
 
 ## 5. Seguridad: rotación de credenciales
 La cadena `MONGODB_URI` y `JWT_SECRET` estuvieron en `docker-compose.yml` (ya corregido a `env_file`), por lo que siguen en el historial de git.
@@ -48,4 +48,4 @@ El commit `c6eee0c` subió `carloso` (llave privada OpenSSH) y `carloso.pub`, us
 - [ ] Opcional: purgar el historial (`git filter-repo`/`git filter-branch`) y exige force-push + re-clonar en el otro equipo.
 
 ## Prioridad
-Orden sugerido: primero seguridad/rotación de credenciales (incluida la llave SSH filtrada); desplegar el backend nuevo en la VPS para alinear el remoto con la nueva estructura; después las pruebas E2E con Postman contra el remoto. La migración de `recipes` ya se aplicó en Atlas (5 likes / 5 saves / 0 reports). Conexión a Atlas (1), revisión de usuarios (2), flujo local contenerizado y colecciones Postman (4) ya documentados.
+Orden sugerido: primero seguridad/rotación de credenciales (incluida la llave SSH filtrada); desplegar el fix de `follows` en la VPS y reejecutar las pruebas E2E (27/28 PASS el 2026-10-17; el fallo era el hook de `Follow.js`, ya corregido localmente). La migración de `recipes` ya se aplicó en Atlas (5 likes / 5 saves / 0 reportes). Conexión a Atlas (1), revisión de usuarios (2), flujo local contenerizado y colecciones Postman (4) ya documentados.

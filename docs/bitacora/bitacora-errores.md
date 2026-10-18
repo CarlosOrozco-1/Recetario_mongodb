@@ -505,5 +505,27 @@ el propio controlador escribía.
 - `npm test` (backend): 14/14; `npm test` (frontend): 11/11.
 - `ng build --configuration production`: correcto.
 - `backend/scripts/normalize-interactions.js --dry-run`: 7 recetas, 5 likes,
-  5 guardados, 0 reportes (pendiente aplicar tras desplegar el backend nuevo).
+  5 guardados, 0 reportes. **Aplicada en la VPS el 2026-10-17** tras desplegar
+  el backend nuevo; dry-run posterior: 0/0/0 (migración completa).
 - Diagramas Mermaid regenerados y ambos DERCAS recompilados.
+
+## 2026-10-17 — POST /api/follows fallaba con 500 (`next is not a function`)
+
+**Síntoma:** en pruebas E2E contra el remoto, `POST /api/follows` para seguir a
+otro usuario respondía `500 {"message":"Error en follow","error":"next is not a function"}.
+El chequeo de follow propio (`400`) y `GET /follows/check/:userId` sí funcionaban.
+
+**Causa:** el hook `FollowSchema.pre("validate", function (next) {...})` estaba
+escrito para la API de callbacks de Mongoose; en Mongoose 9 los hooks de
+documentos ya no reciben `next`, de modo que invocarlo lanzaba
+`TypeError: next is not a function`. El hook además tenía un doble `next()`
+(latente desde su creación: tras `next(error)` seguía llamando a `next()`).
+
+**Solución aplicada:** convertir el hook a forma asíncrona sin `next` y lanzar
+el error directamente (`backend/src/models/Follow.js`).
+
+**Verificación:**
+- `npm test` (backend): 17/17.
+- Validación del modelo en aislamiento: auto-seguir rechazado con el mensaje
+  esperado; follow entre usuarios distintos valida sin error.
+- E2E remoto pendiente de reejecutar tras desplegar este cambio en la VPS.

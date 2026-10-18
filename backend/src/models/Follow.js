@@ -22,12 +22,12 @@ FollowSchema.index({ seguidor: 1, seguido: 1 }, { unique: true });
 FollowSchema.index({ seguido: 1, createdAt: -1 });
 FollowSchema.index({ seguidor: 1, createdAt: -1 });
 
-// Evitar auto-seguir
-FollowSchema.pre("validate", function (next) {
+// Evitar auto-seguir. En Mongoose 9 los hooks de documentos no reciben `next`;
+// el error se lanza para rechazar la operación.
+FollowSchema.pre("validate", function () {
   if (this.seguidor.equals(this.seguido)) {
-    next(new Error("No puedes seguirte a ti mismo"));
+    throw new Error("No puedes seguirte a ti mismo");
   }
-  next();
 });
 
 module.exports = mongoose.model("Follow", FollowSchema);
