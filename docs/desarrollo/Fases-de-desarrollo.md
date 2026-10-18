@@ -40,11 +40,11 @@ Pruebas actuales: **14 backend** (`backend/test/recipes.test.js`) y
 
 ### Estado de las ramas
 
-`desa`, `pre` y `pro` están en `67ac781` (2026-10-17), sincronizadas con
-`origin`. La normalización de interacciones quedó desplegada en la VPS el
-2026-10-17 (backend reconstruido y migración aplicada, dry-run final 0/0/0);
-el stack local contenerizado está versionado en el repo. Pendiente: rotación
-de credenciales y pruebas E2E contra el remoto (ver
+Las ramas `desa`, `pre` y `pro` están sincronizadas con `origin` (2026-10-17).
+La normalización de interacciones quedó desplegada en la VPS el
+2026-10-17 (backend reconstruido y migración aplicada, dry-run final 0/0/0),
+igual que el fix de `follows`; las pruebas E2E contra el remoto cerraron en
+28/28 PASS. Pendiente: rotación de credenciales (ver
 `docs/bitacora/pendientes.md`).
 
 ---

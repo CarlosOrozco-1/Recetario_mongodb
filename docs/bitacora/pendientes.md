@@ -30,7 +30,7 @@ Problema: `recipes` mezclaba el contenido de la receta con relaciones hacia usua
 - [x] Añadir requests para flujos críticos: auth, recetas, imágenes, likes/saves, comentarios, reseñas, follows, activity (8 carpetas).
 - [x] Guardar scripts de test para obtener token e IDs automáticamente desde las respuestas.
 - [x] Documentar importación y uso en `docs/operacion/postman-environment.md` y enlace desde el README raíz.
-- [ ] Ejecutar pruebas end-to-end contra el remoto y registrar resultados en bitácora. **Progreso 2026-10-17:** 27/28 PASS con dos usuarios de prueba; el fallo (`POST /follows` → 500) era un defecto en `Follow.js` ya corregido localmente, pendiente de desplegar y reejecutar el E2E.
+- [x] Ejecutar pruebas end-to-end contra el remoto y registrar resultados en bitácora. 2026-10-17: **28/28 PASS** (dos ejecuciones: la primera detectó el 500 de `POST /follows`, defecto corregido, desplegado y reejecutado sin fallos). Cubre auth, CRUD de recetas, imágenes GridFS, likes/saves/share/report con reglas de negocio, flags `liked`/`saved`, comentarios, reseñas, follows, actividad y DELETE con cascada.
 
 ## 5. Seguridad: rotación de credenciales
 La cadena `MONGODB_URI` y `JWT_SECRET` estuvieron en `docker-compose.yml` (ya corregido a `env_file`), por lo que siguen en el historial de git.
@@ -48,4 +48,4 @@ El commit `c6eee0c` subió `carloso` (llave privada OpenSSH) y `carloso.pub`, us
 - [ ] Opcional: purgar el historial (`git filter-repo`/`git filter-branch`) y exige force-push + re-clonar en el otro equipo.
 
 ## Prioridad
-Orden sugerido: primero seguridad/rotación de credenciales (incluida la llave SSH filtrada); desplegar el fix de `follows` en la VPS y reejecutar las pruebas E2E (27/28 PASS el 2026-10-17; el fallo era el hook de `Follow.js`, ya corregido localmente). La migración de `recipes` ya se aplicó en Atlas (5 likes / 5 saves / 0 reportes). Conexión a Atlas (1), revisión de usuarios (2), flujo local contenerizado y colecciones Postman (4) ya documentados.
+Orden sugerido: seguridad/rotación de credenciales (incluida la llave SSH filtrada) — único bloque pendiente. Las pruebas E2E contra el remoto quedaron en 28/28 PASS (2026-10-17) y la migración de `recipes` ya se aplicó en Atlas (5 likes / 5 saves / 0 reportes). Conexión a Atlas (1), revisión de usuarios (2), flujo local contenerizado y colecciones Postman (4) ya documentados.

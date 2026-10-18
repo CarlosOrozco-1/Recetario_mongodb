@@ -528,4 +528,6 @@ el error directamente (`backend/src/models/Follow.js`).
 - `npm test` (backend): 17/17.
 - Validación del modelo en aislamiento: auto-seguir rechazado con el mensaje
   esperado; follow entre usuarios distintos valida sin error.
-- E2E remoto pendiente de reejecutar tras desplegar este cambio en la VPS.
+- Tras desplegar en la VPS (2026-10-17): E2E remoto reejecutado, **28/28
+  PASS**, `POST /follows` → `200 {"isFollowing":true}` y el feed incluye
+  `siguio_usuario`.
