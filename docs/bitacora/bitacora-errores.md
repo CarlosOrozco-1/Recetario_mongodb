@@ -285,9 +285,6 @@ Actualizar `Dockerfile.frontend` para copiarlo.
 
 ---
 
-*Última actualización: 2026-08-18*
----
-
 ## 2026-09-25 | Deploy VPS (contenedor crasheado por whitelist de Atlas)
 
 ### Síntoma

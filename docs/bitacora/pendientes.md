@@ -25,12 +25,12 @@ Problema: `recipes` mezclaba el contenido de la receta con relaciones hacia usua
 - [x] Actualizar `docs/modelo-datos/` (receta, usuario, like, guardado, reporte) y los dos DERCAS (diagrama ER, procesos, casos de uso, estados).
 
 ## 4. Pruebas con Postman
-- [ ] Crear un **Environment** en Postman (fuera del repo) con variables: `baseUrl`, `token`, `userId`, etc.
-- [ ] Configurar colección existente (`postman/Recetario.postman_collection.json`) para usar variables de entorno.
-- [ ] Añadir requests para flujos críticos: auth, recetas, imágenes, likes/saves, comentarios, reseñas, follows, feed.
-- [ ] Guardar scripts de pre-request/test para obtener token automáticamente si aplica.
-- [ ] Documentar cómo importar colección + environment en `docs/operacion/` o README de Postman.
-- [ ] Ejecutar pruebas end-to-end y registrar resultados en bitácora.
+- [x] Crear colecciones por entorno con variables de colección (`baseUrl`, `token`, `userId`, etc.): `postman/Recetario-Local.postman_collection.json` y `postman/Recetario-Remoto.postman_collection.json`. Environment de Postman quedó opcional.
+- [x] Configurar las colecciones para usar variables (`{{baseUrl}}`, `{{token}}`, …); las IDs se guardan automáticamente desde las respuestas.
+- [x] Añadir requests para flujos críticos: auth, recetas, imágenes, likes/saves, comentarios, reseñas, follows, activity (8 carpetas).
+- [x] Guardar scripts de test para obtener token e IDs automáticamente desde las respuestas.
+- [x] Documentar importación y uso en `docs/operacion/postman-environment.md` y enlace desde el README raíz.
+- [ ] Ejecutar pruebas end-to-end contra el remoto (tras desplegar el backend nuevo) y registrar resultados en bitácora.
 
 ## 5. Seguridad: rotación de credenciales
 La cadena `MONGODB_URI` y `JWT_SECRET` estuvieron en `docker-compose.yml` (ya corregido a `env_file`), por lo que siguen en el historial de git.
@@ -43,4 +43,4 @@ La cadena `MONGODB_URI` y `JWT_SECRET` estuvieron en `docker-compose.yml` (ya co
 - [ ] Confirmar que `.env` sigue ignorado por git en todos los entornos.
 
 ## Prioridad
-Orden sugerido: primero seguridad/rotación de credenciales; luego normalización de `recipes`; después Postman. Conexión a Atlas (1) y revisión de usuarios (2) ya documentadas.
+Orden sugerido: primero seguridad/rotación de credenciales; luego aplicar la migración de `recipes` en el remoto (el backend nuevo debe desplegarse primero); después las pruebas E2E con Postman contra el remoto. Conexión a Atlas (1), revisión de usuarios (2), flujo local contenerizado y colecciones Postman (4) ya documentados.

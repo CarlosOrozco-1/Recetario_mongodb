@@ -1,0 +1,57 @@
+name: recetario-local
+
+services:
+  mongo:
+    image: mongo:8
+    container_name: recetario-local-mongo
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:27017:27017"
+    volumes:
+      - mongo-local-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 5s
+
+  backend:
+    image: node:22-alpine
+    container_name: recetario-local-backend
+    working_dir: /app
+    restart: unless-stopped
+    depends_on:
+      mongo:
+        condition: service_healthy
+    environment:
+      PORT: "3000"
+      JWT_SECRET: local-only-change-me
+      MONGODB_URI: mongodb://mongo:27017/recetario_local
+    volumes:
+      - ../backend:/app:Z
+      - backend-local-node-modules:/app/node_modules
+    command: sh -c "if [ ! -d node_modules/mongoose ]; then npm install; fi && npm run dev"
+    ports:
+      - "127.0.0.1:3000:3000"
+
+  frontend:
+    image: node:22-alpine
+    container_name: recetario-local-frontend
+    working_dir: /app
+    restart: unless-stopped
+    depends_on:
+      - backend
+    environment:
+      CHOKIDAR_USEPOLLING: "true"
+    volumes:
+      - ../frontend:/app:Z
+      - frontend-local-node-modules:/app/node_modules
+    command: sh -c "if [ ! -d node_modules/@angular/cli ]; then npm install; fi && npm run start:docker"
+    ports:
+      - "127.0.0.1:4200:4200"
+
+volumes:
+  mongo-local-data:
+  backend-local-node-modules:
+  frontend-local-node-modules:

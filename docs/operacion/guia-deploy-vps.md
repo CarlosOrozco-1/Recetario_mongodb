@@ -511,7 +511,7 @@ docker compose exec backend node scripts/normalize-interactions.js
 docker compose exec backend node scripts/normalize-interactions.js --dry-run
 ```
 
-La migración es idempotente (upserts) y crea los índices únicos con `syncIndexes()`
+La migración es idempotente (upserts) y crea los índices únicos con `createIndex()`
 antes de insertar. El backend también crea los índices al arrancar (Mongoose con
 `autoIndex` por defecto; no se define `NODE_ENV=production`).
 

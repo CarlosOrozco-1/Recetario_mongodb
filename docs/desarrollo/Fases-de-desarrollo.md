@@ -38,12 +38,14 @@ Hay dos cosas que conviene tener presentes antes de la entrega:
 Pruebas actuales: **14 backend** (`backend/test/recipes.test.js`) y
 **11 frontend** (`frontend/test/dashboard-templates.test.js`).
 
-### Commits locales sin subir
+### Estado de las ramas
 
-`desa`, `pre` y `pro` están en `cd2441d`. Lo único pendiente de `origin` es el
-commit de este documento. El código de la corrección de imágenes (`33f2f9e`) y su
-explicación (`5d8c37d`) ya están subidos, pero **producción aún no se ha
-reconstruido** con ellos.
+`desa`, `pre` y `pro` están en `512c1fc` (2026-10-17), sincronizadas con
+`origin`. La normalización de interacciones ya está commiteada; el stack local
+contenerizado (`local/compose.yaml`, colecciones Postman y docs asociadas) está
+listo para commit en `desa`. **La VPS aún no se ha desplegado con la
+normalización ni se ha aplicado la migración de datos** (ver
+`docs/operacion/guia-deploy-vps.md` §3.6 y `docs/bitacora/pendientes.md`).
 
 ---
 
@@ -217,9 +219,9 @@ reconstruido** con ellos.
 - [x] Editar receta
 - [x] Eliminar receta
 - [x] Verificar persistencia en MongoDB
-- [ ] Preparar MongoDB local aislado para pruebas rápidas de API, sin conexión a Atlas
-- [ ] Probar todos los flujos/endpoints contra la base local antes de validar persistencia en Atlas
-- [ ] Documentar el procedimiento para promover datos aprobados a Atlas (sin copiar datos de prueba automáticamente)
+- [x] Preparar MongoDB local aislado para pruebas rápidas de API, sin conexión a Atlas (stack contenerizado en `local/compose.yaml`, ver `docs/operacion/desarrollo-local-docker.md`)
+- [x] Probar todos los flujos/endpoints contra la base local antes de validar persistencia en Atlas (colección `postman/Recetario-Local.postman_collection.json`)
+- [x] Documentar el procedimiento: los registros locales no se promueven automáticamente a Atlas; se recrian de forma deliberada en el entorno que corresponda (`docs/operacion/desarrollo-local-docker.md`)
 
 ### Paso 28 - Validaciones y Manejo de Errores
 - [x] Validaciones en backend (campos obligatorios)
@@ -257,8 +259,8 @@ reconstruido** con ellos.
 ### Paso 32 - Deploy
 - [x] Configurar para producción (VPS con Caddy + Docker Compose)
 - [x] Imágenes Docker optimizadas (build multi-stage + nginx)
-- [ ] Variables de entorno seguras (secretos aún en texto plano en compose/historial)
-- [ ] `.dockerignore` en `backend/`
+- [ ] Variables de entorno seguras (secretos aún en texto plano en el historial de `docker-compose.yml`; rotación pendiente en `docs/bitacora/pendientes.md`)
+- [x] `.dockerignore` en `backend/`
 
 ---
 

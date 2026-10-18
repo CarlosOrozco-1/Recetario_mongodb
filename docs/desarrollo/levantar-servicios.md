@@ -11,11 +11,21 @@ solo existe en el servidor de producción.
 - `backend/.env` con `JWT_SECRET` y la variable `MONGODB_URI` o `MONGO_URI`.
 - En la configuración actual, la URI apunta a MongoDB Atlas. Las pruebas de escritura ejecutadas así modifican Atlas.
 
-## Pendiente: entorno local aislado para pruebas de API
+## Alternativa recomendada: stack local contenerizado
 
-Las pruebas de endpoints deberían ejecutarse primero contra una instancia MongoDB local desechable y separada de Atlas, para evitar depender de la red y no modificar datos reales. Después de aprobar los flujos, los datos que se quieran conservar se registrarán explícitamente en Atlas; no se copiarán automáticamente.
+Para probar sin depender de Atlas, usa el stack aislado documentado en [`desarrollo-local-docker.md`](../operacion/desarrollo-local-docker.md): inicia MongoDB 8, backend y frontend con Podman Compose o Docker Compose. En Fedora/Podman:
 
-Este entorno local aún no está configurado. La propuesta es levantar MongoDB 8 en `localhost:27017` con una base exclusiva (por ejemplo `recetario_test`) y una URI local seleccionada mediante una variable de entorno de pruebas, sin reemplazar ni versionar las credenciales de `backend/.env`. No usar `docker-compose.yml` de la raíz para esto: está destinado a VPS y contiene configuración de producción. Completar y validar este flujo es una tarea pendiente de Fase 3, Paso 27.
+```bash
+podman compose -f local/compose.yaml up -d
+```
+
+Con Docker Compose v2, usa `docker compose -f local/compose.yaml up -d`.
+
+La configuración del backend se inyecta desde el compose local y apunta a `recetario_local`; no modifica ni sustituye `backend/.env` de Atlas. En esta modalidad no necesitas iniciar cada servicio manualmente en una terminal aparte.
+
+## Alternativa manual (backend/frontend en el host)
+
+Si prefieres levantar Node y Angular directamente en dos terminales, necesitas una instancia MongoDB local corriendo primero y configurar temporalmente `MONGODB_URI` o `MONGO_URI` para apuntar a `mongodb://localhost:27017/recetario_local`. No sobrescribas la URI de Atlas en `backend/.env`; usa variables de entorno de la shell o un archivo local separado ignorado por Git. En esta modalidad el orden es MongoDB → backend → frontend.
 
 ## Paso 1 — Backend (terminal 1)
 

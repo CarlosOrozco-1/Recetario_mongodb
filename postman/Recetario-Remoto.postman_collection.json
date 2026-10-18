@@ -1,0 +1,482 @@
+{
+  "info": {
+    "name": "Recetario API - Remoto",
+    "description": "Pruebas contra la API remota de FoodLoop. Las operaciones de escritura modifican datos remotos; usar con precaución. No contiene tokens ni credenciales.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "https://foodloopc.duckdns.org/api" },
+    { "key": "token", "value": "" },
+    { "key": "userId", "value": "" },
+    { "key": "recipeId", "value": "" },
+    { "key": "commentId", "value": "" },
+    { "key": "reviewId", "value": "" },
+    { "key": "fileId", "value": "" },
+    { "key": "otherUserId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Health Check",
+      "item": [
+        {
+          "name": "GET /api/health",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/health"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "POST /api/auth/register",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json.token) {",
+                  "    pm.collectionVariables.set('token', json.token);",
+                  "    pm.collectionVariables.set('userId', json._id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Carlos Test\",\n  \"email\": \"carlos@test.com\",\n  \"password\": \"12345678\"\n}"
+            },
+            "url": "{{baseUrl}}/auth/register"
+          }
+        },
+        {
+          "name": "POST /api/auth/login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json.token) {",
+                  "    pm.collectionVariables.set('token', json.token);",
+                  "    pm.collectionVariables.set('userId', json._id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"carlos@test.com\",\n  \"password\": \"12345678\"\n}"
+            },
+            "url": "{{baseUrl}}/auth/login"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Recipes",
+      "item": [
+        {
+          "name": "POST /api/recipes (crear)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json._id) {",
+                  "    pm.collectionVariables.set('recipeId', json._id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Tacos al Pastor\",\n  \"descripcion\": \"Receta tradicional mexicana\",\n  \"categoria\": \"cena\",\n  \"hashtags\": [\"mexicana\", \"tacos\"],\n  \"ingredientes\": [\"carne de cerdo\", \"piña\", \"tortillas\", \"cebolla\", \"cilantro\"],\n  \"instrucciones\": \"Marinar la carne, asar y servir en tortillas con piña y cilantro.\",\n  \"publica\": true\n}"
+            },
+            "url": "{{baseUrl}}/recipes"
+          }
+        },
+        {
+          "name": "GET /api/recipes (listar)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{baseUrl}}/recipes"
+          }
+        },
+        {
+          "name": "GET /api/recipes?scope=public (catálogo público)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{baseUrl}}/recipes?scope=public"
+          }
+        },
+        {
+          "name": "GET /api/recipes/:id (obtener)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json.imagen) { pm.collectionVariables.set('fileId', json.imagen); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{baseUrl}}/recipes/{{recipeId}}"
+          }
+        },
+        {
+          "name": "PUT /api/recipes/:id (actualizar)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Tacos al Pastor (actualizado)\",\n  \"descripcion\": \"Receta mejorada\",\n  \"categoria\": \"cena\",\n  \"hashtags\": [\"mexicana\", \"tacos\", \"picante\"],\n  \"ingredientes\": [\"carne de cerdo\", \"piña\", \"tortillas\", \"cebolla\", \"cilantro\", \"salsa\"],\n  \"instrucciones\": \"Marinar, asar, servir y agregar salsa al gusto.\",\n  \"publica\": true\n}"
+            },
+            "url": "{{baseUrl}}/recipes/{{recipeId}}"
+          }
+        },
+        {
+          "name": "DELETE /api/recipes/:id (eliminar)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{baseUrl}}/recipes/{{recipeId}}"
+          }
+        },
+        {
+          "name": "POST /api/recipes/:id/image (subir imagen)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json.imagen) { pm.collectionVariables.set('fileId', json.imagen); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "imagen", "type": "file", "src": "" }
+              ]
+            },
+            "url": "{{baseUrl}}/recipes/{{recipeId}}/image"
+          }
+        },
+        {
+          "name": "GET /api/recipes/image/:fileId (ver imagen)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/recipes/image/{{fileId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Recipes Social",
+      "item": [
+        {
+          "name": "POST /api/recipes/:id/like (alternar like)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{baseUrl}}/recipes/{{recipeId}}/like"
+          }
+        },
+        {
+          "name": "POST /api/recipes/:id/save (alternar guardado)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{baseUrl}}/recipes/{{recipeId}}/save"
+          }
+        },
+        {
+          "name": "POST /api/recipes/:id/share (compartir)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{baseUrl}}/recipes/{{recipeId}}/share"
+          }
+        },
+        {
+          "name": "POST /api/recipes/:id/report (reportar)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"motivo\": \"Contenido duplicado o inapropiado\"\n}"
+            },
+            "url": "{{baseUrl}}/recipes/{{recipeId}}/report"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Comments",
+      "item": [
+        {
+          "name": "POST /api/comments (crear)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json._id) { pm.collectionVariables.set('commentId', json._id); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"receta\": \"{{recipeId}}\",\n  \"texto\": \"Se ve delicioso, lo probaré este fin de semana.\"\n}"
+            },
+            "url": "{{baseUrl}}/comments"
+          }
+        },
+        {
+          "name": "GET /api/comments/receta/:recetaId (listar)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{baseUrl}}/comments/receta/{{recipeId}}"
+          }
+        },
+        {
+          "name": "PUT /api/comments/:id (editar)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"texto\": \"Comentario editado.\"\n}"
+            },
+            "url": "{{baseUrl}}/comments/{{commentId}}"
+          }
+        },
+        {
+          "name": "DELETE /api/comments/:id (eliminar)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{baseUrl}}/comments/{{commentId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reviews",
+      "item": [
+        {
+          "name": "POST /api/reviews (crear)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json._id) { pm.collectionVariables.set('reviewId', json._id); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"receta\": \"{{recipeId}}\",\n  \"puntuacion\": 5,\n  \"texto\": \"Excelente receta, quedó perfecta.\"\n}"
+            },
+            "url": "{{baseUrl}}/reviews"
+          }
+        },
+        {
+          "name": "GET /api/reviews/receta/:recetaId (listar)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{baseUrl}}/reviews/receta/{{recipeId}}"
+          }
+        },
+        {
+          "name": "PUT /api/reviews/:id (editar)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"puntuacion\": 4,\n  \"texto\": \"Muy buena, ajustaría la sal.\"\n}"
+            },
+            "url": "{{baseUrl}}/reviews/{{reviewId}}"
+          }
+        },
+        {
+          "name": "DELETE /api/reviews/:id (eliminar)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{baseUrl}}/reviews/{{reviewId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Follows",
+      "item": [
+        {
+          "name": "POST /api/follows (seguir/dejar de seguir)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"seguidoId\": \"{{otherUserId}}\"\n}"
+            },
+            "url": "{{baseUrl}}/follows"
+          }
+        },
+        {
+          "name": "GET /api/follows/followers/:userId (seguidores)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{baseUrl}}/follows/followers/{{userId}}"
+          }
+        },
+        {
+          "name": "GET /api/follows/following/:userId (siguiendo)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{baseUrl}}/follows/following/{{userId}}"
+          }
+        },
+        {
+          "name": "GET /api/follows/check/:userId (¿lo sigo?)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{baseUrl}}/follows/check/{{otherUserId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Activity Feed",
+      "item": [
+        {
+          "name": "GET /api/activity/feed (mi actividad)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{baseUrl}}/activity/feed?page=1&limit=20"
+          }
+        },
+        {
+          "name": "GET /api/activity/user/:userId (actividad de un usuario)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{baseUrl}}/activity/user/{{userId}}"
+          }
+        }
+      ]
+    }
+  ]
+}

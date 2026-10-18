@@ -35,23 +35,29 @@ recetario/
 │       ├── app.ts         → Componente raíz
 │       └── app.routes.ts  → Definición de rutas
 ├── docs/                  → Documentación del proyecto
+│   ├── desarrollo/        → Convenciones, fases y flujo de trabajo
+│   ├── operacion/         → Despliegue VPS, desarrollo local y Postman
+│   ├── modelo-datos/      → Colecciones, campos e índices
 │   ├── diagramas/         → Diagramas de flujo y casos de uso
-│   ├── Fases-de-desarrollo.md → Plan de aprendizaje
-│   ├── convenciones.md    → Convenciones de nomenclatura
-│   └── instrucciones.md   → Guía para levantar servicios
-├── postman/               → Colección Postman para pruebas
-└── docker-compose.yml     → Orquestación de contenedores
+│   └── referencia/        → Referencia de la API
+├── local/                 → Stack local contenerizado (MongoDB 8 + backend + frontend)
+├── postman/               → Colecciones Postman (Local y Remoto)
+└── docker-compose.yml     → Orchestación de contenedores (exclusiva VPS)
 ```
 
 ## ⚙️ Instalación y Ejecución
 
 ### Requisitos previos
-- Docker y Docker Compose
+- Docker o Podman con plugin Compose v2 (para el stack local)
 
-### Paso 1 - Levantar los servicios
+### Paso 1 - Levantar los servicios (desarrollo local)
+
 ```bash
-docker compose up --build
+podman compose -f local/compose.yaml up -d
+# Con Docker Compose v2: docker compose -f local/compose.yaml up -d
 ```
+
+> El `docker-compose.yml` de la raíz es exclusivo de la VPS (usa la red de Caddy y los secretos de `backend/.env`); no debe usarse en local. Detalle completo en [Desarrollo local contenerizado](docs/operacion/desarrollo-local-docker.md).
 
 ### Paso 2 - Acceder a la aplicación
 | Servicio | URL |
@@ -128,14 +134,15 @@ El sistema usa **JWT (JSON Web Tokens)** con expiración de 30 días.
 ## 🧪 Pruebas
 
 ### Postman
-1. Importar `postman/Recetario.postman_collection.json`
-2. Ejecutar el flujo: register → login → CRUD de recetas
-3. Las variables `{{token}}` y `{{recipeId}}` se guardan automáticamente
+1. Para pruebas aisladas, importa `postman/Recetario-Local.postman_collection.json` (API local → MongoDB local).
+2. Para probar la API desplegada, importa `postman/Recetario-Remoto.postman_collection.json` (API remota → Atlas).
+3. Ejecuta los flujos en orden; las variables `{{token}}`, `{{recipeId}}` y otras IDs se guardan automáticamente. La colección remota incluye operaciones de escritura y eliminación: evita ejecutarlas contra datos reales sin revisarlas.
 
 ### MongoDB Compass
-- Conectar a `mongodb://localhost:27017`
-- Base de datos: `recetario`
-- Colecciones: `users`, `recipes`
+- Conectar a `mongodb://localhost:27017` (solo loopback, según `local/compose.yaml`)
+- Base de datos local: `recetario_local`
+- Colecciones: `users`, `recipes`, `comments`, `reviews`, `follows`, `likes`, `saves`, `reports`, `activityfeeds`
+- Guía: [Conectar con Compass](docs/operacion/conectar-compass.md)
 
 ---
 
@@ -151,6 +158,7 @@ El sistema usa **JWT (JSON Web Tokens)** con expiración de 30 días.
 - [Diagrama ER](docs/diagramas/diagrama-er.md) - Colecciones, relaciones e índices
 - [DERCAS](docs/dercas/dercas.tex) - Documento formal en LaTeX
 - [Análisis de flujos y pruebas de la API](docs/pruebas-api-flujos.md) - Endpoints, orden E2E y casos de prueba
+- [Desarrollo local con Docker](docs/operacion/desarrollo-local-docker.md) - MongoDB 8, backend y frontend aislados de Atlas
 
 ## 🚧 Estado del Proyecto
 
