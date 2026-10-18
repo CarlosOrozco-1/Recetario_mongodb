@@ -95,7 +95,7 @@ docker compose up -d
 
 ## 🧪 Pruebas con Postman
 
-1. Importar `postman/Recetario.postman_collection.json` en Postman
+1. Importar `postman/Recetario-Local.postman_collection.json` (local) o `postman/Recetario-Remoto.postman_collection.json` (remoto) en Postman
 2. Ejecutar en orden:
    - `POST /api/auth/register` (crea usuario y guarda token)
    - `POST /api/auth/login` (guarda token automáticamente)

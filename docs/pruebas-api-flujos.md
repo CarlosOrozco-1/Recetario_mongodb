@@ -30,7 +30,7 @@ flowchart TD
 
 ## 2. Preparar entorno
 
-Para desarrollo local, seguir [`levantar-servicios.md`](./levantar-servicios.md). El backend responde en `http://localhost:3000`. En Postman, importar `postman/Recetario.postman_collection.json` y usar una variable `baseUrl` con valor `http://localhost:3000/api`.
+Para desarrollo local, seguir [`levantar-servicios.md`](./levantar-servicios.md). El backend responde en `http://localhost:3000`. En Postman, importar `postman/Recetario-Local.postman_collection.json` (su `baseUrl` ya apunta a `http://localhost:3000/api`). Para probar la API desplegada, usar `postman/Recetario-Remoto.postman_collection.json`.
 
 Antes de probar:
 
@@ -261,7 +261,7 @@ Clasificar cada caso como **Aprobado**, **Fallido** o **Bloqueado**. Para fallos
 
 ## 9. Colección Postman actual y alcance
 
-La colección `postman/Recetario.postman_collection.json` cubre actualmente health, registro/login y CRUD básico de recetas, y guarda automáticamente `token`, `userId` y `recipeId`. No incluye todavía comentarios, reseñas, follow, feed, acciones sociales ni carga de imágenes. Este documento detalla cómo probarlos manualmente; ampliar la colección Postman con esos flujos puede ser el siguiente paso.
+Las colecciones `postman/Recetario-Local.postman_collection.json` y `postman/Recetario-Remoto.postman_collection.json` cubren todos los flujos: health, registro/login, CRUD de recetas, imagen (GridFS), acciones sociales (like/save/share/report), comentarios, reseñas, follows y feed de actividad. Guardan automáticamente `token`, `userId`, `recipeId`, `commentId`, `reviewId` y `fileId` desde las respuestas. Solo difieren en `baseUrl`.
 
 ## Referencias internas
 
@@ -270,4 +270,4 @@ La colección `postman/Recetario.postman_collection.json` cubre actualmente heal
 - Esquemas y reglas de campos: `backend/src/models/`.
 - Pruebas automatizadas existentes: `backend/test/recipes.test.js` (pruebas unitarias/regresión de rutas y recetas, no suite completa de integración HTTP).
 - Arranque local: [`levantar-servicios.md`](./levantar-servicios.md).
-- Colección Postman: `postman/Recetario.postman_collection.json`.
+- Colección Postman: `postman/Recetario-Local.postman_collection.json` (local) y `postman/Recetario-Remoto.postman_collection.json` (remoto).

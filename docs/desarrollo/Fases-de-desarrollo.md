@@ -136,7 +136,7 @@ normalización ni se ha aplicado la migración de datos** (ver
 - [x] `DELETE /api/recipes/:id`
 
 ### Paso 15 - Probar Backend con Postman/Compass
-- [x] Importar colección Postman (`Recetario.postman_collection.json`)
+- [x] Importar colección Postman (`Recetario-Local.postman_collection.json`)
 - [x] Probar health check
 - [x] Probar registro de usuario
 - [x] Probar login
