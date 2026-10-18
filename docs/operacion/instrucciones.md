@@ -17,9 +17,30 @@ servidor. En local esa red no existe, así que `docker compose up` falla con:
 Además, Caddy es quien enruta `/api/*` al backend; sin Caddy, el nginx del
 frontend no sabe a quién pedirle la API.
 
-### En local: los servicios se levantan individualmente
+### En local: stack contenerizado (recomendado)
 
-**Cada servicio en su propia terminal.** El detalle paso a paso está en
+Levanta **MongoDB 8 + backend + frontend** con un solo comando, aislado de
+Atlas. Detalle completo en
+[Desarrollo local contenerizado](./desarrollo-local-docker.md):
+
+```bash
+# Podman Compose
+podman compose -f local/compose.yaml up -d
+
+# Docker Compose v2
+# docker compose -f local/compose.yaml up -d
+```
+
+- MongoDB solo publica `127.0.0.1:27017` con volumen propio (`mongo-local-data`).
+- Backend en `http://localhost:3000` con `MONGODB_URI=mongodb://mongo:27017/recetario_local`
+  (inyectada por el compose; no usa `backend/.env` ni Atlas).
+- Frontend en `http://localhost:4200`; el proxy redirige `/api` al backend.
+- Detener: `podman compose -f local/compose.yaml down` (los datos persisten en el volumen).
+
+### En local: servicios individuales (alternativa)
+
+Si prefieres Node y Angular en el host (necesitas una instancia MongoDB local
+apuntando a `recetario_local`), el detalle paso a paso está en
 [Levantar los servicios individualmente](./levantar-servicios.md).
 
 ```bash
@@ -39,20 +60,22 @@ la app se comporta igual que en producción.
    ```bash
    curl http://localhost:3000/api/health
    ```
-   Respuesta esperada:
+   Respuesta esperada (stack local: la base es `recetario_local`; con servicios
+   individuales apuntando a Atlas: `recetario`):
    ```json
    {
      "status": "ok",
      "mongodb": "conectado",
-     "database": "recetario",
+     "database": "recetario_local",
      "timestamp": "..."
    }
    ```
 
 2. **Frontend:** `http://localhost:4200`
 
-3. **Base de datos:** es el clúster de Atlas (servicio `mongo` comentado). Se
-   inspecciona con MongoDB Compass usando la cadena de `backend/.env`.
+3. **Base de datos:** en el stack local es el contenedor `mongo` (accesible con
+   Compass en `mongodb://localhost:27017`, base `recetario_local`). En el
+   esquema individual es el clúster de Atlas (cadena en `backend/.env`).
 
 ## 📖 Comandos útiles (solo VPS)
 
@@ -111,8 +134,9 @@ docker compose up -d
 
 | Problema | Solución |
 |----------|----------|
-| `network caddy-central_default ... could not be found` | Estás usando el compose de VPS en local. En local los servicios se levantan individualmente (ver `docs/desarrollo/levantar-servicios.md`) |
+| `network caddy-central_default ... could not be found` | Estás usando el compose de VPS en local. En local usa `local/compose.yaml` o los servicios individuales (ver `docs/desarrollo/levantar-servicios.md`) |
 | Puerto 3000 en uso | Cambiar `PORT` en `backend/.env` o parar el otro backend |
 | Puerto 4200 en uso | Parar el otro `ng serve` |
-| Error de conexión MongoDB | Revisar `MONGODB_URI`/`MONGO_URI` en `backend/.env`; la base es Atlas, no hay contenedor local |
+| Error de conexión MongoDB (stack local) | Verificar que el compose local esté levantado (`podman compose -f local/compose.yaml ps`) y el healthcheck de `mongo` en `healthy` |
+| Error de conexión MongoDB (servicios individuales) | Revisar `MONGODB_URI`/`MONGO_URI`; si apunta a Atlas la máquina necesita internet |
 | Cambios de Angular no se ven | `ng serve` recarga solo; hard-refresh (Ctrl+F5) si el navegador cachea |

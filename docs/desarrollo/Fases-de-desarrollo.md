@@ -40,12 +40,12 @@ Pruebas actuales: **14 backend** (`backend/test/recipes.test.js`) y
 
 ### Estado de las ramas
 
-`desa`, `pre` y `pro` están en `512c1fc` (2026-10-17), sincronizadas con
-`origin`. La normalización de interacciones ya está commiteada; el stack local
-contenerizado (`local/compose.yaml`, colecciones Postman y docs asociadas) está
-listo para commit en `desa`. **La VPS aún no se ha desplegado con la
-normalización ni se ha aplicado la migración de datos** (ver
-`docs/operacion/guia-deploy-vps.md` §3.6 y `docs/bitacora/pendientes.md`).
+`desa`, `pre` y `pro` están en `67ac781` (2026-10-17), sincronizadas con
+`origin`. La normalización de interacciones quedó desplegada en la VPS el
+2026-10-17 (backend reconstruido y migración aplicada, dry-run final 0/0/0);
+el stack local contenerizado está versionado en el repo. Pendiente: rotación
+de credenciales y pruebas E2E contra el remoto (ver
+`docs/bitacora/pendientes.md`).
 
 ---
 

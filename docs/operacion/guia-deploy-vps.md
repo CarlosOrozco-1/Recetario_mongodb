@@ -461,7 +461,7 @@ sudo nano /home/ubuntu/gestionInventario/gestion-inventario-sprinReact/caddy-cen
 
 | Tema | Problema | Archivo |
 |------|----------|---------|
-| Imagen huérfana | Reemplazar imagen no borra la anterior de GridFS | `backend/src/controllers/recipeController.js` |
+| Imagen huérfana | **Resuelto (2026-09-26):** `update` borra la imagen anterior de GridFS al sustituirla o quitarla | `backend/src/controllers/recipeController.js` |
 | Perfil | Ruta `/profile/:username` pero `User` no tiene `username` | `backend/src/models/User.js` |
 | Respuestas anidadas | `getByRecipe` solo trae respuestas de primer nivel | `backend/src/controllers/commentController.js` |
 | Reglas de negocio | Responder el propio comentario solo se bloquea en el frontend; el like propio ya responde `400` en el backend | `commentController.js` |
