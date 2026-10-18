@@ -21,7 +21,7 @@ Problema: `recipes` mezclaba el contenido de la receta con relaciones hacia usua
 - [x] Eliminar el booleano global `favorito` de `Recipe`; el "Guardar" (`saves`) es el único favorito personal.
 - [x] Añadir índices a `recipes`: `{usuario:1, createdAt:-1}`, `{categoria:1}`, `{publica:1}`.
 - [x] Actualizar `recipeSocialController.js`, `recipeController.js` (flags `liked`/`saved`) y `dashboard.ts`/`dashboard.html` (filtro por `saved`, sin estrella).
-- [ ] Migrar los datos existentes con `backend/scripts/normalize-interactions.js` **después** de desplegar el backend nuevo (~5 likes, ~5 guardados, 0 reportes).
+- [x] Migrar los datos existentes con `backend/scripts/normalize-interactions.js` (2026-10-17): `likes` 5, `saves` 5, `reports` 0; sin campos viejos en `recipes`/`users`; índices únicos `(usuario, receta)` creados. Idempotente (re-ejecución → 0/0/0).
 - [x] Actualizar `docs/modelo-datos/` (receta, usuario, like, guardado, reporte) y los dos DERCAS (diagrama ER, procesos, casos de uso, estados).
 
 ## 4. Pruebas con Postman
@@ -42,5 +42,10 @@ La cadena `MONGODB_URI` y `JWT_SECRET` estuvieron en `docker-compose.yml` (ya co
 - [ ] Rotar `JWT_SECRET` en `backend/.env` (local y VPS); invalida sesiones activas.
 - [ ] Confirmar que `.env` sigue ignorado por git en todos los entornos.
 
+### 5.1 Llave SSH filtrada en el historial
+El commit `c6eee0c` subió `carloso` (llave privada OpenSSH) y `carloso.pub`, usados para la conexión con el remoto. Ya no están en el árbol actual, pero **permanecen en el historial de GitHub**.
+- [ ] Rotar/cambiar la llave SSH del repositorio remoto para invalidar la filtrada. Decisión: se conserva por ahora, se rotará posteriormente.
+- [ ] Opcional: purgar el historial (`git filter-repo`/`git filter-branch`) y exige force-push + re-clonar en el otro equipo.
+
 ## Prioridad
-Orden sugerido: primero seguridad/rotación de credenciales; luego aplicar la migración de `recipes` en el remoto (el backend nuevo debe desplegarse primero); después las pruebas E2E con Postman contra el remoto. Conexión a Atlas (1), revisión de usuarios (2), flujo local contenerizado y colecciones Postman (4) ya documentados.
+Orden sugerido: primero seguridad/rotación de credenciales (incluida la llave SSH filtrada); desplegar el backend nuevo en la VPS para alinear el remoto con la nueva estructura; después las pruebas E2E con Postman contra el remoto. La migración de `recipes` ya se aplicó en Atlas (5 likes / 5 saves / 0 reports). Conexión a Atlas (1), revisión de usuarios (2), flujo local contenerizado y colecciones Postman (4) ya documentados.
