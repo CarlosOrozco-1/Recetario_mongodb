@@ -1,4 +1,12 @@
-# Bitácora de Errores y Correcciones
+# Bitácora de errores y correcciones
+
+## 2026-10-19 — Renovación visual del feed y dashboard
+
+- **Componente:** `frontend/src/app/components/feed/` y `frontend/src/app/components/dashboard/`.
+- **Síntoma:** las vistas principales tenían una presentación genérica y el feed carecía de una jerarquía visual propia de una red social culinaria.
+- **Causa:** composición centrada en listas y controles básicos, sin identidad compartida ni navegación persistente adaptable.
+- **Solución:** se actualizaron las vistas de feed y catálogo con identidad visual Sazón, navegación responsive, cabeceras editoriales y tarjetas sociales, preservando las rutas, filtros, datos y acciones existentes.
+- **Verificación:** pendiente ejecutar `npx ng build --configuration production` y `npm test` en `frontend/`; en este entorno los comandos no pudieron arrancar debido a un fallo de `bwrap` asociado a una ruta de Zed eliminada.
 
 ## Formato
 Cada entrada incluye: **Fecha**, **Componente/Archivo**, **Síntoma**, **Causa Raíz**, **Solución Aplicada**, **Verificación**.
