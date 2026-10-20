@@ -113,17 +113,48 @@
         </button>
       </div>
 
-      <div class="input-group">
-        <label for="instrucciones">Instrucciones de preparación</label>
-        <textarea
-          id="instrucciones"
-          [(ngModel)]="recipe.instrucciones"
-          name="instrucciones"
-          rows="6"
-          placeholder="Paso 1. Hervir agua...&#10;Paso 2. Saltear ingredientes..."
-          required
-        ></textarea>
-      </div>
+      <section class="instructions-section" aria-labelledby="instructions-title">
+        <div class="instructions-heading">
+          <div>
+            <label id="instructions-title">Instrucciones de preparación</label>
+            <p>Ordena la receta en pasos claros y fáciles de seguir.</p>
+          </div>
+          <span class="steps-count">{{ instructionSteps.length }} {{ instructionSteps.length === 1 ? 'paso' : 'pasos' }}</span>
+        </div>
+
+        <div class="instruction-steps">
+          <div
+            *ngFor="let step of instructionSteps; let i = index; trackBy: trackByIndex"
+            class="instruction-step"
+          >
+            <span class="step-number" aria-hidden="true">{{ i + 1 }}</span>
+            <textarea
+              [id]="'instruction-step-' + i"
+              [(ngModel)]="instructionSteps[i]"
+              [name]="'instructionStep' + i"
+              [attr.aria-label]="'Instrucción, paso ' + (i + 1)"
+              rows="2"
+              [placeholder]="i === 0 ? 'Ej.: Pela y corta la piña en cubos pequeños...' : 'Describe el siguiente paso de preparación...'"
+              required
+            ></textarea>
+            <button
+              type="button"
+              class="btn-remove-step"
+              (click)="onRemoveInstructionStep(i)"
+              [disabled]="instructionSteps.length === 1"
+              [attr.aria-label]="'Quitar paso ' + (i + 1)"
+              title="Quitar paso"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"></path></svg>
+            </button>
+          </div>
+        </div>
+
+        <button type="button" class="btn-add-step" (click)="onAddInstructionStep()">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
+          Agregar paso
+        </button>
+      </section>
 
       <div class="input-group">
         <label>Imagen del plato</label>

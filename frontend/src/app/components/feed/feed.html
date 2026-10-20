@@ -1,85 +1,140 @@
-<div class="feed-wrapper animate-fade-in">
-  <!-- Header -->
-  <header class="feed-header">
-    <div class="header-content">
-      <div class="brand">
-        <span class="brand-icon">📰</span>
-        <h1>Tu Feed</h1>
+<div class="feed-page">
+  <div class="feed-shell">
+    <aside class="feed-rail" aria-label="Navegación principal">
+      <a class="brand-mark" routerLink="/dashboard" aria-label="Sazón, inicio">
+        <span class="brand-symbol">s</span>
+        <span class="brand-name">sazón<span>.</span></span>
+      </a>
+
+      <nav class="primary-nav">
+        <a class="nav-item active" routerLink="/feed" aria-current="page">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="4"></rect><path d="M7 9h10M7 13h6"></path></svg>
+          <span>Inicio</span>
+        </a>
+        <a class="nav-item" routerLink="/dashboard">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-4-4"></path></svg>
+          <span>Explorar</span>
+        </a>
+        <a class="nav-item" routerLink="/recipe">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
+          <span>Crear receta</span>
+        </a>
+      </nav>
+
+      <div class="rail-note">
+        <span class="note-sparkle">✳</span>
+        <p>La cocina sabe mejor cuando se comparte.</p>
       </div>
-      <div class="header-actions">
-        <button type="button" class="btn-secondary" (click)="refreshFeed()" [disabled]="loading()">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
-          Actualizar
+    </aside>
+
+    <main class="feed-main">
+      <header class="feed-topbar">
+        <div class="topbar-label"><span class="live-dot"></span> Tu comunidad culinaria</div>
+        <button type="button" class="refresh-button" (click)="refreshFeed()" [disabled]="loading()" aria-label="Actualizar feed">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5"></path><path d="M5.6 9a7 7 0 0 1 11.6-2L20 12M4 12l2.8 5a7 7 0 0 0 11.6-2"></path></svg>
+          <span>Actualizar</span>
         </button>
+      </header>
+
+      <section class="feed-intro">
+        <p class="eyebrow">RECETAS, PERSONAS Y BUENOS MOMENTOS</p>
+        <h1>La mesa está <span>servida.</span></h1>
+        <p class="intro-copy">Descubre lo que cocina tu comunidad y encuentra inspiración para tu próxima receta.</p>
+      </section>
+
+      <a class="create-prompt" routerLink="/recipe">
+        <span class="prompt-avatar">✳</span>
+        <span class="prompt-copy">¿Qué estás cocinando hoy?</span>
+        <span class="prompt-action">Compartir receta <span aria-hidden="true">↗</span></span>
+      </a>
+
+      <div *ngIf="error()" class="error-alert" role="alert">
+        <span>{{ error() }}</span>
+        <button type="button" (click)="loadFeed(true)">Reintentar</button>
       </div>
-    </div>
-  </header>
 
-  <!-- Error -->
-  <div *ngIf="error()" class="error-alert">
-    {{ error() }}
-    <button type="button" class="btn-secondary" (click)="loadFeed(true)">Reintentar</button>
-  </div>
-
-  <!-- Feed List -->
-  <div class="feed-container" (scroll)="onScroll($event)" #feedContainer>
-    <div *ngIf="loading() && activities().length === 0" class="loading-state">
-      <div class="spinner"></div>
-      <p>Cargando tu feed...</p>
-    </div>
-
-    <div *ngIf="!loading() && activities().length === 0" class="empty-state">
-      <div class="empty-icon">📭</div>
-      <h3>Tu feed está vacío</h3>
-      <p>Sigue a otros chefs y crea recetas para ver actividad aquí.</p>
-      <button type="button" class="btn-primary" routerLink="/dashboard">Explorar Recetas</button>
-    </div>
-
-    <div class="feed-list" *ngIf="activities().length > 0">
-      <div *ngFor="let activity of activities(); trackBy: trackByActivityId" class="activity-card animate-slide-up">
-        <div class="activity-header">
-          <img 
-            *ngIf="activity.usuario?.avatar" 
-            [src]="activity.usuario!.avatar" 
-            alt="{{ activity.usuario?.name }}" 
-            class="activity-avatar"
-            (error)="onImageError($event)"
-          />
-          <span *ngIf="!activity.usuario?.avatar" class="activity-avatar placeholder">{{ (activity.usuario?.name ?? '').charAt(0).toUpperCase() || '?' }}</span>
-          <div class="activity-meta">
-            <strong>{{ activity.usuario?.name || 'Alguien' }}</strong>
-            <span class="activity-time">{{ formatTime(activity.createdAt) }}</span>
+      <div class="feed-layout">
+        <section class="feed-column" aria-label="Actividad reciente">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">AL DÍA EN LA COMUNIDAD</p>
+              <h2>Tu feed <span class="heading-sparkle">✳</span></h2>
+            </div>
+            <span class="feed-caption">Lo último de quienes sigues</span>
           </div>
-        </div>
 
-        <div class="activity-content">
-          <span class="activity-icon">{{ getActivityIcon(activity.tipo) }}</span>
-          <p class="activity-text">{{ getActivityText(activity) }}</p>
-        </div>
+          <div class="feed-container" (scroll)="onScroll($event)" #feedContainer>
+            <div *ngIf="loading() && activities().length === 0" class="loading-state">
+              <div class="spinner"></div>
+              <p>Preparando algo delicioso...</p>
+            </div>
 
-        <div *ngIf="activity.referencia?.tipo === 'Recipe' && activity.referencia.id" class="activity-recipe-link">
-          <button 
-            type="button" 
-            class="btn-link" 
-            [routerLink]="['/recipe', activity.referencia.id]"
-          >
-            Ver receta →
-          </button>
-        </div>
-      </div>
+            <div *ngIf="!loading() && activities().length === 0" class="empty-state">
+              <div class="empty-illustration" aria-hidden="true"><span>✳</span><span>♡</span></div>
+              <p class="eyebrow">EL COMIENZO DE ALGO RICO</p>
+              <h3>Tu mesa todavía está vacía</h3>
+              <p>Sigue a otros cocineros o comparte tu primera receta para llenar tu feed de inspiración.</p>
+              <div class="empty-actions">
+                <a class="button-primary" routerLink="/dashboard">Explorar recetas <span aria-hidden="true">↗</span></a>
+                <a class="button-secondary" routerLink="/recipe">Crear receta</a>
+              </div>
+            </div>
 
-      <!-- Load More Trigger -->
-      <div class="load-more-trigger" *ngIf="hasMore() && !loadingMore()">
-        <div class="spinner-small"></div>
-        <span>Cargando más...</span>
+            <div class="feed-list" *ngIf="activities().length > 0">
+              <article *ngFor="let activity of activities(); trackBy: trackByActivityId" class="activity-card">
+                <div class="activity-header">
+                  <img
+                    *ngIf="activity.usuario?.avatar"
+                    [src]="activity.usuario!.avatar"
+                    alt="{{ activity.usuario?.name }}"
+                    class="activity-avatar"
+                    (error)="onImageError($event)"
+                  />
+                  <span *ngIf="!activity.usuario?.avatar" class="activity-avatar placeholder">{{ (activity.usuario?.name ?? '').charAt(0).toUpperCase() || '?' }}</span>
+                  <div class="activity-meta">
+                    <strong>{{ activity.usuario?.name || 'Alguien' }}</strong>
+                    <span class="activity-time">{{ getActivityLabel(activity.tipo) }} <span aria-hidden="true">·</span> {{ formatTime(activity.createdAt) }}</span>
+                  </div>
+                  <span class="activity-type-icon" aria-hidden="true">{{ getActivityIcon(activity.tipo) }}</span>
+                </div>
+
+                <div class="activity-content">
+                  <p class="activity-text">{{ getActivityText(activity) }}</p>
+                </div>
+
+                <div *ngIf="activity.referencia?.tipo === 'Recipe' && activity.referencia.id" class="activity-recipe-link">
+                  <a class="recipe-link" [routerLink]="['/recipe', activity.referencia.id]">
+                    <span>Ver receta</span><span class="recipe-link-arrow" aria-hidden="true">↗</span>
+                  </a>
+                  <span class="recipe-link-hint">Inspírate y cocina algo nuevo</span>
+                </div>
+              </article>
+
+              <div class="load-more-trigger" *ngIf="hasMore() && !loadingMore()">
+                <div class="spinner-small"></div>
+                <span>Cargando más...</span>
+              </div>
+              <div *ngIf="loadingMore()" class="loading-more">
+                <div class="spinner-small"></div>
+                <span>Cargando más actividad...</span>
+              </div>
+              <div *ngIf="!hasMore() && activities().length > 0" class="end-of-feed">
+                <span aria-hidden="true">✳</span>
+                <p>Estás al día. Vuelve pronto por más inspiración.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <aside class="community-card">
+          <div class="community-art" aria-hidden="true"><span>✳</span><span>♡</span><span>✦</span></div>
+          <p class="eyebrow">HECHO PARA COMPARTIR</p>
+          <h2>Cada receta tiene una historia.</h2>
+          <p>Publica tus platos favoritos y deja que alguien encuentre su próxima idea en tu cocina.</p>
+          <a routerLink="/recipe" class="community-link">Publicar una receta <span aria-hidden="true">↗</span></a>
+          <div class="community-footer"><span>COCINAR · COMPARTIR · REPETIR</span><span>✳</span></div>
+        </aside>
       </div>
-      <div *ngIf="loadingMore()" class="loading-more">
-        <div class="spinner-small"></div>
-        <span>Cargando más actividades...</span>
-      </div>
-      <div *ngIf="!hasMore() && activities().length > 0" class="end-of-feed">
-        <p>🎉 Has visto toda la actividad reciente</p>
-      </div>
-    </div>
+    </main>
   </div>
 </div>

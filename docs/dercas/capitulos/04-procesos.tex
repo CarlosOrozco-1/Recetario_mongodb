@@ -41,9 +41,9 @@ Los procesos utilizan los identificadores P01 a P06 y se describen con los campo
   Nombre & P02: Gestión de recetas y visibilidad. \\
   Descripción & Creación, consulta, edición, eliminación y cambio de visibilidad de recetas. \\
   Actores & Usuario registrado y propietario. \\
-  Entradas & Título, descripción, ingredientes, instrucciones, categoría y visibilidad. \\
+  Entradas & Título, descripción, ingredientes, pasos de preparación, categoría y visibilidad. \\
   Salidas & Receta creada, lista filtrada, detalle permitido o confirmación de borrado. \\
-  Especificaciones de funcionamiento & \path{POST /api/recipes}, \path{GET /api/recipes}, \path{GET /api/recipes?scope=public}, \path{GET /api/recipes/:id}, \path{PUT /api/recipes/:id} y \path{DELETE /api/recipes/:id}. El servidor asigna el propietario y acepta únicamente 11 campos editables. Las recetas nacen privadas; el detalle permite recetas propias o públicas; la edición y el borrado exigen propiedad. Alcance: tablero personal, recetas públicas y detalle. \\
+  Especificaciones de funcionamiento & \path{POST /api/recipes}, \path{GET /api/recipes}, \path{GET /api/recipes?scope=public}, \path{GET /api/recipes/:id}, \path{PUT /api/recipes/:id} y \path{DELETE /api/recipes/:id}. El servidor asigna el propietario y acepta únicamente 11 campos editables. Las recetas nacen privadas; el detalle permite recetas propias o públicas; la edición y el borrado exigen propiedad. Las instrucciones se capturan como pasos numerados en la interfaz y se almacenan como líneas dentro del campo de texto existente; el detalle las presenta como lista, manteniendo la lectura de recetas previas en párrafo. Alcance: tablero personal, recetas públicas y detalle. \\
   Restricciones adicionales & Lista de campos editables, validadores Mongoose, límite de creación y saneado parcial. No hay búsqueda ni paginación en el servidor. Respuestas \texttt{201}, \texttt{200}, \texttt{400}, \texttt{404}, \texttt{429} y \texttt{500}. \\
   \bottomrule
 \end{longtable}

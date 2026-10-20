@@ -1,5 +1,13 @@
 # Bitácora de errores y correcciones
 
+## 2026-10-20 — Instrucciones por pasos y formato de modales
+
+- **Componente:** formulario de recetas y modal de detalle del dashboard.
+- **Síntoma:** las instrucciones se presentaban como un bloque de texto y el modal de detalle perdía jerarquía, espaciado y formato en pestañas.
+- **Causa:** el campo `instrucciones` se capturaba y mostraba como texto continuo; durante la renovación visual no se conservaron reglas CSS específicas del modal.
+- **Solución:** el formulario ahora edita pasos numerados; se serializan como líneas en el mismo campo string, y el modal los representa como lista. Los registros anteriores se leen conservadoramente como un paso si no tienen saltos de línea. Se recuperó la estructura visual del modal y pestañas.
+- **Verificación:** tests frontend/backend y build de producción; DERCAS pendiente de compilar, ya que `make` no está instalado en el entorno.
+
 ## 2026-10-19 — Renovación visual del feed y dashboard
 
 - **Componente:** `frontend/src/app/components/feed/` y `frontend/src/app/components/dashboard/`.

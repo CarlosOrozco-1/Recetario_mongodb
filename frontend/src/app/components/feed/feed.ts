@@ -114,6 +114,19 @@ export class Feed implements OnInit, OnDestroy {
     return icons[tipo] || "📝";
   }
 
+  getActivityLabel(tipo: string): string {
+    const labels: Record<string, string> = {
+      "creo_receta": "compartió una receta",
+      "comento_receta": "dejó un comentario",
+      "reseno_receta": "escribió una reseña",
+      "likio_receta": "le gustó una receta",
+      "guardo_receta": "guardó una receta",
+      "siguio_usuario": "amplió su comunidad",
+      "compartio_receta": "compartió una receta",
+    };
+    return labels[tipo] || "actividad reciente";
+  }
+
   getActivityText(activity: Activity): string {
     const userName = activity.usuario?.name || "Alguien";
     const recipeTitle = activity.metadata?.recetaTitulo || "una receta";

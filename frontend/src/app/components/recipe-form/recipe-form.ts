@@ -40,6 +40,7 @@ export class RecipeForm implements OnInit {
   isEdit = false;
   id = "";
   error = "";
+  instructionSteps: string[] = [""];
 
   selectedFile: File | null = null;
   previewUrl: string | null = null;
@@ -67,6 +68,7 @@ export class RecipeForm implements OnInit {
           porciones: 2,
           publica: false,
         };
+        this.instructionSteps = [""];
       }
     });
   }
@@ -87,6 +89,7 @@ next: (data) => {
             ? [...data.ingredientes]
             : [""],
         };
+        this.instructionSteps = this.parseInstructionSteps(data.instrucciones);
         console.log("Modelo de receta asignado en el formulario:", this.recipe);
         this.cdr.detectChanges();
       },
@@ -110,6 +113,29 @@ next: (data) => {
     this.recipe.ingredientes.splice(index, 1);
   }
 
+  onAddInstructionStep(): void {
+    this.instructionSteps.push("");
+  }
+
+  onRemoveInstructionStep(index: number): void {
+    this.instructionSteps.splice(index, 1);
+    if (this.instructionSteps.length === 0) this.instructionSteps.push("");
+  }
+
+  private parseInstructionSteps(instructions: string | undefined): string[] {
+    const text = (instructions ?? "").trim();
+    if (!text) return [""];
+
+    const lines = text
+      .split(/\r?\n/)
+      .map(line => line.trim())
+      .filter(Boolean);
+    const steps = lines.map(line =>
+      line.replace(/^(?:paso\s*)?\d+[.)、:-]?\s*/i, "").trim()
+    );
+    return steps.length > 0 ? steps : [text];
+  }
+
   onSubmit(): void {
     this.error = "";
     const ingredientes = this.recipe.ingredientes.filter(
@@ -121,10 +147,23 @@ next: (data) => {
       return;
     }
 
+    const instructionSteps = this.instructionSteps.map(step => step.trim()).filter(Boolean);
+    if (instructionSteps.length === 0) {
+      this.error = "Agrega al menos un paso de preparación";
+      this.toastService.error("Debes agregar al menos un paso de preparación");
+      return;
+    }
+
     // Destructurar y limpiar campos de metadata generados por MongoDB/Mongoose
     // para evitar errores de validación de esquemas (CastError) en el backend.
     const { _id, usuario, createdAt, updatedAt, ...cleanRecipe } = this.recipe;
-    const data = { ...cleanRecipe, ingredientes };
+    const data = {
+      ...cleanRecipe,
+      ingredientes,
+      instrucciones: instructionSteps
+        .map((step, index) => `Paso ${index + 1}. ${step}`)
+        .join("\n"),
+    };
     
     console.log("Enviando datos al backend para guardar:", data);
 

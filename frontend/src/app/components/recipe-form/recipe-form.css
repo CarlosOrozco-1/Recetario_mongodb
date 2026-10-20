@@ -59,6 +59,27 @@ h2 {
   .form-grid {
     grid-template-columns: 1fr;
   }
+
+  .instruction-step {
+    grid-template-columns: 28px minmax(0, 1fr) 32px;
+    gap: 7px;
+  }
+
+  .step-number {
+    width: 27px;
+    height: 27px;
+    font-size: 11px;
+  }
+
+  .btn-remove-step {
+    width: 32px;
+    height: 34px;
+  }
+
+  .instructions-heading p {
+    max-width: 260px;
+    font-size: 11px;
+  }
 }
 
 /* Ingredients List */
@@ -123,6 +144,147 @@ h2 {
 .btn-add:hover {
   background-color: var(--primary-light);
   border-color: var(--primary);
+}
+
+/* Preparation steps */
+.instructions-section {
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+}
+
+.instructions-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.instructions-heading label {
+  color: var(--text-main);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.instructions-heading p {
+  margin: 5px 0 0;
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.steps-count {
+  flex: 0 0 auto;
+  padding: 6px 9px;
+  border: 1px solid #ead9cc;
+  border-radius: 999px;
+  color: #a65a3c;
+  background: #fbf1e9;
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.instruction-steps {
+  display: grid;
+  gap: 10px;
+}
+
+.instruction-step {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr) 36px;
+  align-items: start;
+  gap: 10px;
+}
+
+.step-number {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  margin-top: 6px;
+  border: 1px solid #ead9cc;
+  border-radius: 50%;
+  color: #a65a3c;
+  background: #fbf1e9;
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.instruction-step textarea {
+  width: 100%;
+  min-height: 62px;
+  padding: 11px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-main);
+  background: var(--surface);
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.55;
+  resize: vertical;
+}
+
+.instruction-step textarea:focus {
+  border-color: var(--primary);
+  outline: 2px solid color-mix(in srgb, var(--primary) 18%, transparent);
+  outline-offset: 1px;
+}
+
+.btn-remove-step {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  margin-top: 5px;
+  border: 1px solid #efdfd8;
+  border-radius: var(--radius-sm);
+  color: #b85e49;
+  background: #fff8f5;
+  cursor: pointer;
+  transition: background 150ms ease, color 150ms ease, border-color 150ms ease;
+}
+
+.btn-remove-step svg,
+.btn-add-step svg {
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.btn-remove-step:hover:not(:disabled) {
+  border-color: #cb6d55;
+  color: #fff;
+  background: #cb6d55;
+}
+
+.btn-remove-step:disabled {
+  opacity: 0.42;
+  cursor: not-allowed;
+}
+
+.btn-add-step {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 12px;
+  border: 1px dashed var(--primary);
+  border-radius: var(--radius-sm);
+  color: var(--primary);
+  background: transparent;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 650;
+  cursor: pointer;
+  transition: background 150ms ease, border-color 150ms ease;
+}
+
+.btn-add-step:hover {
+  background: var(--primary-light);
 }
 
 /* Modern simple checkbox styling */

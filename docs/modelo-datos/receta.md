@@ -11,7 +11,7 @@ Fuente: `backend/src/models/Recipe.js`
 | `titulo` | `String` | Sí | Sin espacios exteriores | — |
 | `descripcion` | `String` | Sí | Sin espacios exteriores | — |
 | `ingredientes` | `String[]` | Sí | Por lo menos un ingrediente no vacío en la interfaz | — |
-| `instrucciones` | `String` | Sí | Texto libre | — |
+| `instrucciones` | `String` | Sí | Pasos de preparación en líneas independientes (`Paso N. texto`); las recetas históricas en texto libre se conservan y se muestran como un único paso | — |
 | `imagen` | `String` | No | Identificador del archivo en `uploads.files`; cadena vacía significa sin imagen | `""` |
 | `categoria` | `String` | No | Texto libre | `"Otro"` |
 | `tiempoPreparacion` | `Number` | No | Minutos | `0` |
@@ -61,7 +61,7 @@ por usuario vive en colecciones propias (`likes`, `saves`, `comments`, `reviews`
   "titulo": "Frijoles volteados",
   "descripcion": "Receta tradicional",
   "ingredientes": ["frijoles", "cebolla", "sal"],
-  "instrucciones": "Freír los frijoles...",
+  "instrucciones": "Paso 1. Freír los frijoles...\nPaso 2. Servir caliente.",
   "imagen": "68ea00000000000000000100",
   "categoria": "Plato principal",
   "tiempoPreparacion": 30,

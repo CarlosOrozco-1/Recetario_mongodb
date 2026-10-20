@@ -420,9 +420,20 @@
 
           <div *ngSwitchCase="'instructions'">
             <div class="instructions-section">
-              <h3>📝 Instrucciones de Preparación</h3>
-              <div class="instructions-content">{{ selectedRecipe()?.instrucciones }}</div>
-            </div>
+                <div class="instructions-section-heading">
+                  <div>
+                    <p class="modal-section-eyebrow">MANOS A LA OBRA</p>
+                    <h3>Instrucciones de preparación</h3>
+                  </div>
+                  <span class="steps-count-modal">{{ getInstructionSteps(selectedRecipe()?.instrucciones).length }} pasos</span>
+                </div>
+                <ol class="preparation-steps">
+                  <li *ngFor="let step of getInstructionSteps(selectedRecipe()?.instrucciones); let i = index" class="preparation-step">
+                    <span class="preparation-step-number" aria-hidden="true">{{ i + 1 }}</span>
+                    <p>{{ step }}</p>
+                  </li>
+                </ol>
+              </div>
           </div>
 
           <div *ngSwitchCase="'comments'">

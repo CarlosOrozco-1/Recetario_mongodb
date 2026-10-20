@@ -435,6 +435,19 @@ export class Dashboard implements OnInit {
     });
   }
 
+  getInstructionSteps(instructions: string | undefined): string[] {
+    const text = (instructions ?? "").trim();
+    if (!text) return [];
+
+    const lines = text
+      .split(/\r?\n/)
+      .map(line => line.trim())
+      .filter(Boolean);
+    return lines.map(line =>
+      line.replace(/^(?:paso\s*)?\d+[.)、:-]?\s*/i, "").trim()
+    );
+  }
+
   getStarClass(star: number, review?: Review): string {
     const rating = review?.puntuacion ?? this.newReview().puntuacion;
     return star <= rating ? 'filled' : '';

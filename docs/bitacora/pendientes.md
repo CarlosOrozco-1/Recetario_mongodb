@@ -47,5 +47,10 @@ El commit `c6eee0c` subió `carloso` (llave privada OpenSSH) y `carloso.pub`, us
 - [ ] Rotar/cambiar la llave SSH del repositorio remoto para invalidar la filtrada. Decisión: se conserva por ahora, se rotará posteriormente.
 - [ ] Opcional: purgar el historial (`git filter-repo`/`git filter-branch`) y exige force-push + re-clonar en el otro equipo.
 
+## 6. Instrucciones de preparación por pasos
+- [x] Capturar, editar y numerar instrucciones paso a paso en el formulario de recetas.
+- [x] Mostrar las instrucciones como lista en el detalle, conservando compatibilidad con textos históricos y el campo API `instrucciones`.
+- [x] Actualizar documentación de modelo y DERCAS; validar tests y build.
+
 ## Prioridad
-Orden sugerido: seguridad/rotación de credenciales (incluida la llave SSH filtrada) — único bloque pendiente. Las pruebas E2E contra el remoto quedaron en 28/28 PASS (2026-10-17) y la migración de `recipes` ya se aplicó en Atlas (5 likes / 5 saves / 0 reportes). Conexión a Atlas (1), revisión de usuarios (2), flujo local contenerizado y colecciones Postman (4) ya documentados.
+Orden sugerido: seguridad/rotación de credenciales (incluida la llave SSH filtrada) — pendientes prioritarios. Las pruebas E2E contra el remoto quedaron en 28/28 PASS (2026-10-17) y la migración de `recipes` ya se aplicó en Atlas (5 likes / 5 saves / 0 reportes). Conexión a Atlas (1), revisión de usuarios (2), flujo local contenerizado y colecciones Postman (4) ya documentados.
