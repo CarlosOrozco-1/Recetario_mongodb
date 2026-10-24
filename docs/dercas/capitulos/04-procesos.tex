@@ -16,12 +16,12 @@ Los procesos utilizan los identificadores P01 a P06 y se describen con los campo
   \midrule
   \endhead
   Nombre & P01: Autenticación y sesión. \\
-  Descripción & Registro, inicio de sesión y cierre local de sesión. \\
+  Descripción & Registro, inicio de sesión con contraseña o Google y cierre local de sesión. \\
   Actores & Visitante y usuario registrado. \\
-  Entradas & Nombre, correo y contraseña. \\
-  Salidas & Identificador, nombre, correo y token JWT. \\
-  Especificaciones de funcionamiento & \path{POST /api/auth/register} crea el usuario con hash bcrypt; \path{POST /api/auth/login} compara el hash y emite un token de 30 días. El cierre de sesión elimina el token del navegador. Alcance: acceso a la aplicación y a las rutas protegidas. El correo debe ser único y la contraseña debe tener al menos 8 caracteres. \\
-  Restricciones adicionales & Límite de 10 intentos cada 15 minutos y saneado de nombre y correo en el registro. Respuestas \texttt{201}, \texttt{200}, \texttt{400}, \texttt{429} y \texttt{500}. \\
+  Entradas & Nombre, correo y contraseña para registro; credencial ID firmada por Google para autenticación federada. \\
+  Salidas & Identificador, nombre, correo y token JWT propio. \\
+  Especificaciones de funcionamiento & \path{POST /api/auth/register} crea el usuario con hash bcrypt; \path{POST /api/auth/login} compara el hash y emite un token de 30 días; \path{POST /api/auth/google} verifica firma y audiencia con la configuración del servidor, requiere email verificado y crea o vincula la cuenta por correo verificado. El cierre de sesión elimina el token del navegador. Alcance: acceso a la aplicación y a las rutas protegidas. El correo debe ser único y la contraseña debe tener al menos 8 caracteres para cuentas locales. \\
+  Restricciones adicionales & Límite de 10 intentos cada 15 minutos y saneado de nombre y correo en el registro. Respuestas \texttt{201}, \texttt{200}, \texttt{400}, \texttt{401}, \texttt{429} y \texttt{500}. \\
   \bottomrule
 \end{longtable}
 \end{center}

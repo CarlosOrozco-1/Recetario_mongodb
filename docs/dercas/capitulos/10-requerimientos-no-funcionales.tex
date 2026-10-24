@@ -6,12 +6,12 @@ El desarrollo sigue una arquitectura de tres capas: Frontend, Backend y Base de 
 \section{Autenticación y autorización}
 
 \begin{itemize}[leftmargin=*]
-  \item El registro y el inicio de sesión se hacen con \path{POST /api/auth/register} y \path{POST /api/auth/login}.
+  \item El registro y el inicio de sesión local se hacen con \path{POST /api/auth/register} y \path{POST /api/auth/login}; el inicio de sesión federado usa \path{POST /api/auth/google}.
   \item Las contraseñas se almacenan con hash bcrypt de 10 rondas; nunca en texto claro.
-  \item La sesión se representa con un JWT de 30 días que viaja en la cabecera \texttt{Authorization: Bearer}.
+  \item La sesión se representa con un JWT propio de 30 días que viaja en la cabecera \texttt{Authorization: Bearer}, también cuando la identidad se verifica mediante Google.
   \item Todas las rutas salvo \texttt{/api/health}, las de autenticación y la lectura pública de imagen exigen un token válido; la ausencia o invalidez del token produce \texttt{401}.
   \item La autorización es por propiedad: solo el propietario puede editar, eliminar, cambiar la visibilidad o gestionar la imagen de su receta. Una operación sobre un recurso ajeno o inexistente produce \texttt{404}.
-  \item El límite original de reintentos es de 10 intentos cada 15 minutos en registro e inicio de sesión.
+  \item El límite de reintentos es de 10 intentos cada 15 minutos en registro e inicio de sesión local y Google. Google verifica el ID token en el servidor contra la audiencia configurada y exige correo verificado antes de crear o vincular una cuenta.
   \item \textbf{Deuda conocida:} el cierre de sesión no invalida el token en el servidor; el \texttt{AuthGuard} del cliente comprueba la presencia del token, pero no su expiración antes de llamar al backend.
 \end{itemize}
 

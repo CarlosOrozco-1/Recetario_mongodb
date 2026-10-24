@@ -1,6 +1,8 @@
 \chapter{Diagrama ER}
 \label{ch:diagrama-er}
 
+La colección de usuarios admite cuentas locales con contraseña bcrypt y cuentas autenticadas mediante Google. El campo opcional y único \texttt{googleId} almacena el identificador de la identidad verificada; la contraseña es obligatoria únicamente para usuarios sin ese identificador. La descripción completa de campos está en \path{docs/modelo-datos/usuario.md}.
+
 El campo \texttt{instrucciones} de la receta permanece como texto para conservar compatibilidad con los registros y la API existentes. La interfaz captura cada instrucción como un paso independiente y serializa los pasos en líneas numeradas (\texttt{Paso N. texto}); el detalle presenta las líneas como una lista ordenada. Las recetas históricas en un solo párrafo se conservan y se muestran como un único paso, sin dividir frases automáticamente.
 
 \begin{figure}[H]

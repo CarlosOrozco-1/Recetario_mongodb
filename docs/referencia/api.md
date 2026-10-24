@@ -16,8 +16,9 @@ Límite global: 100 solicitudes cada 15 minutos para `/api`.
 |---|---|---|
 | `POST /api/auth/register` | 10 intentos cada 15 minutos; sanea `name` y `email` | `201` con `_id`, `name`, `email` y `token`; `400` si el usuario ya existe |
 | `POST /api/auth/login` | 10 intentos cada 15 minutos | `200` con `_id`, `name`, `email` y `token`; `400` si el usuario o la contraseña son incorrectos |
+| `POST /api/auth/google` | 10 intentos cada 15 minutos | Recibe `{ credential }`; `200` con `_id`, `name`, `email` y JWT propio; `400` para credencial ausente/inválida, `401` si Google no verifica el email o no se puede vincular la cuenta, `500` si falta configuración o falla el servidor |
 
-El token dura 30 días. No hay cierre de sesión en el servidor: el frontend elimina el token guardado.
+El endpoint Google verifica la firma y la audiencia del ID token con `GOOGLE_CLIENT_ID`, exige `email_verified` y no acepta identidad o email enviados por separado. Puede crear una cuenta sin contraseña o vincular una cuenta local con el mismo email verificado. El token de sesión dura 30 días. No hay cierre de sesión en el servidor: el frontend elimina el token guardado.
 
 ## Recetas
 

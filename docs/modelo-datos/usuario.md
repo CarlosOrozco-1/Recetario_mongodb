@@ -10,7 +10,8 @@ Fuente: `backend/src/models/User.js`
 | `_id` | `ObjectId` | Sí | Clave primaria generada por MongoDB | — |
 | `name` | `String` | Sí | Se eliminan espacios exteriores | — |
 | `email` | `String` | Sí | Único, minúsculas y sin espacios exteriores | — |
-| `password` | `String` | Sí | Mínimo 8 caracteres; hash bcrypt; no se devuelve en consultas normales | — |
+| `password` | `String` | Condicional | Mínimo 8 caracteres; hash bcrypt; no se devuelve en consultas normales; obligatorio sin `googleId` | — |
+| `googleId` | `String` | No | Identificador `sub` validado por Google; único y sparse | — |
 | `avatar` | `String` | No | URL o cadena vacía | `""` |
 | `bio` | `String` | No | Máximo 500 caracteres | `""` |
 | `stats.recetasCount` | `Number` | No | Contador derivado | `0` |
@@ -21,6 +22,7 @@ Fuente: `backend/src/models/User.js`
 
 ## Relaciones
 
+- `googleId` vincula opcionalmente la cuenta con la identidad Google verificada.
 - Un usuario puede ser propietario de muchas recetas.
 - Un usuario puede escribir muchos comentarios y reseñas.
 - Un usuario puede seguir a muchos usuarios y ser seguido por muchos usuarios.
