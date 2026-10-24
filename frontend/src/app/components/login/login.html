@@ -39,10 +39,14 @@
         </div>
       </div>
 
-      <button type="submit" class="btn-primary btn-submit" [disabled]="loading()">
+      <button type="submit" class="btn-primary btn-submit" [disabled]="loading() || googleLoading()">
         <span *ngIf="loading()" class="spinner"></span>
         {{ loading() ? 'Iniciando...' : 'Ingresar a la cocina' }}
       </button>
+
+      <div class="auth-divider" aria-hidden="true"><span>o continúa con</span></div>
+      <div id="google-signin-button" class="google-signin-button" [attr.aria-busy]="googleLoading()"></div>
+      <p *ngIf="googleLoading()" class="google-loading" role="status">Verificando tu cuenta con Google...</p>
 
       <div class="auth-footer">
         <p>¿Aún no tienes un recetario? <a routerLink="/register">Regístrate aquí</a></p>

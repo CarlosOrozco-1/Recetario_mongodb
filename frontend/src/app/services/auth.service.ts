@@ -28,6 +28,11 @@ export class AuthService {
       .pipe(tap(user => this.saveUser(user)));
   }
 
+  loginWithGoogle(credential: string): Observable<User> {
+    return this.http.post<User>(`${this.apiUrl}/google`, { credential })
+      .pipe(tap(user => this.saveUser(user)));
+  }
+
   logout(): void {
     localStorage.removeItem('user');
     this.router.navigate(['/login']);

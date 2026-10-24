@@ -131,6 +131,36 @@ form {
   border: 1px solid #fca5a5;
 }
 
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--border, #e5e7eb);
+}
+
+.google-signin-button {
+  width: 100%;
+  min-height: 40px;
+  display: flex;
+  justify-content: center;
+}
+
+.google-loading {
+  margin: -12px 0 0;
+  color: var(--text-muted);
+  font-size: 13px;
+  text-align: center;
+}
+
 .auth-footer {
   text-align: center;
   margin-top: 16px;
