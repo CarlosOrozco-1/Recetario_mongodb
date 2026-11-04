@@ -37,6 +37,7 @@ app.get("/api/health", (req, res) => {
   });
 });
 
+app.use("/api/config", require("./routes/config"));
 app.use("/api/auth", require("./routes/auth"));
 app.use("/api/recipes", require("./routes/recipes"));
 app.use("/api/comments", commentsRouter);

@@ -4,7 +4,6 @@ import { FormsModule } from "@angular/forms";
 import { Router, RouterModule } from "@angular/router";
 import { firstValueFrom } from "rxjs";
 import { AuthService } from "../../services/auth.service";
-import { environment } from "../../../environments/environment";
 
 declare global {
   interface Window {
@@ -32,8 +31,6 @@ export class Login implements AfterViewInit {
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
 
-  readonly googleClientId = environment.googleClientId;
-
   email = "";
   password = "";
   error = "";
@@ -43,7 +40,20 @@ export class Login implements AfterViewInit {
   googleLoading = signal(false);
 
   ngAfterViewInit(): void {
-    if (!this.googleClientId) {
+    void this.initGoogleButton();
+  }
+
+  private async initGoogleButton(): Promise<void> {
+    let googleClientId = "";
+    try {
+      const config = await firstValueFrom(this.authService.getPublicConfig());
+      googleClientId = config.googleClientId?.trim() ?? "";
+    } catch {
+      this.error = "No se pudo cargar la configuración de Google";
+      return;
+    }
+
+    if (!googleClientId) {
       this.error = "El inicio de sesión con Google no está configurado";
       return;
     }
@@ -54,7 +64,7 @@ export class Login implements AfterViewInit {
       if (!google || !container) return;
 
       google.accounts.id.initialize({
-        client_id: this.googleClientId,
+        client_id: googleClientId,
         callback: response => void this.onGoogleCredential(response.credential),
       });
       google.accounts.id.renderButton(container, {

@@ -5,8 +5,8 @@
 - **Componente:** `local/compose.yaml`, login con Google (`POST /api/auth/google`).
 - **Síntoma:** el botón de Google se mostraba, pero el backend respondía `401` con “La credencial de Google no es válida” (o `500` si faltaba la variable). El usuario no podía iniciar sesión con Google.
 - **Causa:** `GOOGLE_CLIENT_ID` en `local/compose.yaml` tenía una comilla simple sobrante al final, por lo que la audiencia configurada no coincidía con el `client_id` del frontend. Además, el backend fuera de compose no definía `GOOGLE_CLIENT_ID` en su `.env`.
-- **Solución:** se eliminó la comilla sobrante del compose. Se documenta que `GOOGLE_CLIENT_ID` debe existir en el entorno del backend y coincidir exactamente con `googleClientId` de `frontend/src/environments/environment.ts`. El `client_id` de Google es público; no se registran secretos.
-- **Verificación:** pruebas backend de auth Google (`npm test`); el compose local queda con el identificador correcto. Queda pendiente validar el flujo real en el navegador (éxito, cancelación y errores) y definir la variable en la VPS.
+- **Solución:** se eliminó la comilla sobrante del compose. Además, el frontend dejó de importar `environment.ts`: el login consulta `GET /api/config` y recibe el `googleClientId` desde el backend, de modo que el identificador público no se versiona en el código. El `client_id` de Google es público; no se registran secretos.
+- **Verificación:** pruebas backend de configuración y auth Google (`npm test`), pruebas frontend y build de producción; el compose local queda con el identificador correcto. Queda pendiente validar el flujo real en el navegador (éxito, cancelación y errores) y definir la variable en la VPS.
 
 ## 2026-11-03 — Instrucciones guardadas como subdocumentos
 

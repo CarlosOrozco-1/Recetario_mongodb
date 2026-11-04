@@ -10,6 +10,14 @@ Límite global: 100 solicitudes cada 15 minutos para `/api`.
 |---|---|---|
 | `GET /api/health` | Pública | `200` con estado, conexión MongoDB, base de datos, host, puerto y marca temporal |
 
+## Configuración
+
+| Método y ruta | Auth | Respuesta principal |
+|---|---|---|
+| `GET /api/config` | Pública | `200` con `googleClientId`; cadena vacía si Google no está configurado |
+
+Expone únicamente la configuración pública que el frontend necesita antes de iniciar sesión. No incluye secretos, cadenas de conexión ni identificadores internos.
+
 ## Autenticación
 
 | Método y ruta | Límites y saneado | Respuesta principal |
@@ -18,7 +26,7 @@ Límite global: 100 solicitudes cada 15 minutos para `/api`.
 | `POST /api/auth/login` | 10 intentos cada 15 minutos | `200` con `_id`, `name`, `email` y `token`; `400` si el usuario o la contraseña son incorrectos |
 | `POST /api/auth/google` | 10 intentos cada 15 minutos | Recibe `{ credential }`; `200` con `_id`, `name`, `email` y JWT propio; `400` para credencial ausente/inválida, `401` si Google no verifica el email o no se puede vincular la cuenta, `500` si falta configuración o falla el servidor |
 
-El endpoint Google verifica la firma y la audiencia del ID token con `GOOGLE_CLIENT_ID`, exige `email_verified` y no acepta identidad o email enviados por separado. La variable debe coincidir exactamente con el `client_id` configurado en el frontend (`googleClientId`). Puede crear una cuenta sin contraseña o vincular una cuenta local con el mismo email verificado. El token de sesión dura 30 días. No hay cierre de sesión en el servidor: el frontend elimina el token guardado.
+El endpoint Google verifica la firma y la audiencia del ID token con `GOOGLE_CLIENT_ID`, exige `email_verified` y no acepta identidad o email enviados por separado. El frontend obtiene el identificador público desde `GET /api/config`, así que no se versiona en el código; la variable del backend debe coincidir con el `client_id` autorizado en Google. Puede crear una cuenta sin contraseña o vincular una cuenta local con el mismo email verificado. El token de sesión dura 30 días. No hay cierre de sesión en el servidor: el frontend elimina el token guardado.
 
 ## Recetas
 

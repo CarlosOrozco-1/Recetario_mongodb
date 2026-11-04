@@ -70,6 +70,7 @@ Estado: implementación avanzada en backend y frontend; pendiente de corregir la
 - [x] Botón de Google y carga del script de identidad en el login (`1b02056`).
 - [x] Pruebas del endpoint: configuración faltante, credencial ausente o sobredimensionada, email no verificado, alta y vinculación de cuentas.
 - [x] Corregir la comilla sobrante en `GOOGLE_CLIENT_ID` de `local/compose.yaml` y documentar la causa (2026-11-03).
+- [x] Quitar el `client_id` del código del frontend: `GET /api/config` entrega la configuración pública al login.
 - [ ] Definir `GOOGLE_CLIENT_ID` en el `.env` del backend para ejecución local sin compose y en la VPS.
 - [ ] Probar éxito, cancelación y errores de credencial/configuración sin exponer tokens ni identificadores sensibles.
 - [ ] Registrar el resultado en la bitácora.
@@ -77,6 +78,7 @@ Estado: implementación avanzada en backend y frontend; pendiente de corregir la
 ## Registro de avances
 - 2026-11-03: pendiente 6 implementado en código y documentación; falta ejecutar la migración en local y Atlas. Pendientes 7–9 abiertos.
 - 2026-11-03: `pre` y `pro` actualizadas por fast-forward con `origin`; `desa` conserva dos commits locales de Google sin publicar.
+- 2026-11-03: el login obtiene `googleClientId` desde `GET /api/config`; se elimina `frontend/src/environments/environment.ts` y la nota local con credenciales queda ignorada por Git.
 
 ## Prioridad
 Orden sugerido: seguridad/rotación de credenciales (incluida la llave SSH filtrada), validar el acceso con Google (9), corregir el listado tras guardar (7) y añadir el feed de “Me gusta” (8). Las pruebas E2E contra el remoto quedaron en 28/28 PASS (2026-10-17) y la migración de `recipes` ya se aplicó en Atlas (5 likes / 5 saves / 0 reportes). Conexión a Atlas (1), revisión de usuarios (2), flujo local contenerizado y colecciones Postman (4) ya documentados.

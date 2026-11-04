@@ -12,3 +12,6 @@ keys-mongoAtlas/
 .angular/
 *.tsbuildinfo
 angular-compiler.db-lock
+
+# Notas locales con credenciales de prueba
+frontend/test/usertest.md

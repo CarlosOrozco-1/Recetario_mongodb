@@ -10,6 +10,10 @@ export interface User {
   token: string;
 }
 
+export interface PublicConfig {
+  googleClientId: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -31,6 +35,10 @@ export class AuthService {
   loginWithGoogle(credential: string): Observable<User> {
     return this.http.post<User>(`${this.apiUrl}/google`, { credential })
       .pipe(tap(user => this.saveUser(user)));
+  }
+
+  getPublicConfig(): Observable<PublicConfig> {
+    return this.http.get<PublicConfig>('/api/config');
   }
 
   logout(): void {
