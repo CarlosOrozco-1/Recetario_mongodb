@@ -14,7 +14,7 @@
 - **Síntoma:** las instrucciones se almacenaban como un único bloque de texto, aunque la interfaz las capturara por pasos.
 - **Causa:** el esquema definía `instrucciones` como `String` y el formulario las serializaba en líneas `Paso N.`.
 - **Solución:** el campo pasa a ser un arreglo de subdocumentos `{ orden, texto }` sin `_id`; el servidor normaliza, ordena, renumera y descarta pasos vacíos. El formulario envía el arreglo y el detalle ordena por `orden`. Las recetas antiguas se migran con `backend/scripts/normalize-instructions.js`.
-- **Verificación:** pruebas backend (35/35) y frontend (14/14), build de producción correcto. La migración se validó en una base temporal con texto multilínea, pasos en una sola línea y arreglos híbridos; `--check` confirma 0 pendientes. Dry-run local anterior: 12 recetas, 44 pasos. DERCAS: capítulos y SVG actualizados; la regeneración del PDF quedó pendiente porque la red del entorno redujo las descargas de `dnf` a ~15 KB/s e impidió completar `make`.
+- **Verificación:** pruebas backend (35/35) y frontend (14/14), build de producción correcto. La migración se validó en una base temporal con texto multilínea, pasos en una sola línea y arreglos híbridos, y se aplicó en `recetario_local` el 2026-11-03: 12 recetas, 44 pasos, 0 cadenas restantes y sin `_id` en los subdocumentos. En Atlas queda pendiente por falta de `MONGODB_URI`. DERCAS: capítulos y SVG actualizados; la regeneración del PDF quedó pendiente porque la red del entorno redujo las descargas de `dnf` a ~15 KB/s e impidió completar `make`.
 
 ## 2026-10-20 — Instrucciones por pasos y formato de modales
 

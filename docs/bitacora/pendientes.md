@@ -80,15 +80,18 @@ El código nuevo ya escribe `instrucciones` como arreglo de subdocumentos, pero 
 - [x] El modelo, el formulario y el API guardan y devuelven arreglos `{ orden, texto }` en altas y ediciones.
 - [x] El script de migración detecta texto en bloque, arreglos híbridos y pasos escritos en una sola línea; incluye modo `--check`.
 - [ ] Ejecutar `node scripts/normalize-instructions.js --dry-run` en `backend/` contra Atlas y revisar cuántas recetas y pasos se migrarían.
-- [ ] Aplicar la migración con `node scripts/normalize-instructions.js` y verificar con `--check` que no queden cadenas.
-- [ ] Confirmar en una consulta que un documento de ejemplo muestra `instrucciones` como arreglo de subdocumentos.
-- [ ] Registrar el resultado en la bitácora.
+- [ ] Aplicar la migración contra Atlas con `node scripts/normalize-instructions.js` y verificar con `--check` que no queden cadenas.
+- [x] Ejecutar el dry-run en la base local: 12 recetas, 44 pasos (2026-11-03).
+- [x] Aplicar la migración en `recetario_local` y verificar con `--check`: 0 cadenas, 12 recetas con arreglo, 44 pasos y sin `_id` en los subdocumentos (2026-11-03).
+- [ ] Confirmar en una consulta de Atlas que un documento de ejemplo muestra `instrucciones` como arreglo de subdocumentos.
+- [ ] Registrar el resultado de Atlas en la bitácora.
 
 ## Registro de avances
 - 2026-11-03: pendiente 6 implementado en código y documentación; falta ejecutar la migración en local y Atlas. Pendientes 7–9 abiertos.
 - 2026-11-03: `pre` y `pro` actualizadas por fast-forward con `origin`; `desa` conserva dos commits locales de Google sin publicar.
 - 2026-11-03: el login obtiene `googleClientId` desde `GET /api/config`; se elimina `frontend/src/environments/environment.ts` y la nota local con credenciales queda ignorada por Git.
 - 2026-11-03: pendiente 10 agregado. El script de migración ahora separa pasos en una sola línea, normaliza arreglos híbridos y permite verificar con `--check`.
+- 2026-11-03: migración aplicada en la base local `recetario_local`: 12 recetas, 44 pasos, 0 cadenas restantes. En Atlas queda pendiente por falta de `MONGODB_URI`.
 
 ## Prioridad
 Orden sugerido: seguridad/rotación de credenciales (incluida la llave SSH filtrada), migrar las instrucciones existentes (10), validar el acceso con Google (9), corregir el listado tras guardar (7) y añadir el feed de “Me gusta” (8). Las pruebas E2E contra el remoto quedaron en 28/28 PASS (2026-10-17) y la migración de `recipes` ya se aplicó en Atlas (5 likes / 5 saves / 0 reportes). Conexión a Atlas (1), revisión de usuarios (2), flujo local contenerizado y colecciones Postman (4) ya documentados.
