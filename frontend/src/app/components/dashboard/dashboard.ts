@@ -1,8 +1,9 @@
-import { Component, inject, OnInit, signal, computed } from "@angular/core";
+import { Component, inject, OnInit, signal, computed, OnDestroy } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
-import { Router, RouterModule } from "@angular/router";
+import { Router, RouterModule, NavigationEnd } from "@angular/router";
 import { firstValueFrom } from "rxjs";
+import { filter } from "rxjs/operators";
 import { AuthService } from "../../services/auth.service";
 import { RecipeService, Recipe, InstructionStep } from "../../services/recipe.service";
 import { SocialService, Comment, Review } from "../../services/social.service";
@@ -27,7 +28,7 @@ export class Dashboard implements OnInit {
   error = signal("");
   
   // Navigation & Filtering
-  activeTab = signal<"mine" | "public">("mine");
+  activeTab = signal<"mine" | "public" | "liked">("mine");
   searchQuery = signal("");
   selectedCategory = signal<string>("Todas");
   sortBy = signal<"recent" | "title">("recent");
@@ -90,13 +91,14 @@ export class Dashboard implements OnInit {
           const recipeUserId = typeof r.usuario === "object" ? r.usuario._id : r.usuario;
           return recipeUserId === currentUser._id;
         });
-      } else {
+      } else if (tab === "public") {
         // public - show recipes that are public and NOT ours
         filtered = filtered.filter(r => {
           const recipeUserId = typeof r.usuario === "object" ? r.usuario._id : r.usuario;
           return r.publica && recipeUserId !== currentUser._id;
         });
       }
+      // "liked": backend already returns only liked recipes; no extra filter.
     }
 
     // 2. Filter by Category
@@ -133,14 +135,28 @@ export class Dashboard implements OnInit {
     return filtered;
   });
 
+  private navSub?: ReturnType<Router["events"]["subscribe"]>;
+
   ngOnInit(): void {
     this.loadRecipes();
+    this.navSub = this.router.events
+      .pipe(filter((e): e is NavigationEnd => e instanceof NavigationEnd))
+      .subscribe((e) => {
+        if (e.urlAfterRedirects === "/dashboard" && !this.loading()) {
+          this.loadRecipes();
+        }
+      });
+  }
+
+  ngOnDestroy(): void {
+    this.navSub?.unsubscribe();
   }
 
   loadRecipes(): void {
     this.loading.set(true);
     this.error.set("");
-    const scope = this.activeTab() === "public" ? "public" : undefined;
+    const tab = this.activeTab();
+    const scope = tab === "public" ? "public" : tab === "liked" ? "liked" : undefined;
     
     this.recipeService.getAll(scope).subscribe({
       next: (recipes) => {
@@ -155,7 +171,7 @@ export class Dashboard implements OnInit {
     });
   }
 
-  changeTab(tab: "mine" | "public"): void {
+  changeTab(tab: "mine" | "public" | "liked"): void {
     this.activeTab.set(tab);
     this.selectedCategory.set("Todas");
     this.showOnlyFavorites.set(false);

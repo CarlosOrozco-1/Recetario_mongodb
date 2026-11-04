@@ -73,6 +73,17 @@ const needsMigration = recipe => {
   return Array.isArray(instructions) && instructions.length > 0 && !isNormalized(instructions);
 };
 
+const resolveDatabaseName = uri => {
+  try {
+    const url = new URL(uri);
+    const current = url.pathname.replace(/^\//, "").split("/")[0];
+    if (current) return { uri, database: current };
+    return { uri, database: null };
+  } catch {
+    return { uri, database: null };
+  }
+};
+
 const run = async () => {
   if (!process.env.MONGODB_URI) throw new Error("Falta MONGODB_URI en el entorno");
 
@@ -80,7 +91,32 @@ const run = async () => {
   const DRY_RUN = process.argv.includes("--dry-run");
   const CHECK = process.argv.includes("--check");
 
-  await mongoose.connect(process.env.MONGODB_URI);
+  const originalUri = process.env.MONGODB_URI;
+  const { database: uriDatabase } = resolveDatabaseName(originalUri);
+
+  if (!uriDatabase && !process.env.MONGODB_DB) {
+    const u = new URL(originalUri);
+    u.pathname = "/admin";
+    await mongoose.connect(u.toString());
+    const res = await mongoose.connection.db.admin().command({ listDatabases: 1 });
+    const names = res.databases.map(d => d.name).join(", ");
+    await mongoose.disconnect();
+    throw new Error(`La URI no incluye una base de datos. Bases disponibles en el cluster: ${names}. Agrega /<base> a MONGODB_URI o define MONGODB_DB.`);
+  }
+
+  const database = uriDatabase || process.env.MONGODB_DB;
+  let connectionUri = originalUri;
+  if (!uriDatabase) {
+    try {
+      const url = new URL(originalUri);
+      url.pathname = `/${database}`;
+      connectionUri = url.toString();
+    } catch {
+      connectionUri = originalUri;
+    }
+  }
+
+  await mongoose.connect(connectionUri);
   const db = mongoose.connection.db;
   console.log(`Conectado a "${db.databaseName}"${DRY_RUN ? " (DRY RUN: no se escribe nada)" : ""}${CHECK ? " (CHECK: solo verifica)" : ""}`);
 

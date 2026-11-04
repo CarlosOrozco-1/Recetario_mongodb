@@ -55,14 +55,15 @@ El commit `c6eee0c` subió `carloso` (llave privada OpenSSH) y `carloso.pub`, us
 - [ ] Datos existentes: ver pendiente 10 (migración y verificación).
 
 ## 7. Listado después de guardar o crear una receta
-- [ ] Reproducir el flujo: guardar o crear una receta y pulsar el botón para mostrar recetas; el listado no aparece.
-- [ ] Revisar la respuesta del API, la navegación y la carga del tablero.
-- [ ] Corregir el fallo y verificarlo con pruebas.
+- [x] Revisar la respuesta del API, la navegación y la carga del tablero: el backend devuelve correctamente la lista tras crear.
+- [x] Añadir recarga automática del tablero al volver a `/dashboard` y pruebas de build.
+- [ ] Verificar en el navegador que el listado aparece tras guardar y crear.
 
 ## 8. Feed de recetas con “Me gusta”
-- [ ] Añadir una vista que liste las recetas marcadas con “Me gusta” por el usuario.
-- [ ] Confirmar acceso autorizado y estados de carga, vacío y error.
-- [ ] Documentar el endpoint o las consultas si cambia la API.
+- [x] Añadir una pestaña “Me gusta” en el dashboard que consulta `GET /api/recipes?scope=liked`.
+- [x] Endpoint backend con filtrado por likes del usuario y flags `liked`/`saved`.
+- [x] Documentar el parámetro `scope=liked` en la API.
+- [ ] Confirmar acceso autorizado y estados de carga, vacío y error en navegador.
 
 ## 9. Acceso con Google
 Estado: implementación avanzada en backend y frontend; pendiente de corregir la configuración y validar el flujo completo.

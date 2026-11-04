@@ -84,7 +84,12 @@ const getAll = async (req, res) => {
   try {
     const query = req.query.scope === "public"
       ? { $or: [{ publica: true }, { usuario: req.user._id }] }
-      : { usuario: req.user._id };
+      : req.query.scope === "liked"
+        ? await (async () => {
+            const likes = await Like.find({ usuario: req.user._id }).select("receta");
+            return { _id: { $in: likes.map((l) => l.receta) } };
+          })()
+        : { usuario: req.user._id };
 
     const recipes = await Recipe.find(query)
       .populate("usuario", "name")

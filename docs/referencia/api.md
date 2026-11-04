@@ -35,6 +35,7 @@ El endpoint Google verifica la firma y la audiencia del ID token con `GOOGLE_CLI
 | `POST /api/recipes` | 10 creaciones por minuto; sanea título, descripción, instrucciones, categoría y etiquetas | `201` con la receta y el propietario asignado por el servidor |
 | `GET /api/recipes` | Autenticada | `200` con las recetas del usuario |
 | `GET /api/recipes?scope=public` | Autenticada | `200` con las recetas públicas de otros usuarios más las propias |
+| `GET /api/recipes?scope=liked` | Autenticada | `200` con las recetas que el usuario marcó con “Me gusta” |
 | `GET /api/recipes/:id` | Autenticada; permite la receta si es del usuario o es pública | `200` con la receta; `404` si no existe o no es visible |
 | `PUT /api/recipes/:id` | Autenticada; solamente acepta los 11 campos editables | `200` con la receta; `400` si no hay campos editables; `404` si no existe o no pertenece al usuario |
 | `DELETE /api/recipes/:id` | Autenticada | `200` con confirmación; elimina también la imagen en GridFS y las filas asociadas en `likes`, `saves` y `reports`; `404` si no existe o no pertenece al usuario |
