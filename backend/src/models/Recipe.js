@@ -1,4 +1,13 @@
 const mongoose = require("mongoose");
+const { normalizeInstructions } = require("../utils/instructions");
+
+const InstructionStepSchema = new mongoose.Schema(
+  {
+    orden: { type: Number, required: true, min: 1 },
+    texto: { type: String, required: true, trim: true },
+  },
+  { _id: false },
+);
 
 const RecipeSchema = new mongoose.Schema(
   {
@@ -17,8 +26,12 @@ const RecipeSchema = new mongoose.Schema(
       required: [true, "Los ingredientes son obligatorios"],
     },
     instrucciones: {
-      type: String,
+      type: [InstructionStepSchema],
       required: [true, "Las instrucciones son obligatorias"],
+      validate: {
+        validator: steps => Array.isArray(steps) && steps.length > 0 && steps.every(step => step.texto?.trim()),
+        message: "Agrega al menos un paso de preparación",
+      },
     },
     imagen: {
       type: String,
@@ -71,6 +84,8 @@ const RecipeSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+RecipeSchema.path("instrucciones").set(normalizeInstructions);
 
 RecipeSchema.index({ usuario: 1, createdAt: -1 });
 RecipeSchema.index({ categoria: 1 });

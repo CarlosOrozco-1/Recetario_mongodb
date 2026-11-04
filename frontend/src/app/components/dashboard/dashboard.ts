@@ -4,7 +4,7 @@ import { FormsModule } from "@angular/forms";
 import { Router, RouterModule } from "@angular/router";
 import { firstValueFrom } from "rxjs";
 import { AuthService } from "../../services/auth.service";
-import { RecipeService, Recipe } from "../../services/recipe.service";
+import { RecipeService, Recipe, InstructionStep } from "../../services/recipe.service";
 import { SocialService, Comment, Review } from "../../services/social.service";
 import { ToastService } from "../../services/toast.service";
 import { Notifications } from "../notifications/notifications";
@@ -435,7 +435,18 @@ export class Dashboard implements OnInit {
     });
   }
 
-  getInstructionSteps(instructions: string | undefined): string[] {
+  getInstructionSteps(instructions: InstructionStep[] | string[] | string | undefined): string[] {
+    if (Array.isArray(instructions)) {
+      return instructions
+        .map((step, index) => ({
+          orden: typeof step === "object" && step?.orden !== undefined ? step.orden : index + 1,
+          texto: typeof step === "string" ? step : step?.texto ?? "",
+        }))
+        .sort((a, b) => a.orden - b.orden)
+        .map(step => step.texto.trim())
+        .filter(Boolean);
+    }
+
     const text = (instructions ?? "").trim();
     if (!text) return [];
 

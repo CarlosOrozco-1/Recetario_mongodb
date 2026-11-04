@@ -3,6 +3,17 @@ const bcrypt = require("bcryptjs");
 const path = require("path");
 require("dotenv").config({ path: path.resolve(__dirname, "../.env") });
 
+// El modelo guarda cada instrucción como subdocumento { orden, texto }.
+const toSteps = instructions =>
+  (instructions ?? "")
+    .split(/\r?\n/)
+    .map(line => line.trim())
+    .filter(Boolean)
+    .map((texto, index) => ({
+      orden: index + 1,
+      texto: texto.replace(/^(?:Paso\s*)?\d+[.)]\s*/i, "").trim(),
+    }));
+
 async function seed() {
   const uri = process.env.MONGODB_URI;
   if (!uri) {
@@ -182,11 +193,16 @@ async function seed() {
       },
     ];
 
-    await recipes.insertMany(recipesData);
-    console.log(`🍽️ ${recipesData.length} recetas creadas`);
+    const recipesToInsert = recipesData.map(recipe => ({
+      ...recipe,
+      instrucciones: toSteps(recipe.instrucciones),
+    }));
+
+    await recipes.insertMany(recipesToInsert);
+    console.log(`🍽️ ${recipesToInsert.length} recetas creadas`);
 
     // Actualizar contador de recetas del usuario
-    await users.updateOne({ _id: userId }, { $set: { "stats.recetasCount": recipesData.length } });
+    await users.updateOne({ _id: userId }, { $set: { "stats.recetasCount": recipesToInsert.length } });
 
     console.log("✅ Seed completado exitosamente");
   } catch (error) {

@@ -11,7 +11,7 @@ const {
 const auth = require("../middleware/auth");
 const { uploadMiddleware } = require("../middleware/upload");
 const { createLimiter } = require("../middleware/rateLimiter");
-const { sanitizeFields } = require("../middleware/sanitize");
+const { sanitizeFields, sanitizeBody } = require("../middleware/sanitize");
 const mongoose = require("mongoose");
 const { GridFSBucket } = require("mongodb");
 
@@ -70,10 +70,10 @@ router.get("/image/:fileId", async (req, res) => {
 
 router.use(auth);
 
-router.post("/", createLimiter, sanitizeFields(["titulo", "descripcion", "instrucciones", "categoria", "hashtags"]), create);
+router.post("/", createLimiter, sanitizeFields(["titulo", "descripcion", "categoria", "hashtags"]), sanitizeBody, create);
 router.get("/", getAll);
 router.get("/:id", getById);
-router.put("/:id", update);
+router.put("/:id", sanitizeBody, update);
 router.delete("/:id", remove);
 
 router.post("/:id/image", uploadMiddleware, async (req, res) => {

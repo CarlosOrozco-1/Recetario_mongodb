@@ -4,6 +4,7 @@ const Save = require("../models/Save");
 const Report = require("../models/Report");
 const mongoose = require("mongoose");
 const { GridFSBucket } = require("mongodb");
+const { normalizeInstructions } = require("../utils/instructions");
 
 // Únicos campos que el cliente puede escribir. Sin esta lista, un PUT podía
 // pisar _id, usuario (robo de receta), contadores, etc.
@@ -24,7 +25,11 @@ const EDITABLE_FIELDS = [
 const pickEditable = (body) => {
   const allowed = {};
   for (const field of EDITABLE_FIELDS) {
-    if (body[field] !== undefined) allowed[field] = body[field];
+    if (body[field] !== undefined) {
+      allowed[field] = field === "instrucciones"
+        ? normalizeInstructions(body[field])
+        : body[field];
+    }
   }
   return allowed;
 };

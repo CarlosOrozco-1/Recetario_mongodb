@@ -3,12 +3,17 @@ import { HttpClient, HttpHeaders } from "@angular/common/http";
 import { Observable } from "rxjs";
 import { AuthService } from "./auth.service";
 
+export interface InstructionStep {
+  orden: number;
+  texto: string;
+}
+
 export interface Recipe {
   _id?: string;
   titulo: string;
   descripcion: string;
   ingredientes: string[];
-  instrucciones: string;
+  instrucciones: InstructionStep[];
   imagen?: string;
   usuario?: string | { _id: string; name: string; avatar?: string };
   categoria?: string;

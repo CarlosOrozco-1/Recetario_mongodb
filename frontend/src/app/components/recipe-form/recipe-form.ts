@@ -28,7 +28,7 @@ export class RecipeForm implements OnInit {
     titulo: "",
     descripcion: "",
     ingredientes: [""],
-    instrucciones: "",
+    instrucciones: [],
     imagen: "",
     categoria: "Plato Principal",
     tiempoPreparacion: 20,
@@ -60,7 +60,7 @@ export class RecipeForm implements OnInit {
           titulo: "",
           descripcion: "",
           ingredientes: [""],
-          instrucciones: "",
+          instrucciones: [],
           imagen: "",
           categoria: "Plato Principal",
           tiempoPreparacion: 20,
@@ -122,7 +122,19 @@ next: (data) => {
     if (this.instructionSteps.length === 0) this.instructionSteps.push("");
   }
 
-  private parseInstructionSteps(instructions: string | undefined): string[] {
+  private parseInstructionSteps(instructions: Recipe["instrucciones"] | string[] | string | undefined): string[] {
+    if (Array.isArray(instructions)) {
+      const steps = instructions
+        .map((step, index) => ({
+          orden: typeof step === "object" && step?.orden !== undefined ? step.orden : index + 1,
+          texto: typeof step === "string" ? step : step?.texto ?? "",
+        }))
+        .sort((a, b) => a.orden - b.orden)
+        .map(step => step.texto.trim())
+        .filter(Boolean);
+      return steps.length > 0 ? steps : [""];
+    }
+
     const text = (instructions ?? "").trim();
     if (!text) return [""];
 
@@ -160,9 +172,10 @@ next: (data) => {
     const data = {
       ...cleanRecipe,
       ingredientes,
-      instrucciones: instructionSteps
-        .map((step, index) => `Paso ${index + 1}. ${step}`)
-        .join("\n"),
+      instrucciones: instructionSteps.map((texto, index) => ({
+        orden: index + 1,
+        texto,
+      })),
     };
     
     console.log("Enviando datos al backend para guardar:", data);
