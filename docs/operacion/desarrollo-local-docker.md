@@ -27,6 +27,7 @@ Datos persistentes: volumen Docker recetario-local_mongo-local-data
 - En Podman/Fedora, el código se monta con etiqueta SELinux privada `:Z`; Docker Desktop/Linux puede usar la misma sintaxis o requerir que se quite `:Z`, según el motor. Las dependencias de `node_modules` viven en volúmenes nombrados.
 - La primera instalación ejecuta `npm install` dentro de los bind mounts y puede crear/actualizar `package-lock.json`. Antes de confirmar cambios Git, revisa `git status` y `git diff`; conserva lockfiles si son cambios intencionales y descarta solo artefactos accidentales.
 - El backend recibe `MONGODB_URI` local desde el compose; no usa `backend/.env` ni la URI de Atlas en este entorno.
+- El compose también inyecta `GOOGLE_CLIENT_ID` para el inicio de sesión con Google. Debe coincidir exactamente con `googleClientId` de `frontend/src/environments/environment.ts`; una diferencia (incluido un carácter sobrante) hace que Google devuelva `401`.
 - El secreto JWT del compose es solo para desarrollo local; nunca debe reutilizarse en producción.
 - Angular corre con `ng serve` y usa `frontend/src/proxy.docker.conf.json`, que redirige `/api` al servicio `backend`.
 - Los volúmenes separados de `node_modules` evitan instalar dependencias dentro de la carpeta fuente.

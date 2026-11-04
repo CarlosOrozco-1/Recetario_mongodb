@@ -11,7 +11,7 @@ Fuente: `backend/src/models/Recipe.js`
 | `titulo` | `String` | Sí | Sin espacios exteriores | — |
 | `descripcion` | `String` | Sí | Sin espacios exteriores | — |
 | `ingredientes` | `String[]` | Sí | Por lo menos un ingrediente no vacío en la interfaz | — |
-| `instrucciones` | `String` | Sí | Pasos de preparación en líneas independientes (`Paso N. texto`); las recetas históricas en texto libre se conservan y se muestran como un único paso | — |
+| `instrucciones` | `{ orden: Number, texto: String }[]` | Sí | Subdocumentos ordenados; al menos uno con texto no vacío. Las recetas antiguas en texto se migran con `backend/scripts/normalize-instructions.js` | — |
 | `imagen` | `String` | No | Identificador del archivo en `uploads.files`; cadena vacía significa sin imagen | `""` |
 | `categoria` | `String` | No | Texto libre | `"Otro"` |
 | `tiempoPreparacion` | `Number` | No | Minutos | `0` |
@@ -61,7 +61,10 @@ por usuario vive en colecciones propias (`likes`, `saves`, `comments`, `reviews`
   "titulo": "Frijoles volteados",
   "descripcion": "Receta tradicional",
   "ingredientes": ["frijoles", "cebolla", "sal"],
-  "instrucciones": "Paso 1. Freír los frijoles...\nPaso 2. Servir caliente.",
+  "instrucciones": [
+    { "orden": 1, "texto": "Cocer los frijoles hasta que estén suaves." },
+    { "orden": 2, "texto": "Freírlos con cebolla y sal." }
+  ],
   "imagen": "68ea00000000000000000100",
   "categoria": "Plato principal",
   "tiempoPreparacion": 30,

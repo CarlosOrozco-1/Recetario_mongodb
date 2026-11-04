@@ -1,5 +1,21 @@
 # Bitácora de errores y correcciones
 
+## 2026-11-03 — Acceso con Google rechazado por configuración del entorno
+
+- **Componente:** `local/compose.yaml`, login con Google (`POST /api/auth/google`).
+- **Síntoma:** el botón de Google se mostraba, pero el backend respondía `401` con “La credencial de Google no es válida” (o `500` si faltaba la variable). El usuario no podía iniciar sesión con Google.
+- **Causa:** `GOOGLE_CLIENT_ID` en `local/compose.yaml` tenía una comilla simple sobrante al final, por lo que la audiencia configurada no coincidía con el `client_id` del frontend. Además, el backend fuera de compose no definía `GOOGLE_CLIENT_ID` en su `.env`.
+- **Solución:** se eliminó la comilla sobrante del compose. Se documenta que `GOOGLE_CLIENT_ID` debe existir en el entorno del backend y coincidir exactamente con `googleClientId` de `frontend/src/environments/environment.ts`. El `client_id` de Google es público; no se registran secretos.
+- **Verificación:** pruebas backend de auth Google (`npm test`); el compose local queda con el identificador correcto. Queda pendiente validar el flujo real en el navegador (éxito, cancelación y errores) y definir la variable en la VPS.
+
+## 2026-11-03 — Instrucciones guardadas como subdocumentos
+
+- **Componente:** `backend/src/models/Recipe.js`, `backend/src/utils/instructions.js`, `backend/src/controllers/recipeController.js`, formulario y detalle de recetas.
+- **Síntoma:** las instrucciones se almacenaban como un único bloque de texto, aunque la interfaz las capturara por pasos.
+- **Causa:** el esquema definía `instrucciones` como `String` y el formulario las serializaba en líneas `Paso N.`.
+- **Solución:** el campo pasa a ser un arreglo de subdocumentos `{ orden, texto }` sin `_id`; el servidor normaliza, ordena, renumera y descarta pasos vacíos. El formulario envía el arreglo y el detalle ordena por `orden`. Las recetas antiguas se migran con `backend/scripts/normalize-instructions.js`.
+- **Verificación:** pruebas backend (27/27) y frontend (14/14), build de producción correcto y dry-run de la migración sobre `recetario_local` (12 recetas, 44 pasos, 0 omitidas). DERCAS: capítulos y SVG actualizados; la regeneración del PDF quedó pendiente porque la red del entorno redujo las descargas de `dnf` a ~15 KB/s e impidió completar `make`.
+
 ## 2026-10-20 — Instrucciones por pasos y formato de modales
 
 - **Componente:** formulario de recetas y modal de detalle del dashboard.

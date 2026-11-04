@@ -49,8 +49,34 @@ El commit `c6eee0c` subió `carloso` (llave privada OpenSSH) y `carloso.pub`, us
 
 ## 6. Instrucciones de preparación por pasos
 - [x] Capturar, editar y numerar instrucciones paso a paso en el formulario de recetas.
-- [x] Mostrar las instrucciones como lista en el detalle, conservando compatibilidad con textos históricos y el campo API `instrucciones`.
+- [x] Guardar cada instrucción como subdocumento `{ orden, texto }`; el servidor renumera y descarta vacíos.
+- [x] Mostrar las instrucciones como lista en el detalle, conservando compatibilidad con textos históricos.
 - [x] Actualizar documentación de modelo y DERCAS; validar tests y build.
+- [ ] Migrar recetas existentes con `backend/scripts/normalize-instructions.js` (local y Atlas).
+
+## 7. Listado después de guardar o crear una receta
+- [ ] Reproducir el flujo: guardar o crear una receta y pulsar el botón para mostrar recetas; el listado no aparece.
+- [ ] Revisar la respuesta del API, la navegación y la carga del tablero.
+- [ ] Corregir el fallo y verificarlo con pruebas.
+
+## 8. Feed de recetas con “Me gusta”
+- [ ] Añadir una vista que liste las recetas marcadas con “Me gusta” por el usuario.
+- [ ] Confirmar acceso autorizado y estados de carga, vacío y error.
+- [ ] Documentar el endpoint o las consultas si cambia la API.
+
+## 9. Acceso con Google
+Estado: implementación avanzada en backend y frontend; pendiente de corregir la configuración y validar el flujo completo.
+- [x] Endpoint `POST /api/auth/google` con verificación de firma, audiencia y `email_verified` (`f304806`).
+- [x] Botón de Google y carga del script de identidad en el login (`1b02056`).
+- [x] Pruebas del endpoint: configuración faltante, credencial ausente o sobredimensionada, email no verificado, alta y vinculación de cuentas.
+- [x] Corregir la comilla sobrante en `GOOGLE_CLIENT_ID` de `local/compose.yaml` y documentar la causa (2026-11-03).
+- [ ] Definir `GOOGLE_CLIENT_ID` en el `.env` del backend para ejecución local sin compose y en la VPS.
+- [ ] Probar éxito, cancelación y errores de credencial/configuración sin exponer tokens ni identificadores sensibles.
+- [ ] Registrar el resultado en la bitácora.
+
+## Registro de avances
+- 2026-11-03: pendiente 6 implementado en código y documentación; falta ejecutar la migración en local y Atlas. Pendientes 7–9 abiertos.
+- 2026-11-03: `pre` y `pro` actualizadas por fast-forward con `origin`; `desa` conserva dos commits locales de Google sin publicar.
 
 ## Prioridad
-Orden sugerido: seguridad/rotación de credenciales (incluida la llave SSH filtrada) — pendientes prioritarios. Las pruebas E2E contra el remoto quedaron en 28/28 PASS (2026-10-17) y la migración de `recipes` ya se aplicó en Atlas (5 likes / 5 saves / 0 reportes). Conexión a Atlas (1), revisión de usuarios (2), flujo local contenerizado y colecciones Postman (4) ya documentados.
+Orden sugerido: seguridad/rotación de credenciales (incluida la llave SSH filtrada), validar el acceso con Google (9), corregir el listado tras guardar (7) y añadir el feed de “Me gusta” (8). Las pruebas E2E contra el remoto quedaron en 28/28 PASS (2026-10-17) y la migración de `recipes` ya se aplicó en Atlas (5 likes / 5 saves / 0 reportes). Conexión a Atlas (1), revisión de usuarios (2), flujo local contenerizado y colecciones Postman (4) ya documentados.

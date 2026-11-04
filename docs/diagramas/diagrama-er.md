@@ -56,7 +56,7 @@ erDiagram
         String titulo
         String descripcion
         StringArray ingredientes
-        String instrucciones
+        Subdocument instrucciones (orden, texto)
         String imagen FK
         String categoria
         Number tiempoPreparacion

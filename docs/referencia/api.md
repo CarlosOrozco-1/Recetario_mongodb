@@ -18,7 +18,7 @@ Límite global: 100 solicitudes cada 15 minutos para `/api`.
 | `POST /api/auth/login` | 10 intentos cada 15 minutos | `200` con `_id`, `name`, `email` y `token`; `400` si el usuario o la contraseña son incorrectos |
 | `POST /api/auth/google` | 10 intentos cada 15 minutos | Recibe `{ credential }`; `200` con `_id`, `name`, `email` y JWT propio; `400` para credencial ausente/inválida, `401` si Google no verifica el email o no se puede vincular la cuenta, `500` si falta configuración o falla el servidor |
 
-El endpoint Google verifica la firma y la audiencia del ID token con `GOOGLE_CLIENT_ID`, exige `email_verified` y no acepta identidad o email enviados por separado. Puede crear una cuenta sin contraseña o vincular una cuenta local con el mismo email verificado. El token de sesión dura 30 días. No hay cierre de sesión en el servidor: el frontend elimina el token guardado.
+El endpoint Google verifica la firma y la audiencia del ID token con `GOOGLE_CLIENT_ID`, exige `email_verified` y no acepta identidad o email enviados por separado. La variable debe coincidir exactamente con el `client_id` configurado en el frontend (`googleClientId`). Puede crear una cuenta sin contraseña o vincular una cuenta local con el mismo email verificado. El token de sesión dura 30 días. No hay cierre de sesión en el servidor: el frontend elimina el token guardado.
 
 ## Recetas
 
@@ -32,6 +32,8 @@ El endpoint Google verifica la firma y la audiencia del ID token con `GOOGLE_CLI
 | `DELETE /api/recipes/:id` | Autenticada | `200` con confirmación; elimina también la imagen en GridFS y las filas asociadas en `likes`, `saves` y `reports`; `404` si no existe o no pertenece al usuario |
 
 No existen búsqueda por texto, filtro por categoría en el servidor, paginación de recetas ni perfil por nombre de usuario.
+
+`instrucciones` se envía como un arreglo ordenado de subdocumentos `{ orden, texto }`. El servidor renumera los pasos y descarta los vacíos; por compatibilidad también acepta el bloque de texto anterior con líneas `Paso N. ...`.
 
 ## Imágenes
 

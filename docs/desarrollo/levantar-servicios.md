@@ -9,6 +9,7 @@ solo existe en el servidor de producción.
 
 - Node.js 20+ y npm instalados.
 - `backend/.env` con `JWT_SECRET` y la variable `MONGODB_URI` o `MONGO_URI`.
+- Para habilitar el acceso con Google, `backend/.env` debe incluir `GOOGLE_CLIENT_ID` con el mismo valor de `googleClientId` en `frontend/src/environments/environment.ts`. Sin esa variable, `POST /api/auth/google` responde `500`; con un valor distinto, `401`. El `client_id` es público, no es un secreto.
 - En la configuración actual, la URI apunta a MongoDB Atlas. Las pruebas de escritura ejecutadas así modifican Atlas.
 
 ## Alternativa recomendada: stack local contenerizado

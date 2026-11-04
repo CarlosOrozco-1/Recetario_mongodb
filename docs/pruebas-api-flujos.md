@@ -85,7 +85,7 @@ Registro exitoso responde HTTP 201; login exitoso HTTP 200. El duplicado de corr
 | POST | `/recipes/:id/image` | Sí | Subir/reemplazar imagen, `multipart/form-data`, campo `imagen` (ver middleware de upload) |
 | GET | `/recipes/image/:fileId` | No | Servir imagen de GridFS |
 
-Campos básicos requeridos al crear: `titulo`, `descripcion`, `ingredientes` (arreglo), `instrucciones`. Campos opcionales incluyen `categoria`, `tiempoPreparacion`, `dificultad`, `porciones`, `publica` y `hashtags`.
+Campos básicos requeridos al crear: `titulo`, `descripcion`, `ingredientes` (arreglo) e `instrucciones` (arreglo de `{ orden, texto }`). Campos opcionales incluyen `categoria`, `tiempoPreparacion`, `dificultad`, `porciones`, `publica` y `hashtags`.
 
 Ejemplo:
 
@@ -94,7 +94,10 @@ Ejemplo:
   "titulo": "Ensalada de prueba",
   "descripcion": "Receta temporal para pruebas",
   "ingredientes": ["tomate", "pepino"],
-  "instrucciones": "Lavar, cortar y mezclar",
+  "instrucciones": [
+    { "orden": 1, "texto": "Lavar los vegetales" },
+    { "orden": 2, "texto": "Cortar y mezclar" }
+  ],
   "categoria": "Ensaladas",
   "tiempoPreparacion": 15,
   "dificultad": "Fácil",
@@ -235,7 +238,7 @@ Crear receta (reemplazar el token localmente; no subirlo a Git):
 curl -i -X POST http://localhost:3000/api/recipes \
   -H 'Authorization: Bearer <TOKEN>' \
   -H 'Content-Type: application/json' \
-  -d '{"titulo":"Ensalada de prueba","descripcion":"Receta temporal","ingredientes":["tomate","pepino"],"instrucciones":"Cortar y mezclar","publica":true}'
+  -d '{"titulo":"Ensalada de prueba","descripcion":"Receta temporal","ingredientes":["tomate","pepino"],"instrucciones":[{"orden":1,"texto":"Cortar y mezclar"}],"publica":true}'
 ```
 
 > No pegar tokens reales en tickets, capturas compartidas ni archivos versionados.
