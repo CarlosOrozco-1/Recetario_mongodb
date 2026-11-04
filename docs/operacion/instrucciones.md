@@ -116,6 +116,20 @@ docker compose up -d
 > memoria, se compila en local y se suben el bundle o la imagen. Ver
 > `docs/operacion/guia-deploy-vps.md`.
 
+## 🔧 Migrar instrucciones de recetas existentes
+
+El código nuevo guarda cada paso como subdocumento `{ orden, texto }`. Las recetas creadas antes de ese cambio conservan un bloque de texto hasta que se ejecute la migración.
+
+Desde `backend/`, con `MONGODB_URI` disponible en el entorno o en `backend/.env`:
+
+```bash
+node scripts/normalize-instructions.js --dry-run   # solo cuenta, no escribe
+node scripts/normalize-instructions.js             # aplica la migración
+node scripts/normalize-instructions.js --check     # falla si queda texto anterior
+```
+
+La migración es idempotente y también separa pasos que quedaron en una sola línea. Después de aplicarla, verifica en Compass que `instrucciones` sea un arreglo de objetos `{ orden, texto }` y no una cadena.
+
 ## 🧪 Pruebas con Postman
 
 1. Importar `postman/Recetario-Local.postman_collection.json` (local) o `postman/Recetario-Remoto.postman_collection.json` (remoto) en Postman

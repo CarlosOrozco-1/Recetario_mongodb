@@ -52,7 +52,7 @@ El commit `c6eee0c` subió `carloso` (llave privada OpenSSH) y `carloso.pub`, us
 - [x] Guardar cada instrucción como subdocumento `{ orden, texto }`; el servidor renumera y descarta vacíos.
 - [x] Mostrar las instrucciones como lista en el detalle, conservando compatibilidad con textos históricos.
 - [x] Actualizar documentación de modelo y DERCAS; validar tests y build.
-- [ ] Migrar recetas existentes con `backend/scripts/normalize-instructions.js` (local y Atlas).
+- [ ] Datos existentes: ver pendiente 10 (migración y verificación).
 
 ## 7. Listado después de guardar o crear una receta
 - [ ] Reproducir el flujo: guardar o crear una receta y pulsar el botón para mostrar recetas; el listado no aparece.
@@ -75,10 +75,20 @@ Estado: implementación avanzada en backend y frontend; pendiente de corregir la
 - [ ] Probar éxito, cancelación y errores de credencial/configuración sin exponer tokens ni identificadores sensibles.
 - [ ] Registrar el resultado en la bitácora.
 
+## 10. Corregir las instrucciones ya guardadas en la base de datos
+El código nuevo ya escribe `instrucciones` como arreglo de subdocumentos, pero los documentos existentes todavía conservan el bloque de texto anterior. Al consultarlos en Atlas o Compass se ve una sola cadena.
+- [x] El modelo, el formulario y el API guardan y devuelven arreglos `{ orden, texto }` en altas y ediciones.
+- [x] El script de migración detecta texto en bloque, arreglos híbridos y pasos escritos en una sola línea; incluye modo `--check`.
+- [ ] Ejecutar `node scripts/normalize-instructions.js --dry-run` en `backend/` contra Atlas y revisar cuántas recetas y pasos se migrarían.
+- [ ] Aplicar la migración con `node scripts/normalize-instructions.js` y verificar con `--check` que no queden cadenas.
+- [ ] Confirmar en una consulta que un documento de ejemplo muestra `instrucciones` como arreglo de subdocumentos.
+- [ ] Registrar el resultado en la bitácora.
+
 ## Registro de avances
 - 2026-11-03: pendiente 6 implementado en código y documentación; falta ejecutar la migración en local y Atlas. Pendientes 7–9 abiertos.
 - 2026-11-03: `pre` y `pro` actualizadas por fast-forward con `origin`; `desa` conserva dos commits locales de Google sin publicar.
 - 2026-11-03: el login obtiene `googleClientId` desde `GET /api/config`; se elimina `frontend/src/environments/environment.ts` y la nota local con credenciales queda ignorada por Git.
+- 2026-11-03: pendiente 10 agregado. El script de migración ahora separa pasos en una sola línea, normaliza arreglos híbridos y permite verificar con `--check`.
 
 ## Prioridad
-Orden sugerido: seguridad/rotación de credenciales (incluida la llave SSH filtrada), validar el acceso con Google (9), corregir el listado tras guardar (7) y añadir el feed de “Me gusta” (8). Las pruebas E2E contra el remoto quedaron en 28/28 PASS (2026-10-17) y la migración de `recipes` ya se aplicó en Atlas (5 likes / 5 saves / 0 reportes). Conexión a Atlas (1), revisión de usuarios (2), flujo local contenerizado y colecciones Postman (4) ya documentados.
+Orden sugerido: seguridad/rotación de credenciales (incluida la llave SSH filtrada), migrar las instrucciones existentes (10), validar el acceso con Google (9), corregir el listado tras guardar (7) y añadir el feed de “Me gusta” (8). Las pruebas E2E contra el remoto quedaron en 28/28 PASS (2026-10-17) y la migración de `recipes` ya se aplicó en Atlas (5 likes / 5 saves / 0 reportes). Conexión a Atlas (1), revisión de usuarios (2), flujo local contenerizado y colecciones Postman (4) ya documentados.
