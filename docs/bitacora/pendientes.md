@@ -59,10 +59,11 @@ El commit `c6eee0c` subió `carloso` (llave privada OpenSSH) y `carloso.pub`, us
 - [x] Añadir recarga automática del tablero al volver a `/dashboard` y pruebas de build.
 - [ ] Verificar en el navegador que el listado aparece tras guardar y crear.
 
-## 8. Feed de recetas con “Me gusta”
-- [x] Añadir una pestaña “Me gusta” en el dashboard que consulta `GET /api/recipes?scope=liked`.
-- [x] Endpoint backend con filtrado por likes del usuario y flags `liked`/`saved`.
-- [x] Documentar el parámetro `scope=liked` en la API.
+## 8. Feed de recetas con “Me gusta” y “Guardadas”
+- [x] Añadir pestaña “Me gusta” en el dashboard que consulta `GET /api/recipes?scope=liked`.
+- [x] Añadir pestaña “Guardadas” en el dashboard que consulta `GET /api/recipes?scope=saved`.
+- [x] Endpoint backend con filtrado por likes/saves del usuario y flags `liked`/`saved`.
+- [x] Documentar los parámetros `scope=liked` y `scope=saved` en la API.
 - [ ] Confirmar acceso autorizado y estados de carga, vacío y error en navegador.
 
 ## 9. Acceso con Google

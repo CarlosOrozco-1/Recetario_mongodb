@@ -28,7 +28,7 @@ export class Dashboard implements OnInit {
   error = signal("");
   
   // Navigation & Filtering
-  activeTab = signal<"mine" | "public" | "liked">("mine");
+  activeTab = signal<"mine" | "public" | "liked" | "saved">("mine");
   searchQuery = signal("");
   selectedCategory = signal<string>("Todas");
   sortBy = signal<"recent" | "title">("recent");
@@ -98,7 +98,7 @@ export class Dashboard implements OnInit {
           return r.publica && recipeUserId !== currentUser._id;
         });
       }
-      // "liked": backend already returns only liked recipes; no extra filter.
+      // "liked" and "saved": backend already returns only those recipes; no extra filter.
     }
 
     // 2. Filter by Category
@@ -156,7 +156,7 @@ export class Dashboard implements OnInit {
     this.loading.set(true);
     this.error.set("");
     const tab = this.activeTab();
-    const scope = tab === "public" ? "public" : tab === "liked" ? "liked" : undefined;
+    const scope = tab === "public" ? "public" : tab === "liked" ? "liked" : tab === "saved" ? "saved" : undefined;
     
     this.recipeService.getAll(scope).subscribe({
       next: (recipes) => {
@@ -171,7 +171,7 @@ export class Dashboard implements OnInit {
     });
   }
 
-  changeTab(tab: "mine" | "public" | "liked"): void {
+  changeTab(tab: "mine" | "public" | "liked" | "saved"): void {
     this.activeTab.set(tab);
     this.selectedCategory.set("Todas");
     this.showOnlyFavorites.set(false);

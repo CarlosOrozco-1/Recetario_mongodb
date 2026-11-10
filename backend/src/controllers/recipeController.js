@@ -89,7 +89,12 @@ const getAll = async (req, res) => {
             const likes = await Like.find({ usuario: req.user._id }).select("receta");
             return { _id: { $in: likes.map((l) => l.receta) } };
           })()
-        : { usuario: req.user._id };
+        : req.query.scope === "saved"
+          ? await (async () => {
+              const saves = await Save.find({ usuario: req.user._id }).select("receta");
+              return { _id: { $in: saves.map((s) => s.receta) } };
+            })()
+          : { usuario: req.user._id };
 
     const recipes = await Recipe.find(query)
       .populate("usuario", "name")

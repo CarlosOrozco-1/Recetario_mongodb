@@ -87,6 +87,16 @@
       >
         <span class="tab-icon" aria-hidden="true">❤️</span> Me gusta
       </button>
+      <button
+        type="button"
+        role="tab"
+        class="tab-btn"
+        [attr.aria-selected]="activeTab() === 'saved'"
+        [class.active]="activeTab() === 'saved'"
+        (click)="changeTab('saved')"
+      >
+        <span class="tab-icon" aria-hidden="true">🔖</span> Guardadas
+      </button>
     </div>
 
   <!-- Stats Bar (Only shown for own recipes tab) -->
@@ -112,7 +122,7 @@
   <div class="catalog-heading">
     <div>
       <p class="dashboard-eyebrow">UN POCO DE INSPIRACIÓN</p>
-      <h2>{{ activeTab() === 'mine' ? 'Tu colección' : activeTab() === 'liked' ? 'Recetas que te gustan' : 'De nuestra comunidad' }}</h2>
+      <h2>{{ activeTab() === 'mine' ? 'Tu colección' : activeTab() === 'liked' ? 'Recetas que te gustan' : activeTab() === 'saved' ? 'Recetas guardadas' : 'De nuestra comunidad' }}</h2>
     </div>
     <span class="recipe-total">{{ filteredRecipes().length }} {{ filteredRecipes().length === 1 ? 'receta' : 'recetas' }}</span>
   </div>
@@ -295,6 +305,7 @@
     <p *ngIf="recipes().length === 0 && activeTab() === 'mine'">Es el momento perfecto para añadir tu primera creación culinaria.</p>
     <p *ngIf="recipes().length === 0 && activeTab() === 'public'">Aún no hay recetas públicas de otros chefs para explorar.</p>
     <p *ngIf="recipes().length === 0 && activeTab() === 'liked'">Aún no has marcado recetas con “Me gusta”.</p>
+    <p *ngIf="recipes().length === 0 && activeTab() === 'saved'">Aún no has guardado recetas.</p>
     <p *ngIf="recipes().length > 0">Intenta buscar con otros términos o filtros.</p>
     <a *ngIf="recipes().length === 0 && activeTab() === 'mine'" class="empty-create-link" routerLink="/recipe">Crear mi primera receta <span aria-hidden="true">↗</span></a>
   </div>
