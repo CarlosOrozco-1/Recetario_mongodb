@@ -66,14 +66,18 @@ El commit `c6eee0c` subió `carloso` (llave privada OpenSSH) y `carloso.pub`, us
 - [ ] Confirmar acceso autorizado y estados de carga, vacío y error en navegador.
 
 ## 9. Acceso con Google
-Estado: implementación avanzada en backend y frontend; pendiente de corregir la configuración y validar el flujo completo.
+Estado: implementación avanzada en backend y frontend; validación parcial completada.
 - [x] Endpoint `POST /api/auth/google` con verificación de firma, audiencia y `email_verified` (`f304806`).
 - [x] Botón de Google y carga del script de identidad en el login (`1b02056`).
 - [x] Pruebas del endpoint: configuración faltante, credencial ausente o sobredimensionada, email no verificado, alta y vinculación de cuentas.
 - [x] Corregir la comilla sobrante en `GOOGLE_CLIENT_ID` de `local/compose.yaml` y documentar la causa (2026-11-03).
 - [x] Quitar el `client_id` del código del frontend: `GET /api/config` entrega la configuración pública al login.
+- [x] Validar respuestas de error del endpoint contra el stack local: credencial ausente → `400`, credencial inválida → `401`, sobredimensionada → `400` (2026-11-10).
+- [x] Verificar que `GET /api/config` devuelve el `client_id` correcto en el stack local (2026-11-10).
+- [x] Verificar que el frontend compila con el flujo de Google (build de producción correcto).
 - [ ] Definir `GOOGLE_CLIENT_ID` en el `.env` del backend para ejecución local sin compose y en la VPS.
-- [ ] Probar éxito, cancelación y errores de credencial/configuración sin exponer tokens ni identificadores sensibles.
+- [ ] Probar el flujo completo en navegador: éxito (alta y vinculación), cancelación y errores de credencial/configuración.
+- [ ] Verificar que `http://localhost:4200` y el dominio de producción estén registrados como orígenes autorizados en Google Cloud Console.
 - [ ] Registrar el resultado en la bitácora.
 
 ## 10. Corregir las instrucciones ya guardadas en la base de datos
