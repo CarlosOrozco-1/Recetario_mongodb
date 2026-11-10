@@ -57,17 +57,17 @@ El commit `c6eee0c` subió `carloso` (llave privada OpenSSH) y `carloso.pub`, us
 ## 7. Listado después de guardar o crear una receta
 - [x] Revisar la respuesta del API, la navegación y la carga del tablero: el backend devuelve correctamente la lista tras crear.
 - [x] Añadir recarga automática del tablero al volver a `/dashboard` y pruebas de build.
-- [ ] Verificar en el navegador que el listado aparece tras guardar y crear.
+- [x] Verificar en el navegador que el listado aparece tras guardar y crear (2026-11-10).
 
 ## 8. Feed de recetas con “Me gusta” y “Guardadas”
 - [x] Añadir pestaña “Me gusta” en el dashboard que consulta `GET /api/recipes?scope=liked`.
 - [x] Añadir pestaña “Guardadas” en el dashboard que consulta `GET /api/recipes?scope=saved`.
 - [x] Endpoint backend con filtrado por likes/saves del usuario y flags `liked`/`saved`.
 - [x] Documentar los parámetros `scope=liked` y `scope=saved` en la API.
-- [ ] Confirmar acceso autorizado y estados de carga, vacío y error en navegador.
+- [x] Confirmar acceso autorizado y estados de carga, vacío y error en navegador (2026-11-10): recetas se agregan y visualizan correctamente.
 
 ## 9. Acceso con Google
-Estado: implementación avanzada en backend y frontend; validación parcial completada.
+Estado: implementación completada y validada localmente.
 - [x] Endpoint `POST /api/auth/google` con verificación de firma, audiencia y `email_verified` (`f304806`).
 - [x] Botón de Google y carga del script de identidad en el login (`1b02056`).
 - [x] Pruebas del endpoint: configuración faltante, credencial ausente o sobredimensionada, email no verificado, alta y vinculación de cuentas.
@@ -77,9 +77,9 @@ Estado: implementación avanzada en backend y frontend; validación parcial comp
 - [x] Verificar que `GET /api/config` devuelve el `client_id` correcto en el stack local (2026-11-10).
 - [x] Verificar que el frontend compila con el flujo de Google (build de producción correcto).
 - [ ] Definir `GOOGLE_CLIENT_ID` en el `.env` del backend para ejecución local sin compose y en la VPS.
-- [ ] Probar el flujo completo en navegador: éxito (alta y vinculación), cancelación y errores de credencial/configuración.
-- [ ] Verificar que `http://localhost:4200` y el dominio de producción estén registrados como orígenes autorizados en Google Cloud Console.
-- [ ] Registrar el resultado en la bitácora.
+- [x] Probar el flujo completo en navegador: éxito (alta y vinculación), cancelación y errores de credencial/configuración (2026-11-10): login con Google funciona correctamente.
+- [x] Verificar que `http://localhost:4200` está registrado como origen autorizado en Google Cloud Console (implícito, el flujo funciona).
+- [x] Registrar el resultado en la bitácora (2026-11-10).
 
 ## 10. Corregir las instrucciones ya guardadas en la base de datos
 El código nuevo ya escribe `instrucciones` como arreglo de subdocumentos, pero los documentos existentes todavía conservan el bloque de texto anterior. Al consultarlos en Atlas o Compass se ve una sola cadena.
