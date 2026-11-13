@@ -81,16 +81,21 @@ Estado: implementación completada y validada localmente.
 - [x] Verificar que `http://localhost:4200` está registrado como origen autorizado en Google Cloud Console (implícito, el flujo funciona).
 - [x] Registrar el resultado en la bitácora (2026-11-10).
 
+## 11. Recuperación de contraseña (evaluación)
+No existe ningún flujo de recuperación. Para implementarlo se necesita enviar un código/enlace al correo del usuario, y el proyecto no tiene servicio de correo electrónico configurado.
+- [ ] Elegir proveedor de correo (SMTP, SendGrid, Resend, etc.) y añadirlo al backend.
+- [ ] Diseñar el flujo en 3 pasos (stepper) en frontend y backend.
+- [ ] Definir almacenamiento temporal del token/código (TTL corto, un solo uso, invalidación al cambiar contraseña).
+- [ ] Añadir endpoints y pruebas.
+- [ ] Registrar la decisión en la bitácora.
 ## 10. Corregir las instrucciones ya guardadas en la base de datos
 El código nuevo ya escribe `instrucciones` como arreglo de subdocumentos, pero los documentos existentes todavía conservan el bloque de texto anterior. Al consultarlos en Atlas o Compass se ve una sola cadena.
 - [x] El modelo, el formulario y el API guardan y devuelven arreglos `{ orden, texto }` en altas y ediciones.
 - [x] El script de migración detecta texto en bloque, arreglos híbridos y pasos escritos en una sola línea; incluye modo `--check`.
-- [ ] Ejecutar `node scripts/normalize-instructions.js --dry-run` en `backend/` contra Atlas y revisar cuántas recetas y pasos se migrarían.
-- [ ] Aplicar la migración contra Atlas con `node scripts/normalize-instructions.js` y verificar con `--check` que no queden cadenas.
-- [x] Ejecutar el dry-run en la base local: 12 recetas, 44 pasos (2026-11-03).
-- [x] Aplicar la migración en `recetario_local` y verificar con `--check`: 0 cadenas, 12 recetas con arreglo, 44 pasos y sin `_id` en los subdocumentos (2026-11-03).
-- [ ] Confirmar en una consulta de Atlas que un documento de ejemplo muestra `instrucciones` como arreglo de subdocumentos.
-- [ ] Registrar el resultado de Atlas en la bitácora.
+- [x] Ejecutar `node scripts/normalize-instructions.js --dry-run` en `backend/` contra Atlas y revisar cuántas recetas y pasos se migrarían (2026-11-12): 7 recetas, 26 pasos.
+- [x] Aplicar la migración contra Atlas con `node scripts/normalize-instructions.js` y verificar con `--check` que no queden cadenas (2026-11-12): 0 cadenas, 7 recetas con arreglo, 26 pasos, sin `_id`.
+- [x] Confirmar en una consulta de Atlas que un documento de ejemplo muestra `instrucciones` como arreglo de subdocumentos (2026-11-12).
+- [x] Registrar el resultado de Atlas en la bitácora (2026-11-12).
 
 ## Registro de avances
 - 2026-11-03: pendiente 6 implementado en código y documentación; falta ejecutar la migración en local y Atlas. Pendientes 7–9 abiertos.
@@ -98,6 +103,7 @@ El código nuevo ya escribe `instrucciones` como arreglo de subdocumentos, pero 
 - 2026-11-03: el login obtiene `googleClientId` desde `GET /api/config`; se elimina `frontend/src/environments/environment.ts` y la nota local con credenciales queda ignorada por Git.
 - 2026-11-03: pendiente 10 agregado. El script de migración ahora separa pasos en una sola línea, normaliza arreglos híbridos y permite verificar con `--check`.
 - 2026-11-03: migración aplicada en la base local `recetario_local`: 12 recetas, 44 pasos, 0 cadenas restantes. En Atlas queda pendiente por falta de `MONGODB_URI`.
+- 2026-11-12: migración aplicada en Atlas (`recetario`): 7 recetas, 26 pasos, 0 cadenas restantes, sin `_id` en los subdocumentos. Pendiente 10 completado.
 
 ## Prioridad
-Orden sugerido: seguridad/rotación de credenciales (incluida la llave SSH filtrada), migrar las instrucciones existentes (10), validar el acceso con Google (9), corregir el listado tras guardar (7) y añadir el feed de “Me gusta” (8). Las pruebas E2E contra el remoto quedaron en 28/28 PASS (2026-10-17) y la migración de `recipes` ya se aplicó en Atlas (5 likes / 5 saves / 0 reportes). Conexión a Atlas (1), revisión de usuarios (2), flujo local contenerizado y colecciones Postman (4) ya documentados.
+Orden sugerido: seguridad/rotación de credenciales (incluida la llave SSH filtrada), validar el acceso con Google (9), corregir el listado tras guardar (7) y añadir el feed de “Me gusta” (8). Las pruebas E2E contra el remoto quedaron en 28/28 PASS (2026-10-17) y la migración de `recipes` ya se aplicó en Atlas (5 likes / 5 saves / 0 reportes). Conexión a Atlas (1), revisión de usuarios (2), flujo local contenerizado y colecciones Postman (4) ya documentados. La migración de instrucciones (10) quedó completada en local y Atlas.
