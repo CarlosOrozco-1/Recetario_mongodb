@@ -7,7 +7,10 @@ import { RecipeForm } from "./components/recipe-form/recipe-form";
 import { Profile } from "./components/profile/profile";
 import { Feed } from "./components/feed/feed";
 
+import { Home } from "./components/home/home";
+
 export const routes: Routes = [
+  { path: "", component: Home },
   { path: "login", component: Login },
   { path: "register", component: Register },
   { path: "dashboard", component: Dashboard, canActivate: [authGuard] },
@@ -15,5 +18,5 @@ export const routes: Routes = [
   { path: "recipe", component: RecipeForm, canActivate: [authGuard] },
   { path: "profile/:username", component: Profile, canActivate: [authGuard] },
   { path: "feed", component: Feed, canActivate: [authGuard] },
-  { path: "**", redirectTo: "/dashboard", pathMatch: "full" },
+  { path: "**", redirectTo: "", pathMatch: "full" },
 ];
