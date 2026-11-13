@@ -6,7 +6,7 @@ Registro de cambios visuales y de experiencia de usuario. Se actualiza con cada 
 
 - **Login**: se dividió la pantalla en dos columnas: panel izquierdo con la identidad de Sazón (logo, lema) y panel derecho con el formulario. El panel izquierdo usa una fotografía de fondo con overlay oscuro y el logo agrandado. El panel del formulario usa un fondo suave en lugar de blanco puro.
 - **Registro**: mismo diseño de dos columnas con presentación de la red social y formulario mejorado (iconos, toggle de contraseña, estado de carga).
-- **Inicio (landing)**: nueva ruta pública `/` con hero, características y llamadas a la acción. El hero usa la misma fotografía de fondo con overlay. Usuarios autenticados se redirigen al dashboard.
+- **Inicio (landing)**: nueva ruta pública `/` con hero, características y llamadas a la acción. El fondo ahora cubre toda la página con la fotografía y overlays diferenciados por sección. Usuarios autenticados se redirigen al dashboard.
 - **Marca**: se normalizó el nombre a "Sazón" en login, registro, landing y título del navegador.
 - **Dashboard**: se añadieron pestañas "Me gusta" y "Guardadas" para listar recetas marcadas y guardadas por el usuario.
 
