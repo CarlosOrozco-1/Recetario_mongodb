@@ -91,10 +91,10 @@ No existe servicio de correo configurado; el esqueleto usa consola como fallback
 - [x] Añadir variables de correo de prueba al `.env`.
 - [x] Diseñar el correo con HTML moderno: código grande, fondo crema, encabezado con gradiente morado (2026-11-13).
 - [x] Validar el envío de correo con Gmail SMTP (2026-11-13): correo con diseño HTML recibido correctamente.
+- [x] Añadir pruebas unitarias para los 3 endpoints (2026-11-13): 7 pruebas, todos los casos de error cubiertos.
 - [x] Validar el flujo completo end-to-end en el stack local (2026-11-13).
 - [x] Crear diagrama de flujo en `docs/diagramas/flujo/recuperacion-contrasena.md`.
 - [ ] Configurar servicio de correo real (SMTP o proveedor) en la VPS.
-- [ ] Añadir pruebas unitarias para los 3 endpoints.
 - [ ] Invalidar sesiones existentes tras el cambio (opcional).
 - [ ] Registrar la decisión en la bitácora.
 ## 10. Corregir las instrucciones ya guardadas en la base de datos
