@@ -1,4 +1,4 @@
-import { Component, inject } from "@angular/core";
+import { Component, inject, signal } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { Router, RouterModule } from "@angular/router";
@@ -20,8 +20,16 @@ export class Register {
   password = "";
   error = "";
 
+  showPassword = signal(false);
+  loading = signal(false);
+
+  togglePassword(): void {
+    this.showPassword.update((s) => !s);
+  }
+
   async onRegister(): Promise<void> {
     this.error = "";
+    this.loading.set(true);
     try {
       await firstValueFrom(
         this.authService.register(this.name, this.email, this.password),
@@ -29,6 +37,8 @@ export class Register {
       this.router.navigate(["/dashboard"]);
     } catch (err: unknown) {
       this.error = "No se pudo registrar, verifica tus datos";
+    } finally {
+      this.loading.set(false);
     }
   }
 }

@@ -1,27 +1,76 @@
-<div class="register-container">
-  <form (ngSubmit)="onRegister()">
-    <h2>Registrarse</h2>
+<div class="login-wrapper">
+  <section class="login-hero" aria-label="Presentación del recetario">
+    <div class="hero-content">
+      <div class="brand-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 21a9 9 0 0 0 9-9H3a9 9 0 0 0 9 9Z"></path>
+          <path d="M12 12V3"></path>
+          <path d="M8 12V7"></path>
+          <path d="M16 12V7"></path>
+        </svg>
+      </div>
+      <h1>Sazón</h1>
+      <p class="hero-tagline">Únete a la red social de recetas</p>
+      <ul class="hero-features">
+        <li><span aria-hidden="true">🍳</span> Comparte tus recetas favoritas</li>
+        <li><span aria-hidden="true">❤️</span> Da “Me gusta” y guarda las que te inspiran</li>
+        <li><span aria-hidden="true">🔖</span> Organiza tus recetas guardadas</li>
+        <li><span aria-hidden="true">👥</span> Sigue a otros chefs y descubre nuevas ideas</li>
+        <li><span aria-hidden="true">⭐</span> Reseñas y comentarios en cada receta</li>
+      </ul>
+    </div>
+  </section>
 
-    <div *ngIf="error" class="error">{{ error }}</div>
+  <section class="login-panel">
+    <div class="login-card">
+      <div class="brand-header">
+        <h2>Crea tu cuenta</h2>
+        <p>Empieza a compartir tus recetas</p>
+      </div>
 
-    <label for="name">Nombre</label>
-    <input id="name" type="text" [(ngModel)]="name" name="name" required />
+      <form (ngSubmit)="onRegister()">
+        <div *ngIf="error" class="error-alert animate-slide-up">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+          {{ error }}
+        </div>
 
-    <label for="email">Email</label>
-    <input id="email" type="email" [(ngModel)]="email" name="email" required />
+        <div class="input-group">
+          <label for="name">Nombre</label>
+          <div class="input-wrapper">
+            <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            <input id="name" type="text" [(ngModel)]="name" name="name" placeholder="Tu nombre" required />
+          </div>
+        </div>
 
-    <label for="password">Contraseña (mínimo 8 caracteres)</label>
-    <input
-      id="password"
-      type="password"
-      [(ngModel)]="password"
-      name="password"
-      required
-      minlength="8"
-    />
+        <div class="input-group">
+          <label for="email">Correo electrónico</label>
+          <div class="input-wrapper">
+            <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2" ry="2"></rect><polyline points="3 7 12 13 21 7"></polyline></svg>
+            <input id="email" type="email" [(ngModel)]="email" name="email" placeholder="ejemplo@correo.com" required />
+          </div>
+        </div>
 
-    <button type="submit">Crear cuenta</button>
+        <div class="input-group">
+          <label for="password">Contraseña (mínimo 8 caracteres)</label>
+          <div class="input-wrapper">
+            <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+            <input id="password" [type]="showPassword() ? 'text' : 'password'" [(ngModel)]="password" name="password" placeholder="Mínimo 8 caracteres" required minlength="8" />
+            <button type="button" class="btn-toggle-password" (click)="togglePassword()">
+              <svg *ngIf="!showPassword()" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              <svg *ngIf="showPassword()" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"></path><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"></path><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"></path><line x1="2" y1="2" x2="22" y2="22"></line></svg>
+            </button>
+          </div>
+        </div>
 
-    <p>¿Ya tienes cuenta? <a routerLink="/login" href="/login">Inicia sesión</a></p>
-  </form>
+        <button type="submit" class="btn-primary btn-submit" [disabled]="loading()">
+          <span *ngIf="loading()" class="spinner"></span>
+          {{ loading() ? 'Creando cuenta...' : 'Crear cuenta' }}
+        </button>
+
+        <div class="auth-footer">
+          <p>¿Ya tienes cuenta? <a routerLink="/login">Inicia sesión aquí</a></p>
+        </div>
+      </form>
+    </div>
+  </section>
 </div>
