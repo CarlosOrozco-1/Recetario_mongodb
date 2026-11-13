@@ -37,6 +37,18 @@ export class AuthService {
       .pipe(tap(user => this.saveUser(user)));
   }
 
+  requestPasswordReset(email: string): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${this.apiUrl}/forgot-password`, { email });
+  }
+
+  verifyResetCode(email: string, code: string): Observable<{ resetToken: string }> {
+    return this.http.post<{ resetToken: string }>(`${this.apiUrl}/verify-reset-code`, { email, code });
+  }
+
+  resetPassword(token: string, password: string): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${this.apiUrl}/reset-password`, { token, password });
+  }
+
   getPublicConfig(): Observable<PublicConfig> {
     return this.http.get<PublicConfig>('/api/config');
   }

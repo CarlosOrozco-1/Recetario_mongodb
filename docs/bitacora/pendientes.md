@@ -81,12 +81,19 @@ Estado: implementación completada y validada localmente.
 - [x] Verificar que `http://localhost:4200` está registrado como origen autorizado en Google Cloud Console (implícito, el flujo funciona).
 - [x] Registrar el resultado en la bitácora (2026-11-10).
 
-## 11. Recuperación de contraseña (evaluación)
-No existe ningún flujo de recuperación. Para implementarlo se necesita enviar un código/enlace al correo del usuario, y el proyecto no tiene servicio de correo electrónico configurado.
-- [ ] Elegir proveedor de correo (SMTP, SendGrid, Resend, etc.) y añadirlo al backend.
-- [ ] Diseñar el flujo en 3 pasos (stepper) en frontend y backend.
-- [ ] Definir almacenamiento temporal del token/código (TTL corto, un solo uso, invalidación al cambiar contraseña).
-- [ ] Añadir endpoints y pruebas.
+## 11. Recuperación de contraseña (esqueleto implementado)
+No existe servicio de correo configurado; el esqueleto usa consola como fallback.
+- [x] Crear modelo `PasswordReset` con código hasheado, TTL de 15 min e índice de expiración.
+- [x] Implementar endpoints: `POST /api/auth/forgot-password`, `POST /api/auth/verify-reset-code`, `POST /api/auth/reset-password`.
+- [x] Crear utilidad de correo (`utils/mailer.js`) con fallback a consola.
+- [x] Crear componente frontend `ForgotPassword` con stepper de 3 pasos.
+- [x] Añadir ruta `/forgot-password` y enlace desde el login.
+- [x] Añadir variables de correo de prueba al `.env`.
+- [x] Validar el flujo completo end-to-end en el stack local (2026-11-13).
+- [x] Crear diagrama de flujo en `docs/diagramas/flujo/recuperacion-contrasena.md`.
+- [ ] Configurar servicio de correo real (SMTP o proveedor) en la VPS.
+- [ ] Añadir pruebas unitarias para los 3 endpoints.
+- [ ] Invalidar sesiones existentes tras el cambio (opcional).
 - [ ] Registrar la decisión en la bitácora.
 ## 10. Corregir las instrucciones ya guardadas en la base de datos
 El código nuevo ya escribe `instrucciones` como arreglo de subdocumentos, pero los documentos existentes todavía conservan el bloque de texto anterior. Al consultarlos en Atlas o Compass se ve una sola cadena.

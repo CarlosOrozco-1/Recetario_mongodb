@@ -9,10 +9,13 @@ import { Feed } from "./components/feed/feed";
 
 import { Home } from "./components/home/home";
 
+import { ForgotPassword } from "./components/forgot-password/forgot-password";
+
 export const routes: Routes = [
   { path: "", component: Home },
   { path: "login", component: Login },
   { path: "register", component: Register },
+  { path: "forgot-password", component: ForgotPassword },
   { path: "dashboard", component: Dashboard, canActivate: [authGuard] },
   { path: "recipe/:id", component: RecipeForm, canActivate: [authGuard] },
   { path: "recipe", component: RecipeForm, canActivate: [authGuard] },

@@ -25,6 +25,9 @@ Expone únicamente la configuración pública que el frontend necesita antes de 
 | `POST /api/auth/register` | 10 intentos cada 15 minutos; sanea `name` y `email` | `201` con `_id`, `name`, `email` y `token`; `400` si el usuario ya existe |
 | `POST /api/auth/login` | 10 intentos cada 15 minutos | `200` con `_id`, `name`, `email` y `token`; `400` si el usuario o la contraseña son incorrectos |
 | `POST /api/auth/google` | 10 intentos cada 15 minutos | Recibe `{ credential }`; `200` con `_id`, `name`, `email` y JWT propio; `400` para credencial ausente/inválida, `401` si Google no verifica el email o no se puede vincular la cuenta, `500` si falta configuración o falla el servidor |
+| `POST /api/auth/forgot-password` | 10 intentos cada 15 minutos; sanea `email` | Recibe `{ email }`; `200` con mensaje genérico (no revela si la cuenta existe); `400` si falta el correo; `500` si falla el servidor |
+| `POST /api/auth/verify-reset-code` | 10 intentos cada 15 minutos | Recibe `{ email, code }`; `200` con `resetToken` (JWT temporal de 15 min); `400` si el código es inválido o expirado; `500` si falla el servidor |
+| `POST /api/auth/reset-password` | 10 intentos cada 15 minutos | Recibe `{ token, password }`; `200` con mensaje de éxito; `400` si faltan datos o la contraseña es corta; `401` si el token es inválido o expirado; `500` si falla el servidor |
 
 El endpoint Google verifica la firma y la audiencia del ID token con `GOOGLE_CLIENT_ID`, exige `email_verified` y no acepta identidad o email enviados por separado. El frontend obtiene el identificador público desde `GET /api/config`, así que no se versiona en el código; la variable del backend debe coincidir con el `client_id` autorizado en Google. Puede crear una cuenta sin contraseña o vincular una cuenta local con el mismo email verificado. El token de sesión dura 30 días. No hay cierre de sesión en el servidor: el frontend elimina el token guardado.
 

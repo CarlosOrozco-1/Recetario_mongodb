@@ -1,6 +1,10 @@
 const User = require("../models/User");
+const PasswordReset = require("../models/PasswordReset");
+const { sendResetCode } = require("../utils/mailer");
 const { OAuth2Client } = require("google-auth-library");
 const jwt = require("jsonwebtoken");
+const crypto = require("crypto");
+const bcrypt = require("bcryptjs");
 
 // Generar JWT token
 const GenerarJWT = (id) => {
@@ -129,9 +133,134 @@ const login = async (req, res) => {
   }
 };
 
+// ---------- Recuperación de contraseña (esqueleto) ----------
+
+const REQUEST_RESET_TTL_MS = 15 * 60 * 1000;
+
+const requestPasswordReset = async (req, res) => {
+  try {
+    const email = String(req.body?.email || "").trim().toLowerCase();
+    if (!email) {
+      return res.status(400).json({ message: "El correo es obligatorio" });
+    }
+
+    const user = await User.findOne({ email });
+    // Respuesta genérica para no revelar si la cuenta existe.
+    if (!user || user.googleId && !user.password) {
+      return res.status(200).json({ message: "Si el correo existe, recibirás un código de recuperación" });
+    }
+
+    // Invalidar códigos anteriores.
+    await PasswordReset.deleteMany({ usuario: user._id, usado: false });
+
+    const code = crypto.randomInt(100000, 999999).toString();
+    const salt = await bcrypt.genSalt(10);
+    const codeHash = await bcrypt.hash(code, salt);
+
+    await PasswordReset.create({
+      usuario: user._id,
+      codigoHash: codeHash,
+      expiraEn: new Date(Date.now() + REQUEST_RESET_TTL_MS),
+    });
+
+    await sendResetCode(email, code);
+
+    return res.status(200).json({ message: "Si el correo existe, recibirás un código de recuperación" });
+  } catch (error) {
+    console.error("Error al solicitar recuperación:", error.message);
+    return res.status(500).json({ message: "No se pudo procesar la solicitud" });
+  }
+};
+
+const verifyResetCode = async (req, res) => {
+  try {
+    const email = String(req.body?.email || "").trim().toLowerCase();
+    const code = String(req.body?.code || "").trim();
+    if (!email || !code) {
+      return res.status(400).json({ message: "Correo y código son obligatorios" });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ message: "Código inválido o expirado" });
+    }
+
+    const reset = await PasswordReset.findOne({
+      usuario: user._id,
+      usado: false,
+      expiraEn: { $gt: new Date() },
+    }).sort({ createdAt: -1 });
+
+    if (!reset) {
+      return res.status(400).json({ message: "Código inválido o expirado" });
+    }
+
+    const isMatch = await bcrypt.compare(code, reset.codigoHash);
+    if (!isMatch) {
+      return res.status(400).json({ message: "Código inválido o expirado" });
+    }
+
+    const resetToken = jwt.sign(
+      { id: user._id, resetId: reset._id, purpose: "reset" },
+      process.env.JWT_SECRET,
+      { expiresIn: "15m" }
+    );
+
+    return res.status(200).json({ resetToken });
+  } catch (error) {
+    console.error("Error al verificar código:", error.message);
+    return res.status(500).json({ message: "No se pudo verificar el código" });
+  }
+};
+
+const resetPassword = async (req, res) => {
+  try {
+    const token = req.body?.token;
+    const password = req.body?.password;
+    if (!token || !password || String(password).length < 8) {
+      return res.status(400).json({ message: "Token y contraseña (mínimo 8 caracteres) son obligatorios" });
+    }
+
+    let payload;
+    try {
+      payload = jwt.verify(token, process.env.JWT_SECRET);
+    } catch {
+      return res.status(401).json({ message: "Token inválido o expirado" });
+    }
+
+    if (payload.purpose !== "reset") {
+      return res.status(401).json({ message: "Token inválido" });
+    }
+
+    const reset = await PasswordReset.findById(payload.resetId);
+    if (!reset || reset.usado || reset.expiraEn < new Date()) {
+      return res.status(400).json({ message: "El código ya fue usado o expiró" });
+    }
+
+    const user = await User.findById(payload.id);
+    if (!user) {
+      return res.status(404).json({ message: "Usuario no encontrado" });
+    }
+
+    user.password = String(password);
+    await user.save();
+
+    reset.usado = true;
+    await reset.save();
+
+    return res.status(200).json({ message: "Contraseña actualizada correctamente" });
+  } catch (error) {
+    console.error("Error al restablecer contraseña:", error.message);
+    return res.status(500).json({ message: "No se pudo restablecer la contraseña" });
+  }
+};
+
 module.exports = {
   register,
   login,
   googleLogin,
   setGoogleClientForTesting,
+  requestPasswordReset,
+  verifyResetCode,
+  resetPassword,
 };

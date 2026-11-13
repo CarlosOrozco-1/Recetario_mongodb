@@ -23,6 +23,7 @@
     "mongoose": "^9.7.4",
     "multer": "^2.4.0",
     "multer-gridfs-storage": "^6.2.1",
+    "nodemailer": "^10.5.0",
     "sharp": "^0.35.4",
     "xss": "^1.0.15"
   },
