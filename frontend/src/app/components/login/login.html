@@ -1,56 +1,72 @@
-<div class="login-wrapper animate-fade-in">
-  <div class="login-card">
-    <div class="brand-header">
+<div class="login-wrapper">
+  <section class="login-hero" aria-label="Presentación del recetario">
+    <div class="hero-content">
       <div class="brand-icon">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M12 21a9 9 0 0 0 9-9H3a9 9 0 0 0 9 9Z"></path>
           <path d="M12 12V3"></path>
           <path d="M8 12V7"></path>
           <path d="M16 12V7"></path>
         </svg>
       </div>
-      <h2>Tu Recetario</h2>
-      <p>Accede a tus recetas favoritas</p>
+      <h1>Tu Recetario</h1>
+      <p class="hero-tagline">La red social de recetas que inspiran</p>
+      <ul class="hero-features">
+        <li><span aria-hidden="true">🍳</span> Comparte tus recetas favoritas</li>
+        <li><span aria-hidden="true">❤️</span> Da “Me gusta” y guarda las que te inspiran</li>
+        <li><span aria-hidden="true">🔖</span> Organiza tus recetas guardadas</li>
+        <li><span aria-hidden="true">👥</span> Sigue a otros chefs y descubre nuevas ideas</li>
+        <li><span aria-hidden="true">⭐</span> Reseñas y comentarios en cada receta</li>
+      </ul>
     </div>
+  </section>
 
-    <form (ngSubmit)="onLogin()">
-      <div *ngIf="error" class="error-alert animate-slide-up">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
-        {{ error }}
+  <section class="login-panel">
+    <div class="login-card">
+      <div class="brand-header">
+        <h2>Bienvenido de nuevo</h2>
+        <p>Accede a tu cocina digital</p>
       </div>
 
-      <div class="input-group">
-        <label for="email">Correo electrónico</label>
-        <div class="input-wrapper">
-          <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2" ry="2"></rect><polyline points="3 7 12 13 21 7"></polyline></svg>
-          <input id="email" type="email" [(ngModel)]="email" name="email" placeholder="ejemplo@correo.com" required />
+      <form (ngSubmit)="onLogin()">
+        <div *ngIf="error" class="error-alert animate-slide-up">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+          {{ error }}
         </div>
-      </div>
 
-      <div class="input-group">
-        <label for="password">Contraseña</label>
-        <div class="input-wrapper">
-          <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-          <input id="password" [type]="showPassword() ? 'text' : 'password'" [(ngModel)]="password" name="password" placeholder="Ingresa tu contraseña" required />
-          <button type="button" class="btn-toggle-password" (click)="togglePassword()">
-            <svg *ngIf="!showPassword()" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-            <svg *ngIf="showPassword()" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"></path><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"></path><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"></path><line x1="2" y1="2" x2="22" y2="22"></line></svg>
-          </button>
+        <div class="input-group">
+          <label for="email">Correo electrónico</label>
+          <div class="input-wrapper">
+            <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2" ry="2"></rect><polyline points="3 7 12 13 21 7"></polyline></svg>
+            <input id="email" type="email" [(ngModel)]="email" name="email" placeholder="ejemplo@correo.com" required />
+          </div>
         </div>
-      </div>
 
-      <button type="submit" class="btn-primary btn-submit" [disabled]="loading() || googleLoading()">
-        <span *ngIf="loading()" class="spinner"></span>
-        {{ loading() ? 'Iniciando...' : 'Ingresar a la cocina' }}
-      </button>
+        <div class="input-group">
+          <label for="password">Contraseña</label>
+          <div class="input-wrapper">
+            <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+            <input id="password" [type]="showPassword() ? 'text' : 'password'" [(ngModel)]="password" name="password" placeholder="Ingresa tu contraseña" required />
+            <button type="button" class="btn-toggle-password" (click)="togglePassword()">
+              <svg *ngIf="!showPassword()" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              <svg *ngIf="showPassword()" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"></path><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"></path><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"></path><line x1="2" y1="2" x2="22" y2="22"></line></svg>
+            </button>
+          </div>
+        </div>
 
-      <div class="auth-divider" aria-hidden="true"><span>o continúa con</span></div>
-      <div id="google-signin-button" class="google-signin-button" [attr.aria-busy]="googleLoading()"></div>
-      <p *ngIf="googleLoading()" class="google-loading" role="status">Verificando tu cuenta con Google...</p>
+        <button type="submit" class="btn-primary btn-submit" [disabled]="loading() || googleLoading()">
+          <span *ngIf="loading()" class="spinner"></span>
+          {{ loading() ? 'Iniciando...' : 'Ingresar a la cocina' }}
+        </button>
 
-      <div class="auth-footer">
-        <p>¿Aún no tienes un recetario? <a routerLink="/register">Regístrate aquí</a></p>
-      </div>
-    </form>
-  </div>
+        <div class="auth-divider" aria-hidden="true"><span>o continúa con</span></div>
+        <div id="google-signin-button" class="google-signin-button" [attr.aria-busy]="googleLoading()"></div>
+        <p *ngIf="googleLoading()" class="google-loading" role="status">Verificando tu cuenta con Google...</p>
+
+        <div class="auth-footer">
+          <p>¿Aún no tienes un recetario? <a routerLink="/register">Regístrate aquí</a></p>
+        </div>
+      </form>
+    </div>
+  </section>
 </div>
