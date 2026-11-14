@@ -3,6 +3,8 @@
 
 La colección de usuarios admite cuentas locales con contraseña bcrypt y cuentas autenticadas mediante Google. El campo opcional y único \texttt{googleId} almacena el identificador de la identidad verificada; la contraseña es obligatoria únicamente para usuarios sin ese identificador. La descripción completa de campos está en \path{docs/modelo-datos/usuario.md}.
 
+La colección \texttt{passwordresets} guarda un documento por solicitud de recuperación con el código hasheado, su expiración y la marca de uso; un índice TTL elimina los documentos al expirar. Su descripción está en \path{docs/modelo-datos/password-reset.md}.
+
 El campo \texttt{instrucciones} de la receta es un arreglo de subdocumentos ordenados con \texttt{orden} y \texttt{texto}. El servidor renumera los pasos y descarta los vacíos. Las recetas anteriores que guardaban un bloque de texto se migran con \path{backend/scripts/normalize-instructions.js}.
 
 \begin{figure}[H]

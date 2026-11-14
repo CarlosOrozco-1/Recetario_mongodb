@@ -3,6 +3,8 @@ const nodemailer = require("nodemailer");
 const isConfigured = () =>
   Boolean(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS);
 
+const smtpTarget = () => `${process.env.SMTP_HOST}:${process.env.SMTP_PORT || 587}`;
+
 const createTransport = () => {
   if (!isConfigured()) return null;
   return nodemailer.createTransport({
@@ -13,7 +15,34 @@ const createTransport = () => {
       user: process.env.SMTP_USER,
       pass: process.env.SMTP_PASS,
     },
+    // Sin estos límites, un SMTP inalcanzable deja la petición HTTP colgada.
+    connectionTimeout: 10_000,
+    greetingTimeout: 10_000,
+    socketTimeout: 20_000,
   });
+};
+
+// Se registra al arrancar para que el operador sepa si el correo está disponible
+// sin tener que provocar un fallo desde la web. No imprime credenciales.
+const logConfiguration = () => {
+  if (isConfigured()) {
+    console.log(`[MAILER] SMTP configurado (${smtpTarget()})`);
+    return;
+  }
+  console.warn(
+    "[MAILER] SMTP no configurado: define SMTP_HOST, SMTP_USER y SMTP_PASS en backend/.env. " +
+      "La recuperación de contraseña responderá 503."
+  );
+};
+
+const isProduction = () => process.env.NODE_ENV === "production";
+
+const logFallbackCode = (email, code) => {
+  if (isProduction()) {
+    console.warn(`[MAILER] El código de recuperación para ${email} no se pudo entregar; no se registra en producción.`);
+    return;
+  }
+  console.log(`[MAILER] Código para ${email}: ${code}`);
 };
 
 // Envía el código de recuperación. Si no hay SMTP configurado, lo registra en consola
@@ -80,18 +109,21 @@ const sendResetCode = async (email, code) => {
 
   const transport = createTransport();
   if (!transport) {
-    console.log(`[MAILER] SMTP no configurado. Código para ${email}: ${code}`);
-    return { sent: false, preview: code };
+    logFallbackCode(email, code);
+    return { sent: false, reason: "not-configured" };
   }
 
   try {
-    await transport.sendMail({ from, to: email, subject, text, html });
-    return { sent: true };
+    const info = await transport.sendMail({ from, to: email, subject, text, html });
+    return { sent: true, messageId: info?.messageId };
   } catch (error) {
-    console.error("[MAILER] Error al enviar correo:", error.message);
-    console.log(`[MAILER] Código para ${email}: ${code}`);
-    return { sent: false, preview: code };
+    const codeDetail = [error.code, error.responseCode].filter(Boolean).join("/");
+    console.error(
+      `[MAILER] Error al enviar correo a ${email}${codeDetail ? ` (${codeDetail})` : ""}: ${error.message}`
+    );
+    logFallbackCode(email, code);
+    return { sent: false, reason: "send-error", errorCode: error.code || null };
   }
 };
 
-module.exports = { sendResetCode, isConfigured };
+module.exports = { sendResetCode, isConfigured, logConfiguration };

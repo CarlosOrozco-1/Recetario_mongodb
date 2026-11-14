@@ -295,7 +295,32 @@ git checkout <commit-bueno> && docker compose up -d --build
 [ ] 10. Caddy: bloque del subdominio + log con roll_size
 [ ] 11. caddy validate → caddy reload
 [ ] 12. curl -H "Host: app.dominio" http://127.0.0.1/... y luego https://
-[ ] 13. Login + CRUD + carga de imágenes desde el navegador
+[ ] 13. Login (correo/contraseña y Google) + recuperación de contraseña + CRUD + carga de imágenes desde el navegador
+```
+
+### 2.9 Variables obligatorias del backend
+
+El compose de la VPS carga `backend/.env` con `env_file`. La plantilla está en
+`backend/.env.example`; cópiala como `backend/.env` y completa los valores. Sin
+este archivo el backend arranca sin base de datos, sin secreto JWT y sin Google.
+
+| Variable | Uso |
+|---|---|
+| `MONGODB_URI` | Cadena de Atlas |
+| `JWT_SECRET` | Firma de los tokens de sesión y de recuperación |
+| `PORT` | Puerto interno del backend (por defecto 3000) |
+| `GOOGLE_CLIENT_ID` | `client_id` público del cliente web OAuth; sin él `GET /api/config` devuelve `""` y el botón de Google no aparece |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASS` | Envío del código de recuperación; Gmail requiere contraseña de aplicación. Sin estas variables el paso 1 responde `503` |
+| `MAIL_FROM` | Remitente visible del correo |
+
+Además, el dominio de producción debe estar registrado como **origen JavaScript
+autorizado** del mismo cliente OAuth en Google Cloud Console (por ejemplo,
+`https://tu-dominio.com`). El backend no necesita `GOOGLE_CLIENT_SECRET`.
+
+Cada cambio de `.env` requiere recrear el backend para que `env_file` lo inyecte:
+
+```bash
+docker compose up -d --force-recreate backend
 ```
 
 ---

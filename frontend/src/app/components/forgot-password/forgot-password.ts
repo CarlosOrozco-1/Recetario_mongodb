@@ -1,4 +1,5 @@
 import { Component, inject, signal } from "@angular/core";
+import { HttpErrorResponse } from "@angular/common/http";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { Router, RouterModule } from "@angular/router";
@@ -33,8 +34,8 @@ export class ForgotPassword {
       const res = await firstValueFrom(this.authService.requestPasswordReset(this.email));
       this.success = res.message;
       this.step.set(2);
-    } catch {
-      this.error = "No se pudo procesar la solicitud. Intenta de nuevo.";
+    } catch (error) {
+      this.error = this.serverMessage(error) ?? "No se pudo procesar la solicitud. Intenta de nuevo.";
     } finally {
       this.loading.set(false);
     }
@@ -48,8 +49,8 @@ export class ForgotPassword {
       const res = await firstValueFrom(this.authService.verifyResetCode(this.email, this.code));
       this.resetToken = res.resetToken;
       this.step.set(3);
-    } catch {
-      this.error = "Código inválido o expirado.";
+    } catch (error) {
+      this.error = this.serverMessage(error) ?? "Código inválido o expirado.";
     } finally {
       this.loading.set(false);
     }
@@ -71,11 +72,20 @@ export class ForgotPassword {
       const res = await firstValueFrom(this.authService.resetPassword(this.resetToken, this.password));
       this.success = res.message;
       setTimeout(() => this.router.navigate(["/login"]), 2000);
-    } catch {
-      this.error = "No se pudo restablecer la contraseña. El enlace puede haber expirado.";
+    } catch (error) {
+      this.error = this.serverMessage(error) ?? "No se pudo restablecer la contraseña. El enlace puede haber expirado.";
     } finally {
       this.loading.set(false);
     }
+  }
+
+  // Muestra el mensaje del backend cuando existe (por ejemplo, SMTP no disponible)
+  // en lugar de ocultarlo detrás de un texto genérico.
+  private serverMessage(error: unknown): string | null {
+    if (error instanceof HttpErrorResponse && typeof error.error?.message === "string") {
+      return error.error.message;
+    }
+    return null;
   }
 
   goBack(): void {

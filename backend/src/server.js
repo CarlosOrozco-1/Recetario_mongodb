@@ -1,3 +1,6 @@
+// Debe ejecutarse antes de cargar rutas y controladores: varios leen process.env.
+require("dotenv").config();
+
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
@@ -7,8 +10,7 @@ const followsRouter = require("./routes/follows");
 const activityFeedRouter = require("./routes/activityFeed");
 const recipeSocialRouter = require("./routes/recipeSocial");
 const { apiLimiter } = require("./middleware/rateLimiter");
-
-require("dotenv").config();
+const { logConfiguration: logMailConfiguration } = require("./utils/mailer");
 
 const app = express();
 
@@ -57,6 +59,13 @@ mongoose
   });
 
 const PORT = process.env.PORT || 3000;
+logMailConfiguration();
+if (!process.env.GOOGLE_CLIENT_ID) {
+  console.warn(
+    "[AUTH] GOOGLE_CLIENT_ID no configurado: el login con Google no se mostrará " +
+      "(GET /api/config devolverá una cadena vacía)."
+  );
+}
 app.listen(PORT, () => {
   console.log(`🚀 Backend corriendo en puerto ${PORT}`);
 });

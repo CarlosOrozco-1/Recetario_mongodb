@@ -1,5 +1,21 @@
 # Bitácora de errores y correcciones
 
+## 2026-11-13 — El código de recuperación nunca llega y la API responde 200
+
+- **Componente:** `backend/src/utils/mailer.js`, `backend/src/controllers/authController.js`, `backend/src/server.js`, `frontend/src/app/components/forgot-password/forgot-password.ts`.
+- **Síntoma:** desde la web se completaba el paso 1 y la interfaz mostraba el mensaje genérico, pero el correo con el código nunca llegaba. En la VPS ocurría siempre; en local, de forma intermitente según el proceso que atendiera la petición.
+- **Causa:** dos fallos sumados. (1) `sendResetCode` capturaba cualquier error de SMTP y el controlador devolvía `200` genérico, así que un fallo de autenticación, red o configuración era invisible para el usuario y para la API. (2) En la VPS no existía `backend/.env`, por lo que faltaban `SMTP_HOST`, `SMTP_USER` y `SMTP_PASS` y el mailer caía al registro en consola. La cuenta usada en local (`carlosorozcok@gmail.com`) existe y las credenciales SMTP son válidas: se verificó con `transporter.verify()` y con un envío real aceptado por Gmail, por lo que el problema no era la contraseña de aplicación.
+- **Solución:** `server.js` carga `dotenv` antes de las rutas e imprime al arrancar si SMTP está configurado (sin credenciales). `POST /api/auth/forgot-password` responde `503` si falta la configuración global de correo, antes de consultar al usuario para no revelar si existe, y `502` si el proveedor rechaza el envío; en ese caso invalida el código recién creado para no dejar códigos válidos sin entregar. `sendResetCode` devuelve `{ sent, reason, errorCode }`, aplica tiempos de espera de conexión y no registra el código en producción. El frontend muestra el mensaje del backend en lugar de un texto genérico. Se añadió `backend/.env.example` con todas las variables, incluida `GOOGLE_CLIENT_ID` y el bloque SMTP.
+- **Verificación:** `npm test` en `backend/` (49/49, incluye pruebas nuevas de mailer y de los códigos `502`/`503`), `npm test` en `frontend/` (14/14) y `npx ng build --configuration production`. Flujo completo con un backend real contra `recetario_local` y el SMTP configurado: arranque con `[MAILER] SMTP configurado (smtp.gmail.com:587)` y `POST /api/auth/forgot-password` con `200`; el envío directo con `sendResetCode` devolvió `{ sent: true }`. Pendiente: crear `backend/.env` en la VPS con las variables de correo y Google (ver `docs/operacion/guia-deploy-vps.md`).
+
+## 2026-11-13 — Google no funciona en la VPS aunque sí en local
+
+- **Componente:** configuración de entorno del backend, `GET /api/config` y `POST /api/auth/google`.
+- **Síntoma:** el login con Google funciona en local, pero en la VPS la interfaz indica que el inicio de sesión con Google no está configurado.
+- **Causa:** el flujo local funciona porque `local/compose.yaml` inyecta `GOOGLE_CLIENT_ID` directamente en el contenedor del backend. En la VPS, `docker-compose.yml` toma las variables de `backend/.env` y ese archivo no existe todavía, por lo que `GET /api/config` devuelve `googleClientId: ""` y el frontend no renderiza el botón. No se requiere `GOOGLE_CLIENT_SECRET`: el backend solo valida la audiencia del ID token.
+- **Solución:** añadir `GOOGLE_CLIENT_ID` (el mismo `client_id` del cliente web OAuth) a `backend/.env` en la VPS y recrear el contenedor del backend para que `env_file` lo inyecte. Documentar la variable en `backend/.env.example` y registrar el origen de producción en Google Cloud Console. `server.js` ahora advierte al arrancar si la variable falta.
+- **Verificación:** pruebas de `config` y `auth-google` en `backend/` pasan; el arranque local muestra el `client_id` y el botón. Pendiente de validar en la VPS tras crear el `.env`: `GET /api/config` debe devolver el identificador y el origen del dominio debe estar autorizado en Google Cloud Console.
+
 ## 2026-11-03 — Acceso con Google rechazado por configuración del entorno
 
 - **Componente:** `local/compose.yaml`, login con Google (`POST /api/auth/google`).

@@ -3,7 +3,7 @@
 ## Requisitos
 
 - Node.js 20+ y npm.
-- `backend/.env` con la cadena de Atlas (ya existe).
+- `backend/.env` con la cadena de Atlas, `JWT_SECRET`, `GOOGLE_CLIENT_ID` y, para recuperar contraseñas, `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASS` y `MAIL_FROM`. La plantilla completa está en `backend/.env.example`.
 - En la VPS: Docker + Docker Compose.
 
 ## ⚠️ Dos escenarios: VPS y local

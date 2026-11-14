@@ -10,6 +10,7 @@ solo existe en el servidor de producción.
 - Node.js 20+ y npm instalados.
 - `backend/.env` con `JWT_SECRET` y la variable `MONGODB_URI` o `MONGO_URI`.
 - Para habilitar el acceso con Google, `backend/.env` debe incluir `GOOGLE_CLIENT_ID` con el `client_id` autorizado en Google. El frontend lo recibe desde `GET /api/config` al abrir el login, así que no hay que duplicarlo en el código. Sin esa variable, el endpoint Google responde `500`; con un valor distinto al autorizado, `401`. El `client_id` es público, no es un secreto.
+- Para la recuperación de contraseña, `backend/.env` debe incluir `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASS` y `MAIL_FROM`. Con Gmail usa una contraseña de aplicación. Sin esas variables el backend arranca con una advertencia y `POST /api/auth/forgot-password` responde `503`. Al arrancar, la consola indica si SMTP está configurado, sin mostrar credenciales.
 - En la configuración actual, la URI apunta a MongoDB Atlas. Las pruebas de escritura ejecutadas así modifican Atlas.
 
 ## Alternativa recomendada: stack local contenerizado

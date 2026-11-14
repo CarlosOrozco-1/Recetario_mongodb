@@ -76,27 +76,30 @@ Estado: implementación completada y validada localmente.
 - [x] Validar respuestas de error del endpoint contra el stack local: credencial ausente → `400`, credencial inválida → `401`, sobredimensionada → `400` (2026-11-10).
 - [x] Verificar que `GET /api/config` devuelve el `client_id` correcto en el stack local (2026-11-10).
 - [x] Verificar que el frontend compila con el flujo de Google (build de producción correcto).
-- [ ] Definir `GOOGLE_CLIENT_ID` en el `.env` del backend para ejecución local sin compose y en la VPS.
+- [ ] Definir `GOOGLE_CLIENT_ID` en el `.env` del backend para ejecución local sin compose y en la VPS (pendiente solo en la VPS; el backend ahora advierte al arrancar si falta).
+- [ ] Registrar el dominio de producción como origen JavaScript autorizado en Google Cloud Console.
 - [x] Probar el flujo completo en navegador: éxito (alta y vinculación), cancelación y errores de credencial/configuración (2026-11-10): login con Google funciona correctamente.
 - [x] Verificar que `http://localhost:4200` está registrado como origen autorizado en Google Cloud Console (implícito, el flujo funciona).
 - [x] Registrar el resultado en la bitácora (2026-11-10).
 
-## 11. Recuperación de contraseña (esqueleto implementado)
-No existe servicio de correo configurado; el esqueleto usa consola como fallback.
+## 11. Recuperación de contraseña (implementada)
+El correo se envía por SMTP configurado en `backend/.env`; sin configuración la API responde `503` y el arranque lo advierte.
 - [x] Crear modelo `PasswordReset` con código hasheado, TTL de 15 min e índice de expiración.
 - [x] Implementar endpoints: `POST /api/auth/forgot-password`, `POST /api/auth/verify-reset-code`, `POST /api/auth/reset-password`.
-- [x] Crear utilidad de correo (`utils/mailer.js`) con fallback a consola.
+- [x] Crear utilidad de correo (`utils/mailer.js`).
 - [x] Crear componente frontend `ForgotPassword` con stepper de 3 pasos.
 - [x] Añadir ruta `/forgot-password` y enlace desde el login.
 - [x] Añadir variables de correo de prueba al `.env`.
 - [x] Diseñar el correo con HTML moderno: código grande, fondo crema, encabezado con gradiente morado (2026-11-13).
 - [x] Validar el envío de correo con Gmail SMTP (2026-11-13): correo con diseño HTML recibido correctamente.
-- [x] Añadir pruebas unitarias para los 3 endpoints (2026-11-13): 7 pruebas, todos los casos de error cubiertos.
+- [x] Añadir pruebas unitarias para los 3 endpoints y para el mailer (2026-11-13).
 - [x] Validar el flujo completo end-to-end en el stack local (2026-11-13).
 - [x] Crear diagrama de flujo en `docs/diagramas/flujo/recuperacion-contrasena.md`.
-- [ ] Configurar servicio de correo real (SMTP o proveedor) en la VPS.
+- [x] Dejar de ocultar los fallos de envío: `503` si falta SMTP, `502` si el proveedor rechaza el envío, con el código invalidado y el error registrado (2026-11-13).
+- [x] Registrar al arrancar si SMTP está configurado y no escribir códigos de recuperación en logs de producción (2026-11-13).
+- [x] Añadir `backend/.env.example` con las variables de base de datos, Google y SMTP (2026-11-13).
+- [ ] Configurar `SMTP_*` y `MAIL_FROM` en la VPS.
 - [ ] Invalidar sesiones existentes tras el cambio (opcional).
-- [ ] Registrar la decisión en la bitácora.
 ## 10. Corregir las instrucciones ya guardadas en la base de datos
 El código nuevo ya escribe `instrucciones` como arreglo de subdocumentos, pero los documentos existentes todavía conservan el bloque de texto anterior. Al consultarlos en Atlas o Compass se ve una sola cadena.
 - [x] El modelo, el formulario y el API guardan y devuelven arreglos `{ orden, texto }` en altas y ediciones.

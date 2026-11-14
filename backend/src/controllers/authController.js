@@ -1,6 +1,6 @@
 const User = require("../models/User");
 const PasswordReset = require("../models/PasswordReset");
-const { sendResetCode } = require("../utils/mailer");
+const { sendResetCode, isConfigured } = require("../utils/mailer");
 const { OAuth2Client } = require("google-auth-library");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
@@ -133,7 +133,7 @@ const login = async (req, res) => {
   }
 };
 
-// ---------- Recuperación de contraseña (esqueleto) ----------
+// ---------- Recuperación de contraseña ----------
 
 const REQUEST_RESET_TTL_MS = 15 * 60 * 1000;
 
@@ -144,9 +144,18 @@ const requestPasswordReset = async (req, res) => {
       return res.status(400).json({ message: "El correo es obligatorio" });
     }
 
+    // La falta de SMTP es un fallo global del servicio, no de la cuenta: se responde
+    // 503 antes de buscar al usuario para no revelar si el correo existe.
+    if (!isConfigured()) {
+      console.error("[AUTH] Recuperación no disponible: faltan SMTP_HOST, SMTP_USER o SMTP_PASS");
+      return res.status(503).json({
+        message: "El envío de correos no está disponible en este momento. Intenta más tarde o contacta al administrador.",
+      });
+    }
+
     const user = await User.findOne({ email });
     // Respuesta genérica para no revelar si la cuenta existe.
-    if (!user || user.googleId && !user.password) {
+    if (!user) {
       return res.status(200).json({ message: "Si el correo existe, recibirás un código de recuperación" });
     }
 
@@ -163,7 +172,19 @@ const requestPasswordReset = async (req, res) => {
       expiraEn: new Date(Date.now() + REQUEST_RESET_TTL_MS),
     });
 
-    await sendResetCode(email, code);
+    // Cualquier cuenta con email puede recuperar la contraseña, incluidas las
+    // creadas con Google: tras verificar el código pueden definir una contraseña
+    // e iniciar sesión también con email.
+    const mail = await sendResetCode(email, code);
+    if (!mail.sent) {
+      // No dejar un código válido que el usuario nunca recibió.
+      await PasswordReset.deleteMany({ usuario: user._id, usado: false });
+      const detalle = mail.errorCode ? `: ${mail.errorCode}` : "";
+      console.error(`[AUTH] No se pudo enviar el código de recuperación (${mail.reason}${detalle})`);
+      return res.status(502).json({
+        message: "No se pudo enviar el correo de recuperación. Intenta de nuevo en unos minutos.",
+      });
+    }
 
     return res.status(200).json({ message: "Si el correo existe, recibirás un código de recuperación" });
   } catch (error) {

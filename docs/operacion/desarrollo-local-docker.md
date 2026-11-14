@@ -28,6 +28,7 @@ Datos persistentes: volumen Docker recetario-local_mongo-local-data
 - La primera instalación ejecuta `npm install` dentro de los bind mounts y puede crear/actualizar `package-lock.json`. Antes de confirmar cambios Git, revisa `git status` y `git diff`; conserva lockfiles si son cambios intencionales y descarta solo artefactos accidentales.
 - El backend recibe `MONGODB_URI` local desde el compose; no usa `backend/.env` ni la URI de Atlas en este entorno.
 - El compose también inyecta `GOOGLE_CLIENT_ID` para el inicio de sesión con Google. El frontend obtiene ese identificador público desde `GET /api/config`, no desde un archivo de entorno versionado. El valor debe coincidir con el `client_id` autorizado en Google; una diferencia (incluido un carácter sobrante) hace que Google devuelva `401`.
+- El correo de recuperación sí se toma de `backend/.env`, que el backend carga con `dotenv` desde el volumen montado: el compose local no define `SMTP_*` ni `MAIL_FROM`. Si el archivo no las tiene, `POST /api/auth/forgot-password` responde `503` y el arranque lo advierte en consola.
 - El secreto JWT del compose es solo para desarrollo local; nunca debe reutilizarse en producción.
 - Angular corre con `ng serve` y usa `frontend/src/proxy.docker.conf.json`, que redirige `/api` al servicio `backend`.
 - Los volúmenes separados de `node_modules` evitan instalar dependencias dentro de la carpeta fuente.
